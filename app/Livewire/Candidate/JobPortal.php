@@ -1,0 +1,164 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Livewire\Candidate;
+
+use App\Enums\RecruitmentStage;
+use App\Enums\UserRole;
+use App\Models\Application;
+use App\Models\Department;
+use App\Models\Job;
+use App\Models\Site;
+use App\Notifications\ApplicationReceived;
+use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Layout;
+use Livewire\Component;
+use Livewire\WithPagination;
+
+#[Layout('layouts.app')]
+class JobPortal extends Component
+{
+    use WithPagination;
+
+    public string $search = '';
+
+    public string $department_filter = '';
+
+    public string $site_filter = '';
+
+    public string $level_filter = '';
+
+    public bool $show_applied_only = false;
+
+    public ?int $trackingJobId = null;
+
+    public bool $showTrackingModal = false;
+
+    public function mount(): void
+    {
+        abort_unless(Auth::user()?->hasUserRole(), 403);
+    }
+
+    public function updatingSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingDepartmentFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingSiteFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingLevelFilter(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingShowAppliedOnly(): void
+    {
+        $this->resetPage();
+    }
+
+    public function apply(Job $job): void
+    {
+        $user = Auth::user();
+
+        abort_unless($job->is_active, 403);
+
+        $alreadyApplied = Application::where('user_id', $user->id)
+            ->where('job_id', $job->id)
+            ->exists();
+
+        if ($alreadyApplied) {
+            $this->dispatch('notify', message: __('You have already applied for this position.'), type: 'error');
+
+            return;
+        }
+
+        $activeApplicationsCount = Application::where('user_id', $user->id)
+            ->whereNotIn('recruitment_stage', [RecruitmentStage::REJECTED, RecruitmentStage::HIRED])
+            ->count();
+
+        if ($activeApplicationsCount >= 2) {
+            $this->dispatch('notify', message: __('You can only have 2 active applications at a time.'), type: 'error');
+
+            return;
+        }
+
+        $application = Application::create([
+            'user_id' => $user->id,
+            'job_id' => $job->id,
+            'recruitment_stage' => RecruitmentStage::APPLIED,
+        ]);
+
+        try {
+            $user->notify(new ApplicationReceived($application->load('job')));
+        } catch (\Throwable) {
+            // Notification failure should not block the application
+        }
+
+        $this->dispatch('notify', message: __('Application submitted successfully!'), type: 'success');
+    }
+
+    public function openTracking(int $jobId): void
+    {
+        $this->trackingJobId = $jobId;
+        $this->showTrackingModal = true;
+    }
+
+    public function render(): \Illuminate\View\View
+    {
+        $user = Auth::user();
+
+        $appliedJobIds = Application::where('user_id', $user->id)->pluck('job_id')->all();
+
+        $query = Job::with(['department', 'site'])
+            ->where('is_active', true)
+            ->latest();
+
+        if ($this->show_applied_only) {
+            $query->whereIn('id', $appliedJobIds);
+        }
+
+        if ($this->search) {
+            $query->where(function ($q): void {
+                $q->where('title', 'like', "%{$this->search}%")
+                    ->orWhere('description', 'like', "%{$this->search}%");
+            });
+        }
+
+        if ($this->department_filter) {
+            $query->where('department_id', $this->department_filter);
+        }
+
+        if ($this->site_filter) {
+            $query->where('site_id', $this->site_filter);
+        }
+
+        if ($this->level_filter) {
+            $query->where('level', $this->level_filter);
+        }
+
+        $trackingApplication = null;
+        if ($this->trackingJobId) {
+            $trackingApplication = Application::with('stageLogs.decidedBy')
+                ->where('user_id', $user->id)
+                ->where('job_id', $this->trackingJobId)
+                ->first();
+        }
+
+        return view('livewire.candidate.job-portal', [
+            'jobs' => $query->paginate(10),
+            'appliedJobIds' => $appliedJobIds,
+            'departments' => Department::orderBy('name')->get(),
+            'sites' => Site::orderBy('name')->get(),
+            'trackingApplication' => $trackingApplication,
+        ]);
+    }
+}

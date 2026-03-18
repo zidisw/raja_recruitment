@@ -1,0 +1,759 @@
+@import "tailwindcss";
+@import "../../vendor/livewire/flux/dist/flux.css";
+
+@source '../views';
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../vendor/livewire/flux-pro/stubs/**/*.blade.php';
+@source '../../vendor/livewire/flux/stubs/**/*.blade.php';
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-zinc-50: #fafafa;
+  --color-zinc-100: #f5f5f5;
+  --color-zinc-200: #e5e5e5;
+  --color-zinc-300: #d4d4d4;
+  --color-zinc-400: #a3a3a3;
+  --color-zinc-500: #737373;
+  --color-zinc-600: #525252;
+  --color-zinc-700: #404040;
+  --color-zinc-800: #262626;
+  --color-zinc-900: #171717;
+  --color-zinc-950: #0a0a0a;
+
+  --color-accent: var(--color-neutral-800);
+  --color-accent-content: var(--color-neutral-800);
+  --color-accent-foreground: var(--color-white);
+
+  --color-brand-50: #fff9ed;
+  --color-brand-100: #fef0d3;
+  --color-brand-400: #fbcb65;
+  --color-brand-500: #f5a623;
+  --color-brand-600: #d98c1a;
+  --color-brand-900: #7a4e0b;
+  --font-sans: "Inter", sans-serif;
+
+  --bg-page-light: linear-gradient(
+    135deg,
+    #f0f4ff 0%,
+    #faf5ff 25%,
+    #fff7ed 50%,
+    #f0fdf4 75%,
+    #f0f4ff 100%
+  );
+  --bg-page-dark: linear-gradient(
+    135deg,
+    #0f0f1a 0%,
+    #1a0f2e 25%,
+    #1a1a0f 50%,
+    #0f1a1a 75%,
+    #0f0f1a 100%
+  );
+}
+
+@layer theme {
+  .dark {
+    --color-accent: var(--color-white);
+    --color-accent-content: var(--color-white);
+    --color-accent-foreground: var(--color-neutral-800);
+  }
+
+  :root.dark,
+  html[data-theme="dark"],
+  body[data-theme="dark"] {
+    --page-surface: #0f0f1a;
+    --page-background: var(--bg-page-dark);
+  }
+
+  /* Theme-reactive surface variables — set directly from html[data-theme] so they
+     are resolved independently of .dark class timing (no 1-frame morph race). */
+  :root {
+    --surface-dropdown: rgba(255, 255, 255, 0.94);
+    --border-dropdown: rgba(0, 0, 0, 0.07);
+    --surface-select-panel: rgba(255, 255, 255, 0.92);
+    --border-select-panel: rgba(0, 0, 0, 0.07);
+    --divider-table: var(--color-zinc-100);
+  }
+
+  html[data-theme="dark"],
+  body[data-theme="dark"] {
+    --surface-dropdown: rgb(39, 39, 42);
+    --border-dropdown: rgba(255, 255, 255, 0.1);
+    --surface-select-panel: rgba(24, 24, 27, 0.96);
+    --border-select-panel: rgba(255, 255, 255, 0.08);
+    --divider-table: rgba(63, 63, 70, 0.95);
+  }
+}
+
+@layer base {
+  html,
+  body {
+    background-color: var(--page-surface, #fafafa);
+  }
+
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
+}
+
+[data-flux-field]:not(ui-radio, ui-checkbox) {
+  @apply grid gap-2;
+}
+
+[data-flux-label] {
+  @apply mb-0! leading-tight!;
+}
+
+input:focus[data-flux-control],
+textarea:focus[data-flux-control],
+select:focus[data-flux-control] {
+  @apply outline-hidden ring-2 ring-accent ring-offset-2 ring-offset-accent-foreground;
+}
+
+/* --- Modern UI Utilities ----------------------------------------------- */
+/* backdrop-blur reduced from xl(24px) to default(8px) for GPU performance  */
+.glass-card {
+  @apply rounded-2xl border border-zinc-200/60 bg-white/90 p-5 shadow-sm backdrop-blur hover:shadow-md dark:border-white/10 dark:bg-zinc-900/90;
+}
+
+.glass-card-static {
+  @apply rounded-2xl border border-zinc-200/60 bg-white/90 p-5 shadow-sm backdrop-blur dark:border-white/10 dark:bg-zinc-900/90;
+}
+
+.stat-card {
+  @apply rounded-2xl border border-zinc-200/60 bg-white/90 p-5 shadow-sm backdrop-blur hover:shadow-md dark:border-white/10 dark:bg-zinc-900/90 relative overflow-hidden;
+}
+
+.stat-card::before {
+  content: "";
+  position: absolute;
+  right: -1rem;
+  top: -1rem;
+  width: 6rem;
+  height: 6rem;
+  border-radius: 9999px;
+  opacity: 0.1;
+  background: linear-gradient(
+    135deg,
+    var(--color-brand-500),
+    var(--color-brand-400)
+  );
+}
+
+.modern-table thead {
+  @apply bg-zinc-50/80 backdrop-blur-sm dark:bg-zinc-800/60;
+}
+
+html[data-theme="dark"] .modern-table thead,
+body[data-theme="dark"] .modern-table thead {
+  background: rgba(39, 39, 42, 0.6) !important;
+}
+
+.modern-table thead th {
+  @apply border-b border-zinc-200/50 px-6 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:border-white/5 dark:text-zinc-400;
+}
+
+.modern-table tbody td {
+  @apply text-sm text-zinc-700 dark:text-zinc-300;
+}
+
+[x-cloak] {
+  display: none !important;
+}
+
+html[data-theme="dark"] .modern-table thead th,
+body[data-theme="dark"] .modern-table thead th {
+  border-color: rgba(255, 255, 255, 0.05) !important;
+  color: rgb(161 161 170) !important;
+}
+
+/* transition-colors removed: fires on every Livewire DOM morph causing row flicker */
+.modern-table tbody tr {
+  @apply hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30;
+}
+
+html[data-theme="dark"] .modern-table tbody tr,
+body[data-theme="dark"] .modern-table tbody tr {
+  border-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+html[data-theme="dark"] .modern-table tbody tr:hover,
+body[data-theme="dark"] .modern-table tbody tr:hover {
+  background: rgba(39, 39, 42, 0.3) !important;
+}
+
+/* Fallback for bg-white tbody in dark mode (prevents white flash) */
+html[data-theme="dark"] .modern-table tbody,
+body[data-theme="dark"] .modern-table tbody,
+.dark .modern-table tbody {
+  background-color: rgb(24, 24, 27) !important;
+}
+
+.modern-filter-btn {
+  @apply inline-flex items-center gap-1.5 rounded-xl border border-zinc-200/60 bg-white/60 px-3 py-2 text-sm shadow-sm backdrop-blur-sm transition-all duration-200 hover:border-zinc-300 hover:shadow-md dark:border-white/10 dark:bg-zinc-900/60 dark:hover:border-white/20;
+}
+
+.app-action-btn {
+  @apply text-zinc-500 transition-colors hover:text-zinc-700 dark:text-zinc-400 dark:hover:text-zinc-200;
+}
+
+.app-action-btn-danger {
+  @apply text-red-500 transition-colors hover:text-red-600 dark:text-red-400 dark:hover:text-red-300;
+}
+
+/* --- Confirm Dialog Pulse Animation ------------------------------------ */
+@keyframes confirmPulse {
+  0%, 100% { transform: scale(1); opacity: 0; }
+  50% { transform: scale(1.6); opacity: 0.3; }
+}
+
+.confirm-pulse-ring {
+  pointer-events: none;
+}
+
+/* Danger glow for reject / destructive buttons */
+.btn-danger-glow {
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.btn-danger-glow:hover {
+  box-shadow: 0 0 20px rgba(239, 68, 68, 0.25), 0 0 40px rgba(239, 68, 68, 0.1);
+}
+
+.btn-danger-glow:active {
+  transform: scale(0.98);
+}
+
+html[data-theme="dark"] .modern-filter-btn,
+body[data-theme="dark"] .modern-filter-btn {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  background: rgba(24, 24, 27, 0.6) !important;
+}
+
+html[data-theme="dark"] .glass-card,
+html[data-theme="dark"] .glass-card-static,
+html[data-theme="dark"] .stat-card,
+body[data-theme="dark"] .glass-card,
+body[data-theme="dark"] .glass-card-static,
+body[data-theme="dark"] .stat-card {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  background: rgba(24, 24, 27, 0.9) !important;
+}
+
+.modern-filter-panel {
+  @apply absolute z-30 mt-2 min-w-44 rounded-xl border border-zinc-200/60 bg-white/80 p-2 shadow-lg backdrop-blur-xl dark:border-white/10 dark:bg-zinc-900/80;
+}
+
+/* Theme-stable surfaces for Livewire SPA navigation (avoid light flash before .dark settles) */
+.theme-surface {
+  background: var(--surface-select-panel) !important;
+  border-color: var(--border-select-panel) !important;
+}
+
+.theme-surface-soft {
+  background: color-mix(
+    in srgb,
+    var(--surface-select-panel) 88%,
+    transparent
+  ) !important;
+  border-color: var(--border-select-panel) !important;
+}
+
+/* Candidate application stepper: stable colors during Livewire morph (no flash) */
+.app-stage-segment {
+  height: 2px;
+  width: 2rem;
+  border-radius: 9999px;
+  background: rgba(212, 212, 216, 0.75);
+}
+
+@media (min-width: 640px) {
+  .app-stage-segment {
+    width: 2.75rem;
+  }
+}
+
+.app-stage-segment-active {
+  background: linear-gradient(
+    90deg,
+    var(--color-brand-500),
+    var(--color-brand-400)
+  );
+}
+
+.app-stage-node {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.05rem;
+  height: 2.05rem;
+  border-radius: 9999px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  border: 1px solid transparent;
+}
+
+.app-stage-node-passed {
+  color: #fff;
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+}
+
+.app-stage-node-current {
+  color: #fff;
+  background: linear-gradient(
+    135deg,
+    var(--color-brand-600),
+    var(--color-brand-500)
+  );
+  transform: scale(1.06);
+  box-shadow: 0 0 0 4px
+    color-mix(in srgb, var(--color-brand-500) 22%, transparent);
+}
+
+.app-stage-node-rejected {
+  color: #fff;
+  background: linear-gradient(135deg, #dc2626, #ef4444);
+}
+
+.app-stage-node-pending {
+  color: rgb(113, 113, 122);
+  background: rgba(228, 228, 231, 0.95);
+  border-color: rgba(161, 161, 170, 0.35);
+}
+
+.app-stage-label {
+  white-space: nowrap;
+  font-size: 0.66rem;
+  line-height: 1;
+  text-align: center;
+  max-width: 6.5rem;
+}
+
+.app-stage-label-passed,
+.app-stage-label-current {
+  color: rgb(82, 82, 91);
+  font-weight: 600;
+}
+
+.app-stage-label-rejected {
+  color: rgb(239, 68, 68);
+  font-weight: 600;
+}
+
+.app-stage-label-pending {
+  color: rgb(161, 161, 170);
+}
+
+.app-stage-meta {
+  background: color-mix(in srgb, var(--surface-select-panel) 82%, transparent);
+  border-color: var(--border-select-panel);
+}
+
+.app-stage-meta-kicker {
+  color: rgb(113, 113, 122);
+}
+
+.app-stage-meta-title {
+  color: rgb(39, 39, 42);
+}
+
+.app-stage-meta-caption {
+  color: rgb(113, 113, 122);
+}
+
+.app-stage-scroll {
+  overflow-x: auto;
+  overflow-y: visible;
+  padding: 0.35rem 0.35rem 0.6rem;
+  margin: 0 -0.35rem;
+}
+
+.app-stage-scroll::-webkit-scrollbar {
+  height: 6px;
+}
+
+.app-stage-scroll::-webkit-scrollbar-thumb {
+  background: rgba(161, 161, 170, 0.45);
+  border-radius: 9999px;
+}
+
+html[data-theme="dark"] .app-stage-segment,
+body[data-theme="dark"] .app-stage-segment,
+.dark .app-stage-segment {
+  background: rgba(82, 82, 91, 0.85);
+}
+
+html[data-theme="dark"] .app-stage-node-pending,
+body[data-theme="dark"] .app-stage-node-pending,
+.dark .app-stage-node-pending {
+  color: rgb(161, 161, 170);
+  background: rgba(39, 39, 42, 0.95);
+  border-color: rgba(113, 113, 122, 0.45);
+}
+
+html[data-theme="dark"] .app-stage-label-passed,
+html[data-theme="dark"] .app-stage-label-current,
+body[data-theme="dark"] .app-stage-label-passed,
+body[data-theme="dark"] .app-stage-label-current,
+.dark .app-stage-label-passed,
+.dark .app-stage-label-current {
+  color: rgb(212, 212, 216);
+}
+
+html[data-theme="dark"] .app-stage-label-pending,
+body[data-theme="dark"] .app-stage-label-pending,
+.dark .app-stage-label-pending {
+  color: rgb(113, 113, 122);
+}
+
+html[data-theme="dark"] .app-stage-meta,
+body[data-theme="dark"] .app-stage-meta,
+.dark .app-stage-meta {
+  background: rgba(24, 24, 27, 0.72);
+}
+
+html[data-theme="dark"] .app-stage-meta-title,
+body[data-theme="dark"] .app-stage-meta-title,
+.dark .app-stage-meta-title {
+  color: rgb(228, 228, 231);
+}
+
+html[data-theme="dark"] .app-stage-meta-kicker,
+html[data-theme="dark"] .app-stage-meta-caption,
+body[data-theme="dark"] .app-stage-meta-kicker,
+body[data-theme="dark"] .app-stage-meta-caption,
+.dark .app-stage-meta-kicker,
+.dark .app-stage-meta-caption {
+  color: rgb(161, 161, 170);
+}
+
+html[data-theme="dark"] .app-stage-scroll::-webkit-scrollbar-thumb,
+body[data-theme="dark"] .app-stage-scroll::-webkit-scrollbar-thumb,
+.dark .app-stage-scroll::-webkit-scrollbar-thumb {
+  background: rgba(113, 113, 122, 0.65);
+}
+
+/* Dark fallback for dropdown components (custom + Flux) during morph timing */
+/* Dropdown surface — background driven entirely by CSS variable, zero timing race */
+.custom-dropdown-surface {
+  background: var(--surface-dropdown) !important;
+  border-color: var(--border-dropdown) !important;
+}
+
+/* Flux menu fallback (html[data-theme] covers morph timing; .dark covers normal dark mode) */
+html[data-theme="dark"] [data-flux-menu],
+body[data-theme="dark"] [data-flux-menu],
+.dark [data-flux-menu],
+html[data-theme="dark"] ui-menu,
+body[data-theme="dark"] ui-menu,
+.dark ui-menu {
+  background: rgb(39, 39, 42) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+html[data-theme="dark"] [data-flux-menu-item][data-active],
+body[data-theme="dark"] [data-flux-menu-item][data-active],
+.dark [data-flux-menu-item][data-active] {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Global fallback for table inner divider lines (divide-y divide-zinc-100) */
+/* Tailwind v4 divide uses > :not(:last-child), NOT > :not([hidden]) ~ :not([hidden]) */
+tbody.divide-zinc-100 > :not(:last-child) {
+  border-color: var(--divider-table) !important;
+}
+
+html[data-theme="dark"] tbody.divide-zinc-100,
+body[data-theme="dark"] tbody.divide-zinc-100,
+.dark tbody.divide-zinc-100 {
+  background-color: rgb(24, 24, 27) !important;
+}
+
+/* Custom select fallback styles so dark mode doesn't depend only on .dark utility timing */
+/* Custom select trigger */
+html[data-theme="dark"] .custom-select-trigger,
+body[data-theme="dark"] .custom-select-trigger,
+.dark .custom-select-trigger {
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  background: rgba(24, 24, 27, 0.65) !important;
+}
+
+/* Custom select panel — CSS variable so background is correct from first paint */
+.custom-select-panel {
+  background: var(--surface-select-panel) !important;
+  border-color: var(--border-select-panel) !important;
+}
+
+html[data-theme="dark"] .custom-select-panel,
+body[data-theme="dark"] .custom-select-panel,
+.dark .custom-select-panel {
+  box-shadow: 0 10px 32px rgba(0, 0, 0, 0.32) !important;
+}
+
+html[data-theme="dark"] .custom-select-search-wrap,
+body[data-theme="dark"] .custom-select-search-wrap,
+.dark .custom-select-search-wrap {
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+html[data-theme="dark"] .custom-select-search-input,
+body[data-theme="dark"] .custom-select-search-input,
+.dark .custom-select-search-input {
+  background: rgba(39, 39, 42, 0.7) !important;
+  color: rgb(228, 228, 231) !important;
+}
+
+html[data-theme="dark"] .custom-select-search-input::placeholder,
+body[data-theme="dark"] .custom-select-search-input::placeholder,
+.dark .custom-select-search-input::placeholder {
+  color: rgb(113, 113, 122) !important;
+}
+
+/* --- Futuristic Background --------------------------------------------- */
+.futuristic-bg {
+  background: var(--page-background, var(--bg-page-light));
+  background-color: var(--page-surface, #fafafa);
+  min-height: 100vh;
+}
+
+.dark .futuristic-bg {
+  background: var(--page-background, var(--bg-page-dark));
+}
+
+html[data-theme="dark"] .futuristic-bg,
+body[data-theme="dark"].futuristic-bg {
+  background: var(--page-background, var(--bg-page-dark)) !important;
+  background-color: var(--page-surface, #0f0f1a) !important;
+}
+
+/* --- Modern Sidebar ---------------------------------------------------- */
+.sidebar-modern {
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.95) 0%,
+    rgba(248, 250, 252, 0.98) 100%
+  ) !important;
+  border-right: 1px solid rgba(0, 0, 0, 0.06) !important;
+  overflow: visible !important;
+}
+
+.dark .sidebar-modern {
+  background: linear-gradient(
+    180deg,
+    rgba(15, 15, 26, 0.98) 0%,
+    rgba(20, 15, 35, 0.98) 100%
+  ) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+html[data-theme="dark"] .sidebar-modern,
+body[data-theme="dark"] .sidebar-modern {
+  background: linear-gradient(
+    180deg,
+    rgba(15, 15, 26, 0.98) 0%,
+    rgba(20, 15, 35, 0.98) 100%
+  ) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Brand accent on right edge */
+.sidebar-modern::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(
+    180deg,
+    var(--color-brand-500),
+    var(--color-brand-400),
+    transparent
+  );
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* Fix overflow clipping for dropdown popups in sidebar */
+.sidebar-modern,
+ui-sidebar.sidebar-modern,
+.sidebar-modern > div,
+.sidebar-modern > nav,
+.sidebar-modern [data-flux-sidebar-content] {
+  overflow: visible !important;
+  overflow-y: visible !important;
+}
+
+.sidebar-footer {
+  @apply border-t border-zinc-200/50 p-3 dark:border-white/10;
+  overflow: hidden !important;
+  max-width: 100% !important;
+}
+
+html[data-theme="dark"] .sidebar-footer,
+body[data-theme="dark"] .sidebar-footer {
+  border-top-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Transition removed: causes visible blink when active state toggles during navigate */
+.sidebar-disclosure-button {
+  transition: none !important;
+}
+
+.dark .sidebar-disclosure-button,
+html[data-theme="dark"] .sidebar-disclosure-button,
+body[data-theme="dark"] .sidebar-disclosure-button {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.dark .sidebar-disclosure-button:hover,
+html[data-theme="dark"] .sidebar-disclosure-button:hover,
+body[data-theme="dark"] .sidebar-disclosure-button:hover {
+  background: rgba(255, 255, 255, 0.07) !important;
+  color: #fff !important;
+}
+
+.dark .sidebar-disclosure-button.bg-zinc-800\/5,
+html[data-theme="dark"] .sidebar-disclosure-button.bg-zinc-800\/5,
+body[data-theme="dark"] .sidebar-disclosure-button.bg-zinc-800\/5 {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #fff !important;
+}
+
+.sidebar-disclosure-rail {
+  background: rgb(228 228 231 / 1) !important;
+}
+
+.dark .sidebar-disclosure-rail,
+html[data-theme="dark"] .sidebar-disclosure-rail,
+body[data-theme="dark"] .sidebar-disclosure-rail {
+  background: rgba(255, 255, 255, 0.22) !important;
+}
+
+.dark .sidebar-theme-toggle,
+html[data-theme="dark"] .sidebar-theme-toggle,
+body[data-theme="dark"] .sidebar-theme-toggle {
+  color: rgb(212 212 216) !important;
+}
+
+.dark .sidebar-theme-toggle:hover,
+html[data-theme="dark"] .sidebar-theme-toggle:hover,
+body[data-theme="dark"] .sidebar-theme-toggle:hover {
+  background: rgba(245, 166, 35, 0.1) !important;
+  color: rgb(251 191 36) !important;
+}
+
+/* --- Sidebar Navigation Items ------------------------------------------ */
+/* box-shadow inset replaces border-left to avoid 3px layout shift on activate */
+.sidebar-modern [data-flux-sidebar-item][data-current] {
+  background: linear-gradient(
+    135deg,
+    rgba(245, 166, 35, 0.1),
+    rgba(251, 203, 101, 0.08)
+  ) !important;
+  box-shadow: inset 3px 0 0 var(--color-brand-500) !important;
+  color: var(--color-brand-600) !important;
+  font-weight: 600 !important;
+}
+
+.dark .sidebar-modern [data-flux-sidebar-item][data-current] {
+  background: linear-gradient(
+    135deg,
+    rgba(245, 166, 35, 0.15),
+    rgba(251, 203, 101, 0.08)
+  ) !important;
+  color: var(--color-brand-400) !important;
+}
+
+html[data-theme="dark"] .sidebar-modern [data-flux-sidebar-item][data-current],
+body[data-theme="dark"] .sidebar-modern [data-flux-sidebar-item][data-current] {
+  background: linear-gradient(
+    135deg,
+    rgba(245, 166, 35, 0.15),
+    rgba(251, 203, 101, 0.08)
+  ) !important;
+  box-shadow: inset 3px 0 0 var(--color-brand-500) !important;
+  color: var(--color-brand-400) !important;
+}
+
+/* Sidebar items hover: no transform to avoid per-item compositing layer */
+.sidebar-modern [data-flux-sidebar-item]:hover {
+  background: rgba(0, 0, 0, 0.03) !important;
+}
+
+.dark .sidebar-modern [data-flux-sidebar-item]:hover {
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+
+html[data-theme="dark"] .sidebar-modern [data-flux-sidebar-item]:hover,
+body[data-theme="dark"] .sidebar-modern [data-flux-sidebar-item]:hover {
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: #fff !important;
+}
+
+/* Sidebar group headings */
+.sidebar-modern [data-flux-sidebar-group-heading] {
+  color: var(--color-brand-600) !important;
+  font-weight: 700 !important;
+  font-size: 0.65rem !important;
+  letter-spacing: 0.1em !important;
+  text-transform: uppercase !important;
+}
+
+.dark .sidebar-modern [data-flux-sidebar-group-heading] {
+  color: var(--color-brand-400) !important;
+}
+
+html[data-theme="dark"] .sidebar-modern [data-flux-sidebar-group-heading],
+body[data-theme="dark"] .sidebar-modern [data-flux-sidebar-group-heading] {
+  color: var(--color-brand-400) !important;
+}
+
+[data-app-toast-root] {
+  isolation: isolate;
+}
+
+.app-toast {
+  border-color: rgba(16, 185, 129, 0.2);
+  background: rgba(236, 253, 245, 0.96);
+  color: rgb(6, 95, 70);
+}
+
+.app-toast.app-toast-error {
+  border-color: rgba(239, 68, 68, 0.2);
+  background: rgba(254, 242, 242, 0.96);
+  color: rgb(153, 27, 27);
+}
+
+.dark .app-toast.app-toast-success,
+html[data-theme="dark"] .app-toast.app-toast-success,
+body[data-theme="dark"] .app-toast.app-toast-success {
+  border-color: rgba(16, 185, 129, 0.3) !important;
+  background: rgba(6, 78, 59, 0.78) !important;
+  color: rgb(167, 243, 208) !important;
+}
+
+.dark .app-toast.app-toast-error,
+html[data-theme="dark"] .app-toast.app-toast-error,
+body[data-theme="dark"] .app-toast.app-toast-error {
+  border-color: rgba(239, 68, 68, 0.3) !important;
+  background: rgba(127, 29, 29, 0.78) !important;
+  color: rgb(252, 165, 165) !important;
+}
+
+.dark .app-toast-close:hover,
+html[data-theme="dark"] .app-toast-close:hover,
+body[data-theme="dark"] .app-toast-close:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: rgb(228 228 231) !important;
+}
+
+/* --- Content Area Transparency ----------------------------------------- */
+[data-flux-main] {
+  background: transparent !important;
+}
