@@ -153,6 +153,12 @@ class CandidateManagement extends Component
         }
     }
 
+    public function updatedTab(): void
+    {
+        $this->resetPage();
+        $this->resetSelection();
+    }
+
     public function resetSelection(): void
     {
         $this->selectAll = false;
@@ -295,7 +301,10 @@ class CandidateManagement extends Component
                 RecruitmentStage::APPLIED,
                 RecruitmentStage::HIRED,
                 RecruitmentStage::REJECTED,
-            ]);
+            ])
+            ->whereDoesntHave('interviews', function ($q) {
+                $q->where('interview_type', 'HR Interview');
+            });
         }
         
         return $query;

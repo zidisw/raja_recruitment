@@ -25,6 +25,7 @@
         <table class="w-full text-sm modern-table">
             <thead>
                 <tr>
+                    <th class="w-12 text-center!">{{ __('No.') }}</th>
                     <th>{{ __('Stage') }}</th>
                     <th class="text-center!">{{ __('Staff Template') }}</th>
                     <th class="text-center!">{{ __('Non-Staff Template') }}</th>
@@ -37,6 +38,9 @@
                         $nonStaffTemplate = $templates[$stage->value . '_non_staff'] ?? null;
                     @endphp
                     <tr wire:key="{{ $stage->value }}" class="cursor-pointer">
+                        <td class="px-4 py-4 text-center text-zinc-500 font-medium">
+                            {{ $loop->iteration }}
+                        </td>
                         <td class="px-6 py-4 font-medium">{{ $stage->label() }}</td>
                         <td class="px-6 py-4 text-center">
                             @if ($staffTemplate)

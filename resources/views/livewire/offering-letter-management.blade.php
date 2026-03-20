@@ -4,7 +4,6 @@
             <flux:heading size="xl" level="1">{{ __('Offering Letter') }}</flux:heading>
             <flux:subheading size="lg">{{ __('Manage offering letter responses') }}</flux:subheading>
         </div>
-        <flux:button wire:click="openCreate" variant="primary" icon="plus">{{ __('New Offering') }}</flux:button>
     </div>
 
     @if (session('success'))
@@ -17,6 +16,7 @@
         <table class="w-full text-sm modern-table">
             <thead>
                 <tr>
+                    <th class="w-12 text-center!">{{ __('No.') }}</th>
                     <th>{{ __('Candidate Name') }}</th>
                     <th>{{ __('Position') }}</th>
                     <th class="text-center!">{{ __('Offer Date') }}</th>
@@ -27,6 +27,9 @@
             <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
                 @forelse ($applications_paginated as $app)
                     <tr>
+                        <td class="px-4 py-3 text-center text-zinc-500 font-medium">
+                            {{ ($applications_paginated->currentPage() - 1) * $applications_paginated->perPage() + $loop->iteration }}
+                        </td>
                         <td class="px-6 py-4 font-semibold">{{ $app->candidate->name }}</td>
                         <td class="px-6 py-4">{{ $app->job->title }}</td>
                         <td class="px-6 py-4 text-center">{{ $app->offeringLetter?->offer_date?->format('d M Y') ?? '—' }}</td>
@@ -41,20 +44,30 @@
                                     $currentColor = $statusColors[$app->offeringLetter->status] ?? $statusColors['waiting_response'];
                                 @endphp
                                 <div class="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-md border shadow-sm {{ $currentColor }}">
-                                    {{ str_replace('_', ' ', $app->offeringLetter->status) }}
+                                    {{ \App\Enums\OfferingStatus::from($app->offeringLetter->status)->label() }}
                                 </div>
                             @else
                                 <span class="text-zinc-400 text-xs font-semibold px-2 py-1 bg-zinc-100 dark:bg-zinc-800 rounded-md">{{ __('Waiting') }}</span>
                             @endif
                         </td>
                         <td class="px-6 py-4 text-center">
-                            @if($app->offeringLetter)
-                                <flux:button size="sm" variant="ghost" wire:click="openEdit({{ $app->offeringLetter->id }})"
-                                    icon="pencil" />
-                            @else
-                                <flux:button size="sm" variant="ghost" wire:click="openCreate({{ $app->id }})"
-                                    icon="plus" />
-                            @endif
+                            <div class="flex items-center justify-center gap-2">
+                                @if($app->offeringLetter)
+                                    @if($app->offeringLetter->file_path)
+                                        <a href="{{ Storage::url($app->offeringLetter->file_path) }}" target="_blank"
+                                            class="p-2 text-zinc-400 hover:text-brand-500 transition-colors" title="{{ __('Lihat File OL') }}">
+                                            <flux:icon.document-text class="size-5" />
+                                        </a>
+                                    @endif
+
+                                    <flux:button size="sm" variant="ghost" wire:click="openEdit({{ $app->offeringLetter->id }})"
+                                        icon="pencil" title="{{ __('Edit Offering') }}" />
+                                @else
+                                    <flux:button size="sm" variant="primary" wire:click="openCreate({{ $app->id }})">
+                                        {{ __('Create Offer') }}
+                                    </flux:button>
+                                @endif
+                            </div>
                         </td>
                     </tr>
                 @empty
@@ -85,8 +98,24 @@
                 </flux:field>
                 <flux:field>
                     <flux:label>{{ __('Status') }}</flux:label>
-                    <x-custom-select wire:model="status" :options="['waiting_response' => 'waiting_response', 'accepted' => 'accepted', 'rejected' => 'rejected']" />
+                    <x-custom-select wire:model="status" :options="collect($statuses)->mapWithKeys(fn($s) => [$s->value => $s->label()])->toArray()" />
                     <flux:error name="status" />
+                </flux:field>
+
+                <flux:field>
+                    <flux:label>{{ __('File Offering (PDF)') }}</flux:label>
+                    <input type="file" wire:model="offer_file" class="block w-full text-sm text-zinc-600 dark:text-zinc-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-zinc-100 file:text-zinc-700 hover:file:bg-zinc-200 dark:file:bg-zinc-800 dark:file:text-zinc-300 dark:hover:file:bg-zinc-700 focus:outline-none cursor-pointer" />
+                    <flux:error name="offer_file" />
+                    @if($editingId && $app_offering = \App\Models\OfferingLetter::find($editingId))
+                        @if($app_offering->file_path)
+                            <div class="mt-2 text-xs">
+                                <a href="{{ Storage::url($app_offering->file_path) }}" target="_blank" class="text-brand-500 hover:underline inline-flex items-center gap-1">
+                                    <flux:icon.document-text class="size-3" />
+                                    {{ __('Lihat file saat ini') }}
+                                </a>
+                            </div>
+                        @endif
+                    @endif
                 </flux:field>
                 <div class="flex justify-end gap-3">
                     <flux:button type="button" variant="ghost" wire:click="$set('showModal', false)">{{ __('Cancel') }}

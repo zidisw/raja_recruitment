@@ -41,6 +41,7 @@
             <table class="w-full text-sm modern-table">
                 <thead>
                     <tr>
+                        <th class="w-12 text-center!">{{ __('No.') }}</th>
                         <th>{{ __('Job Title') }}</th>
                         <th class="hidden md:table-cell">{{ __('Department') }}</th>
                         <th class="hidden lg:table-cell">{{ __('Site') }}</th>
@@ -51,6 +52,9 @@
                 <tbody class="divide-y divide-zinc-100 bg-white dark:divide-zinc-800 dark:bg-zinc-900">
                     @foreach ($jobs as $job)
                         <tr wire:key="{{ $job->id }}" class="cursor-pointer">
+                            <td class="px-4 py-4 text-center text-zinc-500 font-medium">
+                                {{ ($jobs->currentPage() - 1) * $jobs->perPage() + $loop->iteration }}
+                            </td>
                             <td class="px-6 py-4">
                                 <div class="font-semibold text-zinc-900 dark:text-white">{{ $job->title }}</div>
                                 <div class="text-xs text-zinc-400">{{ $job->is_active ? __('Active') : __('Closed') }}</div>

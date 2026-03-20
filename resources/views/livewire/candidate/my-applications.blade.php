@@ -167,6 +167,78 @@
                             </div>
                         </div>
 
+                        {{-- Offering Letter Response Section --}}
+                        @if ($currentStage === \App\Enums\RecruitmentStage::OFFERING && $application->offeringLetter)
+                            <div class="mt-4 rounded-xl border-2 border-brand-200 bg-brand-50/50 p-5 dark:border-brand-900/30 dark:bg-brand-900/10">
+                                <div class="flex items-center gap-3 mb-4">
+                                    <div class="flex h-10 w-10 items-center justify-center rounded-full bg-brand-100 dark:bg-brand-900/50">
+                                        <flux:icon.document-text class="size-5 text-brand-600 dark:text-brand-400" />
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-zinc-900 dark:text-white">{{ __('Surat Penawaran Kerja (Offering Letter)') }}</h4>
+                                        <p class="text-xs text-zinc-600 dark:text-zinc-400">{{ __('Silakan tinjau dokumen penawaran di bawah ini.') }}</p>
+                                    </div>
+                                </div>
+
+                                <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                                    @if($application->offeringLetter->file_path)
+                                        <a href="{{ Storage::url($application->offeringLetter->file_path) }}" target="_blank"
+                                            class="inline-flex items-center gap-2 rounded-lg bg-white border px-4 py-2 text-sm font-semibold text-zinc-700 shadow-sm transition-all hover:bg-zinc-50 dark:bg-zinc-800 dark:border-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-700">
+                                            <flux:icon.arrow-down-tray class="size-4" />
+                                            {{ __('Unduh Offering Letter (PDF)') }}
+                                        </a>
+                                    @else
+                                        <span class="text-sm text-zinc-500 italic">{{ __('Dokumen sedang disiapkan...') }}</span>
+                                    @endif
+
+                                    <div class="flex items-center gap-2">
+                                        <flux:modal.trigger name="reject-offer-{{ $application->id }}">
+                                            <flux:button variant="ghost" size="sm" class="text-red-600 hover:text-red-700 hover:bg-red-50">
+                                                {{ __('Tolak') }}
+                                            </flux:button>
+                                        </flux:modal.trigger>
+
+                                        <flux:modal.trigger name="accept-offer-{{ $application->id }}">
+                                            <flux:button variant="primary" size="sm" class="bg-emerald-600 hover:bg-emerald-700">
+                                                {{ __('Terima Penawaran') }}
+                                            </flux:button>
+                                        </flux:modal.trigger>
+                                    </div>
+                                </div>
+
+                                {{-- Modals for Confirmation --}}
+                                <flux:modal name="accept-offer-{{ $application->id }}" class="max-w-md">
+                                    <div class="space-y-4">
+                                        <flux:heading size="lg">{{ __('Terima Penawaran?') }}</flux:heading>
+                                        <flux:text>{{ __('Dengan mengklik Ya, Anda menyatakan menyetujui penawaran pekerjaan ini dan akan lanjut ke tahap Psychotest.') }}</flux:text>
+                                        <div class="flex justify-end gap-3">
+                                            <flux:modal.close>
+                                                <flux:button variant="ghost">{{ __('Batal') }}</flux:button>
+                                            </flux:modal.close>
+                                            <flux:button variant="primary" class="bg-emerald-600" wire:click="acceptOffer({{ $application->id }})" x-on:click="$dispatch('modal-close')">
+                                                {{ __('Ya, Saya Terima') }}
+                                            </flux:button>
+                                        </div>
+                                    </div>
+                                </flux:modal>
+
+                                <flux:modal name="reject-offer-{{ $application->id }}" class="max-w-md">
+                                    <div class="space-y-4">
+                                        <flux:heading size="lg" class="text-red-600">{{ __('Tolak Penawaran?') }}</flux:heading>
+                                        <flux:text>{{ __('Apakah Anda yakin ingin menolak penawaran pekerjaan ini? Tindakan ini tidak dapat dibatalkan.') }}</flux:text>
+                                        <div class="flex justify-end gap-3">
+                                            <flux:modal.close>
+                                                <flux:button variant="ghost">{{ __('Batal') }}</flux:button>
+                                            </flux:modal.close>
+                                            <flux:button variant="danger" wire:click="rejectOffer({{ $application->id }})" x-on:click="$dispatch('modal-close')">
+                                                {{ __('Ya, Tolak') }}
+                                            </flux:button>
+                                        </div>
+                                    </div>
+                                </flux:modal>
+                            </div>
+                        @endif
+
                         {{-- Rejection info --}}
                         @if ($isRejected && $application->stageLogs->isNotEmpty())
                             <div class="mt-4 space-y-2">

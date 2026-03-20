@@ -17,6 +17,7 @@
         <table class="w-full text-sm modern-table">
             <thead>
                 <tr>
+                    <th class="w-12 text-center!">{{ __('No.') }}</th>
                     <th>{{ __('Candidate') }}</th>
                     <th>{{ __('Position') }}</th>
                     <th class="text-center!">{{ __('Joining Date') }}</th>
@@ -26,6 +27,9 @@
             <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
                 @forelse ($onboardings as $item)
                     <tr>
+                        <td class="px-4 py-4 text-center text-zinc-500 font-medium">
+                            {{ $onboardings->firstItem() + $loop->index }}
+                        </td>
                         <td class="px-6 py-4 font-semibold">{{ $item->application->candidate->name }}</td>
                         <td class="px-6 py-4">{{ $item->application->job->title }}</td>
                         <td class="px-6 py-4 text-center">{{ $item->joining_date?->format('d M Y') }}</td>
@@ -35,7 +39,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="4" class="px-6 py-8 text-center text-zinc-400">{{ __('No onboarding data yet.') }}</td>
+                        <td colspan="5" class="px-6 py-8 text-center text-zinc-400">{{ __('No onboarding data yet.') }}</td>
                     </tr>
                 @endforelse
             </tbody>

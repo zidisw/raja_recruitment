@@ -15,23 +15,11 @@
         </flux:callout>
     @endif
 
-    @if(count($selectedIds) > 0)
-        <div class="mb-1 flex flex-wrap items-center gap-3 bg-blue-50/50 dark:bg-blue-900/20 p-3 rounded-xl border border-blue-100 dark:border-blue-800/30">
-            <span class="text-sm font-medium text-blue-700 dark:text-blue-400">{{ count($selectedIds) }} {{ __('kandidat terpilih') }}</span>
-            <flux:button size="sm" variant="subtle" wire:click="bulkUpdateStatus('scheduled')">{{ __('Jadwalkan') }}</flux:button>
-            <flux:button size="sm" variant="subtle" wire:click="bulkUpdateStatus('completed')">{{ __('Selesai') }}</flux:button>
-            <flux:button size="sm" variant="primary" wire:click="bulkUpdateStatus('passed')">{{ __('Lolos') }}</flux:button>
-            <flux:button size="sm" variant="danger" wire:click="bulkUpdateStatus('failed')" class="btn-danger-glow">{{ __('Gagal') }}</flux:button>
-        </div>
-    @endif
-
     <div class="glass-card-static overflow-hidden p-0!">
         <table class="w-full text-sm modern-table">
             <thead>
                 <tr>
-                    <th class="w-12 px-4 py-3 text-center">
-                        <flux:checkbox wire:model.live="selectAll" />
-                    </th>
+                    <th class="w-12 text-center!">{{ __('No.') }}</th>
                     <th>{{ __('Candidate') }}</th>
                     <th>{{ __('Position') }}</th>
                     <th>{{ __('Interviewer') }}</th>
@@ -44,8 +32,8 @@
             <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
                 @forelse ($interviews as $interview)
                     <tr>
-                        <td class="w-12 px-4 py-3 text-center">
-                            <flux:checkbox wire:model.live="selectedIds" value="{{ $interview->id }}" />
+                        <td class="px-4 py-3 text-center text-zinc-500 font-medium">
+                            {{ ($interviews->currentPage() - 1) * $interviews->perPage() + $loop->iteration }}
                         </td>
                         <td class="px-6 py-4 font-semibold whitespace-nowrap">{{ $interview->application->candidate->name }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">{{ $interview->application->job->title }}</td>
@@ -114,7 +102,7 @@
                         <td class="px-6 py-4 text-center">
                             <div class="flex items-center justify-center gap-2">
                                 <flux:button size="sm" variant="ghost" wire:click="openEdit({{ $interview->id }})"
-                                    icon="pencil" />
+                                    wire:target="openEdit({{ $interview->id }})" icon="pencil" />
                                 
                                 @if ($tab === 'hr' && $interview->status === 'passed')
                                     @php
@@ -124,7 +112,8 @@
                                     @if (!$hasUserInterview)
                                         @if ($interview->evaluation_path)
                                             <flux:button size="sm" variant="primary" 
-                                                wire:click="openScheduleUserInterview({{ $interview->application_id }})">
+                                                wire:click="openScheduleUserInterview({{ $interview->application_id }})"
+                                                wire:target="openScheduleUserInterview({{ $interview->application_id }})">
                                                 {{ __('Jadwalkan Int. User') }}
                                             </flux:button>
                                         @else

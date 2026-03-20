@@ -17,6 +17,7 @@
         <table class="w-full text-sm modern-table">
             <thead>
                 <tr>
+                    <th class="w-12 text-center!">{{ __('No.') }}</th>
                     <th>{{ __('Candidate') }}</th>
                     <th>{{ __('Position') }}</th>
                     <th class="text-center!">{{ __('MCU Date') }}</th>
@@ -28,6 +29,9 @@
             <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
                 @forelse ($applications_paginated as $app)
                     <tr>
+                        <td class="px-4 py-3 text-center text-zinc-500 font-medium">
+                            {{ ($applications_paginated->currentPage() - 1) * $applications_paginated->perPage() + $loop->iteration }}
+                        </td>
                         <td class="px-6 py-4 font-semibold">{{ $app->candidate->name }}</td>
                         <td class="px-6 py-4">{{ $app->job->title }}</td>
                         <td class="px-6 py-4 text-center">{{ $app->mcu?->mcu_date?->format('d M Y') ?? '—' }}</td>
@@ -51,7 +55,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="px-6 py-8 text-center text-zinc-400">{{ __('No candidates in MCU stage yet.') }}</td>
+                        <td colspan="7" class="px-6 py-8 text-center text-zinc-400">{{ __('No candidates in MCU stage yet.') }}</td>
                     </tr>
                 @endforelse
             </tbody>

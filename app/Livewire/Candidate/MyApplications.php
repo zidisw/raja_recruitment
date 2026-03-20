@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Candidate;
 
+use App\Enums\OfferingStatus;
 use App\Enums\RecruitmentStage;
 use App\Enums\UserRole;
 use App\Models\Application;
@@ -36,9 +37,57 @@ class MyApplications extends Component
         $this->resetPage();
     }
 
+    public function acceptOffer(int $applicationId): void
+    {
+        $application = Application::where('user_id', '=', Auth::id())->findOrFail($applicationId);
+        
+        if ($application->recruitment_stage !== RecruitmentStage::OFFERING) {
+            $this->dispatch('notify', ['message' => __('Status lamaran tidak valid.'), 'type' => 'error']);
+            return;
+        }
+
+        $offering = $application->offeringLetter;
+        if (!$offering) {
+            $this->dispatch('notify', ['message' => __('Offering letter tidak ditemukan.'), 'type' => 'error']);
+            return;
+        }
+
+        $offering->update(['status' => OfferingStatus::ACCEPTED->value]);
+        $application->update([
+            'recruitment_stage' => RecruitmentStage::PSYCHOTEST,
+            'stage_updated_at' => now(),
+        ]);
+
+        $this->dispatch('notify', ['message' => __('Selamat! Anda telah menerima penawaran pekerjaan ini.'), 'type' => 'success']);
+    }
+
+    public function rejectOffer(int $applicationId): void
+    {
+        $application = Application::where('user_id', '=', Auth::id())->findOrFail($applicationId);
+        
+        if ($application->recruitment_stage !== RecruitmentStage::OFFERING) {
+            $this->dispatch('notify', ['message' => __('Status lamaran tidak valid.'), 'type' => 'error']);
+            return;
+        }
+
+        $offering = $application->offeringLetter;
+        if (!$offering) {
+            $this->dispatch('notify', ['message' => __('Offering letter tidak ditemukan.'), 'type' => 'error']);
+            return;
+        }
+
+        $offering->update(['status' => OfferingStatus::REJECTED->value]);
+        $application->update([
+            'recruitment_stage' => RecruitmentStage::REJECTED,
+            'stage_updated_at' => now(),
+        ]);
+
+        $this->dispatch('notify', ['message' => __('Anda telah menolak penawaran pekerjaan ini.'), 'type' => 'info']);
+    }
+
     public function render(): \Illuminate\View\View
     {
-        $query = Application::with(['job.department', 'job.site', 'stageLogs.decidedBy'])
+        $query = Application::with(['job.department', 'job.site', 'stageLogs.decidedBy', 'offeringLetter'])
             ->where('user_id', Auth::id())
             ->latest();
 

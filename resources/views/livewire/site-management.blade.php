@@ -32,6 +32,7 @@
             <table class="w-full text-sm modern-table">
                 <thead>
                     <tr>
+                        <th class="w-12 text-center!">{{ __('No.') }}</th>
                         <th>{{ __('Site Name') }}</th>
                         <th class="hidden sm:table-cell">{{ __('Location') }}</th>
                         <th class="hidden md:table-cell">{{ __('Description') }}</th>
@@ -42,6 +43,9 @@
                 <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
                     @foreach ($sites as $site)
                         <tr wire:key="{{ $site->id }}" class="cursor-pointer">
+                            <td class="px-4 py-3 text-center text-zinc-500 font-medium whitespace-nowrap">
+                                {{ $loop->iteration }}
+                            </td>
                             <td class="px-6 py-4 font-semibold text-zinc-900 dark:text-white">
                                 {{ $site->name }}
                             </td>

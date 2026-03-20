@@ -36,6 +36,12 @@ class JobPortal extends Component
 
     public bool $showTrackingModal = false;
 
+    public ?int $confirmingJobId = null;
+
+    public ?Job $confirmingJob = null;
+
+    public bool $showConfirmModal = false;
+
     public function mount(): void
     {
         abort_unless(Auth::user()?->hasUserRole(), 403);
@@ -72,13 +78,47 @@ class JobPortal extends Component
 
         abort_unless($job->is_active, 403);
 
-        $alreadyApplied = Application::where('user_id', $user->id)
-            ->where('job_id', $job->id)
+        $alreadyApplied = Application::where('user_id', '=', $user->id, 'and')
+            ->where('job_id', '=', $job->id, 'and')
             ->exists();
 
         if ($alreadyApplied) {
             $this->dispatch('notify', ['message' => __('You have already applied for this position.'), 'type' => 'error']);
 
+            return;
+        }
+
+        $activeApplicationsCount = Application::where('user_id', '=', $user->id, 'and')
+            ->whereNotIn('recruitment_stage', [RecruitmentStage::REJECTED, RecruitmentStage::HIRED], 'and')
+            ->count('*');
+
+        if ($activeApplicationsCount >= 2) {
+            $this->dispatch('notify', ['message' => __('You can only have 2 active applications at a time.'), 'type' => 'error']);
+
+            return;
+        }
+
+        // Instead of applying directly, open the confirmation modal
+        $this->confirmingJobId = $job->id;
+        $this->confirmingJob = $job;
+        $this->showConfirmModal = true;
+    }
+
+    public function confirmApply(): void
+    {
+        if (!$this->confirmingJobId || !$this->confirmingJob) {
+            return;
+        }
+
+        $user = Auth::user();
+
+        $alreadyApplied = Application::where('user_id', $user->id)
+            ->where('job_id', $this->confirmingJobId)
+            ->exists();
+
+        if ($alreadyApplied) {
+            $this->dispatch('notify', ['message' => __('You have already applied for this position.'), 'type' => 'error']);
+            $this->showConfirmModal = false;
             return;
         }
 
@@ -88,13 +128,13 @@ class JobPortal extends Component
 
         if ($activeApplicationsCount >= 2) {
             $this->dispatch('notify', ['message' => __('You can only have 2 active applications at a time.'), 'type' => 'error']);
-
+            $this->showConfirmModal = false;
             return;
         }
 
         $application = Application::create([
             'user_id' => $user->id,
-            'job_id' => $job->id,
+            'job_id' => $this->confirmingJobId,
             'recruitment_stage' => RecruitmentStage::APPLIED,
         ]);
 
@@ -103,6 +143,10 @@ class JobPortal extends Component
         } catch (\Throwable) {
             // Notification failure should not block the application
         }
+
+        $this->showConfirmModal = false;
+        $this->confirmingJobId = null;
+        $this->confirmingJob = null;
 
         $this->dispatch('notify', ['message' => __('Application submitted successfully!'), 'type' => 'success']);
     }

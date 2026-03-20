@@ -12,7 +12,9 @@ class OfferingLetter extends Model
     protected $fillable = [
         'application_id',
         'offer_date',
+        'file_path',
         'status',
+        'candidate_notes',
     ];
 
     protected function casts(): array

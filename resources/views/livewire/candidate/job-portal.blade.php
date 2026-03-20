@@ -136,6 +136,76 @@
         <div>{{ $jobs->links() }}</div>
     @endif
 
+    {{-- Confirm Application Modal --}}
+    <flux:modal wire:model="showConfirmModal" class="w-full max-w-lg">
+        @if ($confirmingJob)
+            <div class="space-y-6">
+                <div class="text-center">
+                    <div class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-brand-100 dark:bg-brand-900/30">
+                        <flux:icon.briefcase class="size-6 text-brand-600 dark:text-brand-400" />
+                    </div>
+                    <flux:heading size="lg">{{ __('Apply for Position') }}</flux:heading>
+                    <flux:text class="mt-1 text-sm text-zinc-500">
+                        {{ $confirmingJob->title }}
+                        @if ($confirmingJob->department) - {{ $confirmingJob->department->name }} @endif
+                    </flux:text>
+                </div>
+
+                <div class="rounded-xl border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-700 dark:bg-zinc-800/50">
+                    <h4 class="mb-3 text-sm font-semibold text-zinc-900 dark:text-white">{{ __('Data Confirmation') }}</h4>
+                    <p class="text-sm text-zinc-600 dark:text-zinc-400 mb-4">
+                        {{ __('Please ensure your profile data, experiences, education, and documents are up-to-date before applying. Once submitted, you cannot edit the applied data for this specific position.') }}
+                    </p>
+                    
+                    <div class="grid grid-cols-2 gap-4 text-sm mt-4">
+                        <div>
+                            <span class="block text-zinc-500 text-xs">{{ __('Full Name') }}</span>
+                            <span class="font-medium text-zinc-900 dark:text-white">{{ Auth::user()->name }}</span>
+                        </div>
+                        <div>
+                            <span class="block text-zinc-500 text-xs">{{ __('Email') }}</span>
+                            <span class="font-medium text-zinc-900 dark:text-white">{{ Auth::user()->email }}</span>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-4 border-t border-zinc-200 dark:border-zinc-700">
+                        <span class="block text-zinc-500 text-xs mb-2">{{ __('Your Profile Status:') }}</span>
+                        <ul class="text-xs space-y-1.5 font-medium">
+                            <li class="flex items-center gap-2 {{ Auth::user()->profile ? 'text-green-600 dark:text-green-400' : 'text-amber-500' }}">
+                                @if (Auth::user()->profile) <flux:icon.check-circle class="size-4" /> @else <flux:icon.exclamation-circle class="size-4" /> @endif
+                                {{ __('Personal Data & Documents') }}
+                            </li>
+                            <li class="flex items-center gap-2 {{ Auth::user()->education()->count() > 0 ? 'text-green-600 dark:text-green-400' : 'text-amber-500' }}">
+                                @if (Auth::user()->education()->count() > 0) <flux:icon.check-circle class="size-4" /> @else <flux:icon.exclamation-circle class="size-4" /> @endif
+                                {{ __('Education History: ') }} {{ Auth::user()->education()->count() }}
+                            </li>
+                            <li class="flex items-center gap-2 {{ Auth::user()->experiences()->count() > 0 ? 'text-green-600 dark:text-green-400' : 'text-zinc-500 dark:text-zinc-400' }}">
+                                @if (Auth::user()->experiences()->count() > 0) <flux:icon.check-circle class="size-4" /> @else <flux:icon.minus-circle class="size-4" /> @endif
+                                {{ __('Work Experience: ') }} {{ Auth::user()->experiences()->count() }}
+                            </li>
+                            <li class="flex items-center gap-2 {{ Auth::user()->organizations()->count() > 0 ? 'text-green-600 dark:text-green-400' : 'text-zinc-500 dark:text-zinc-400' }}">
+                                @if (Auth::user()->organizations()->count() > 0) <flux:icon.check-circle class="size-4" /> @else <flux:icon.minus-circle class="size-4" /> @endif
+                                {{ __('Organizational Experience: ') }} {{ Auth::user()->organizations()->count() }}
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+                    <flux:button type="button" variant="ghost" wire:click="$set('showConfirmModal', false)">
+                        {{ __('Cancel') }}
+                    </flux:button>
+                    <flux:button href="{{ route('candidate.profile') }}" variant="danger" icon="pencil-square">
+                        {{ __('Update Profile') }}
+                    </flux:button>
+                    <flux:button wire:click="confirmApply" variant="primary" class="bg-linear-to-r from-brand-500 to-brand-600">
+                        {{ __('Yes, Submit Application') }}
+                    </flux:button>
+                </div>
+            </div>
+        @endif
+    </flux:modal>
+
     {{-- Tracking Modal --}}
     <flux:modal wire:model="showTrackingModal" class="w-full max-w-lg">
         @if ($trackingApplication)

@@ -32,6 +32,7 @@
             <table class="w-full text-sm modern-table">
                 <thead>
                     <tr>
+                        <th class="w-12 text-center!">{{ __('No.') }}</th>
                         <th>{{ __('Department Name') }}</th>
                         <th class="hidden md:table-cell">{{ __('Description') }}</th>
                         <th class="text-center!">{{ __('Members') }}</th>
@@ -43,6 +44,9 @@
                     @foreach ($departments as $department)
                         <tr wire:key="{{ $department->id }}"
                             class="cursor-pointer">
+                            <td class="px-4 py-3 text-center text-zinc-500 font-medium whitespace-nowrap">
+                                {{ $loop->iteration }}
+                            </td>
                             <td class="px-6 py-4 font-semibold text-zinc-900 dark:text-white">
                                 {{ $department->name }}
                             </td>

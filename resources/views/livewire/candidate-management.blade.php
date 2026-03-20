@@ -62,9 +62,12 @@
         <table class="w-full text-sm modern-table">
             <thead>
                 <tr>
-                    <th class="w-12 px-4 py-3 text-center">
-                        <flux:checkbox wire:model.live="selectAll" />
-                    </th>
+                    @if ($tab === 'administrasi')
+                        <th class="w-12 px-4 py-3 text-center">
+                            <flux:checkbox wire:model.live="selectAll" />
+                        </th>
+                    @endif
+                    <th class="w-12 text-center!">{{ __('No.') }}</th>
                     <th class="w-16"></th>
                     <th>{{ __('Candidate Name') }}</th>
                     <th>{{ __('Applied Position') }}</th>
@@ -86,8 +89,13 @@
                         $isTerminal = $application->recruitment_stage->isTerminal();
                     @endphp
                     <tr class="cursor-pointer">
-                        <td class="w-12 px-4 py-3 text-center" @click.stop>
-                            <flux:checkbox wire:model.live="selectedIds" value="{{ $application->id }}" />
+                        @if ($tab === 'administrasi')
+                            <td class="w-12 px-4 py-3 text-center" @click.stop>
+                                <flux:checkbox wire:model.live="selectedIds" value="{{ $application->id }}" />
+                            </td>
+                        @endif
+                        <td class="px-4 py-3 text-center text-zinc-500 font-medium">
+                            {{ ($applications->currentPage() - 1) * $applications->perPage() + $loop->iteration }}
                         </td>
                         <td class="px-6 py-4">
                             <button wire:click="toggleExpand({{ $application->id }})" type="button"
@@ -190,7 +198,8 @@
                                         })">{{ __('Tolak') }}</flux:button>
                                 @elseif ($tab === 'on-progress')
                                     <flux:button size="sm" variant="primary" icon="calendar"
-                                        wire:click="openScheduleInterview({{ $application->id }})">
+                                        wire:click="openScheduleInterview({{ $application->id }})"
+                                        wire:target="openScheduleInterview({{ $application->id }})">
                                         {{ __('Jadwalkan') }}
                                     </flux:button>
                                 @endif

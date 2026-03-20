@@ -28,16 +28,18 @@
     <div class="glass-card-static overflow-hidden p-0!">
         <table class="w-full table-fixed text-sm modern-table">
             <colgroup>
-                <col class="w-[20%]">
+                <col class="w-[5%]">
+                <col class="w-[15%]">
                 <col class="w-[18%]">
-                <col class="w-[16%]">
-                <col class="w-[16%]">
+                <col class="w-[15%]">
+                <col class="w-[15%]">
                 <col class="w-[12%]">
-                <col class="w-[10%]">
+                <col class="w-[12%]">
                 <col class="w-[8%]">
             </colgroup>
             <thead>
                 <tr>
+                    <th class="text-center!">{{ __('No.') }}</th>
                     <th class="text-left!">{{ __('Nomor PTK') }}</th>
                     <th class="text-left!">{{ __('Posisi') }}</th>
                     <th class="hidden text-center! md:table-cell">{{ __('Dibuat Pada') }}</th>
@@ -50,6 +52,9 @@
             <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
                 @forelse ($ptkItems as $item)
                     <tr wire:key="{{ $item->id }}" class="cursor-pointer">
+                        <td class="px-4 py-4 text-center text-zinc-500 font-medium">
+                            {{ ($ptkItems->currentPage() - 1) * $ptkItems->perPage() + $loop->iteration }}
+                        </td>
                         <td class="px-6 py-4 align-middle text-left">
                             <p class="font-semibold text-zinc-900 dark:text-white">{{ $item->nomor_ptk }}</p>
                             @if ($item->department)
@@ -121,7 +126,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="px-6 py-14 text-center">
+                        <td colspan="8" class="px-6 py-14 text-center">
                             <div class="flex flex-col items-center gap-3 text-zinc-400">
                                 <flux:icon.clipboard-document-list class="w-10 h-10 text-zinc-300 dark:text-zinc-600" />
                                 <p class="text-sm">{{ __('Belum ada data PTK.') }}</p>

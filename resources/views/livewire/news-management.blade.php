@@ -31,6 +31,7 @@
             <table class="w-full text-sm modern-table">
                 <thead>
                     <tr>
+                        <th class="w-12 text-center!">{{ __('No.') }}</th>
                         <th>{{ __('Article') }}</th>
                         <th class="hidden md:table-cell">{{ __('Category') }}</th>
                         <th class="hidden lg:table-cell">{{ __('Author') }}</th>
@@ -42,6 +43,9 @@
                 <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
                     @foreach ($articles as $article)
                         <tr wire:key="{{ $article->id }}" class="cursor-pointer">
+                            <td class="px-4 py-4 text-center text-zinc-500 font-medium">
+                                {{ $articles->firstItem() + $loop->index }}
+                            </td>
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-3">
                                     @if ($article->featuredImage)

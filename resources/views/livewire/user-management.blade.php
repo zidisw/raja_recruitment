@@ -38,6 +38,7 @@
             <table class="w-full text-sm modern-table">
                 <thead>
                     <tr>
+                        <th class="w-12 text-center!">{{ __('No.') }}</th>
                         <th>{{ __('Name') }}</th>
                         <th class="hidden md:table-cell">{{ __('Email') }}</th>
                         <th class="text-center!">{{ __('Role') }}</th>
@@ -49,6 +50,9 @@
                 <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
                     @foreach ($users as $user)
                         <tr wire:key="{{ $user->id }}" class="cursor-pointer">
+                            <td class="px-4 py-3 text-center text-zinc-500 font-medium whitespace-nowrap">
+                                {{ ($users->currentPage() - 1) * $users->perPage() + $loop->iteration }}
+                            </td>
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-3">
                                     <flux:avatar :name="$user->name" :initials="$user->initials()" size="sm" />

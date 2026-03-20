@@ -4,25 +4,29 @@ declare(strict_types=1);
 
 namespace App\Livewire;
 
+use App\Enums\OfferingStatus;
 use App\Enums\RecruitmentStage;
 use App\Enums\UserRole;
 use App\Models\Application;
 use App\Models\OfferingLetter;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
 #[Layout('layouts.app')]
 class OfferingLetterManagement extends Component
 {
-    use WithPagination;
+    use WithPagination, WithFileUploads;
 
     public bool $showModal = false;
     public ?int $editingId = null;
 
     public ?int $application_id = null;
     public string $offer_date = '';
+    public $offer_file; // For uploading new file
     public string $status = 'waiting_response';
 
     public function mount(): void
@@ -50,34 +54,45 @@ class OfferingLetterManagement extends Component
 
     public function save(): void
     {
-        $validated = $this->validate([
+        $rules = [
             'application_id' => ['required', 'exists:applications,id'],
             'offer_date' => ['required', 'date'],
             'status' => ['required', 'in:waiting_response,accepted,rejected'],
-        ]);
+            'offer_file' => [$this->editingId ? 'nullable' : 'required', 'file', 'mimes:pdf', 'max:5120'],
+        ];
+
+        $validated = $this->validate($rules);
+
+        $data = [
+            'application_id' => $validated['application_id'],
+            'offer_date' => $validated['offer_date'],
+            'status' => $validated['status'],
+        ];
+
+        if ($this->offer_file) {
+            $data['file_path'] = $this->offer_file->store('offering-letters', 'public');
+        }
 
         $offering = OfferingLetter::updateOrCreate(
             ['application_id' => $validated['application_id']],
-            $validated
+            $data
         );
 
         $application = $offering->application;
 
-        if ($validated['status'] === 'accepted') {
+        // Sync Application Stage based on Offering Status
+        if ($validated['status'] === OfferingStatus::ACCEPTED->value) {
             $application->update([
                 'recruitment_stage' => RecruitmentStage::PSYCHOTEST,
                 'stage_updated_at' => now(),
             ]);
-        }
-
-        if ($validated['status'] === 'rejected') {
+        } elseif ($validated['status'] === OfferingStatus::REJECTED->value) {
             $application->update([
                 'recruitment_stage' => RecruitmentStage::REJECTED,
                 'stage_updated_at' => now(),
             ]);
-        }
-
-        if ($validated['status'] === 'waiting_response') {
+        } else {
+            // waiting_response
             $application->update([
                 'recruitment_stage' => RecruitmentStage::OFFERING,
                 'stage_updated_at' => now(),
@@ -100,12 +115,13 @@ class OfferingLetterManagement extends Component
                 ->whereIn('recruitment_stage', [RecruitmentStage::OFFERING, RecruitmentStage::PSYCHOTEST])
                 ->orWhereHas('offeringLetter')
                 ->get(),
+            'statuses' => OfferingStatus::cases(),
         ]);
     }
 
     private function resetForm(): void
     {
-        $this->reset(['editingId', 'application_id', 'offer_date']);
+        $this->reset(['editingId', 'application_id', 'offer_date', 'offer_file']);
         $this->status = 'waiting_response';
     }
 }

@@ -92,9 +92,6 @@
                             <span class="flex-1 text-left rtl:text-right text-sm font-medium leading-none">
                                 {{ __('Interview') }}
                             </span>
-                            @if($totalInterviews > 0)
-                                <span class="flex h-5 min-w-5 px-1 items-center justify-center rounded-full bg-brand-500 text-[10px] font-medium text-white">{{ $totalInterviews }}</span>
-                            @endif
                             <svg class="size-4 text-zinc-400 transition-transform duration-200"
                                 x-bind:class="open ? 'rotate-90' : ''" viewBox="0 0 20 20" fill="currentColor"
                                 aria-hidden="true">
@@ -118,9 +115,6 @@
                                 :current="request()->routeIs('interviews.hr')" wire:navigate>
                                 <div class="flex items-center justify-between w-full">
                                     <span>{{ __('Interview HR') }}</span>
-                                    @if($hrCount > 0)
-                                        <span class="flex h-5 min-w-5 px-1 items-center justify-center rounded-full bg-brand-500 text-[10px] font-medium text-white">{{ $hrCount }}</span>
-                                    @endif
                                 </div>
                             </flux:sidebar.item>
 
@@ -128,9 +122,6 @@
                                 :current="request()->routeIs('interviews.user')" wire:navigate>
                                 <div class="flex items-center justify-between w-full">
                                     <span>{{ __('Interview User') }}</span>
-                                    @if($userCount > 0)
-                                        <span class="flex h-5 min-w-5 px-1 items-center justify-center rounded-full bg-brand-500 text-[10px] font-medium text-white">{{ $userCount }}</span>
-                                    @endif
                                 </div>
                             </flux:sidebar.item>
                         </div>

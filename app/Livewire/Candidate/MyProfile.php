@@ -181,7 +181,7 @@ class MyProfile extends Component
         $this->dispatch('notify', ['message' => 'Password updated successfully.', 'type' => 'success']);
     }
 
-    public function savePersonalData(): void
+    public function savePersonalInfo(): void
     {
         $this->validate([
             'nik' => ['required', 'string', 'digits:16'],
@@ -194,35 +194,7 @@ class MyProfile extends Component
             'address_domicile' => ['required', 'string', 'max:500'],
             'whatsapp' => ['required', 'string', 'max:20'],
             'linkedin_url' => ['nullable', 'url', 'max:255'],
-            'photo' => ['nullable', 'image', 'max:2048'],
-            'ktp_file' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:2048'],
-            'portfolio' => ['nullable', 'file', 'mimes:pdf', 'max:5120'],
-            'certificate' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
-            'paklaring' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
-            'educations' => ['required', 'array', 'min:1'],
-            'educations.*.degree' => ['required', 'string', 'max:50'],
-            'educations.*.institution_name' => ['required', 'string', 'max:255'],
-            'educations.*.major' => ['required', 'string', 'max:255'],
-            'educations.*.start_year' => ['required', 'integer', 'min:1970', 'max:' . date('Y')],
-            'educations.*.end_year' => ['nullable', 'integer', 'min:1970', 'max:' . (date('Y') + 6)],
-            'educations.*.gpa' => ['nullable', 'numeric', 'min:0', 'max:4'],
-            'experiences' => ['nullable', 'array'],
-            'experiences.*.company_name' => ['required', 'string', 'max:255'],
-            'experiences.*.position' => ['required', 'string', 'max:255'],
-            'experiences.*.start_date' => ['required', 'date'],
-            'experiences.*.end_date' => ['nullable', 'date'],
-            'experiences.*.is_current' => ['boolean'],
-            'experiences.*.last_salary' => ['nullable', 'numeric', 'min:0'],
-            'experiences.*.job_description' => ['nullable', 'string', 'max:2000'],
-            'organizations' => ['nullable', 'array'],
-            'organizations.*.organization_name' => ['required', 'string', 'max:255'],
-            'organizations.*.position' => ['required', 'string', 'max:255'],
-            'organizations.*.start_date' => ['required', 'date'],
-            'organizations.*.end_date' => ['nullable', 'date'],
-            'organizations.*.is_current' => ['boolean'],
         ]);
-
-        $user = Auth::user();
 
         $profileData = [
             'nik' => $this->nik,
@@ -237,34 +209,64 @@ class MyProfile extends Component
             'linkedin_url' => $this->linkedin_url ?: null,
         ];
 
+        CandidateProfile::updateOrCreate(['user_id' => Auth::id()], $profileData);
+        $this->dispatch('notify', ['message' => 'Personal information updated successfully.', 'type' => 'success']);
+    }
+
+    public function saveDocuments(): void
+    {
+        $this->validate([
+            'photo' => ['nullable', 'image', 'max:2048'],
+            'ktp_file' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:2048'],
+            'portfolio' => ['nullable', 'file', 'mimes:pdf', 'max:5120'],
+            'certificate' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'paklaring' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+        ]);
+
+        $profileData = [];
+
         if ($this->photo) {
             $profileData['photo_path'] = $this->photo->store('candidate/photos', 'public');
             $this->photo = null;
         }
-
         if ($this->ktp_file) {
             $profileData['ktp_path'] = $this->ktp_file->store('candidate/ktp', 'public');
             $this->ktp_file = null;
         }
-
         if ($this->portfolio) {
             $profileData['portfolio_path'] = $this->portfolio->store('candidate/portfolios', 'public');
             $this->portfolio = null;
         }
-
         if ($this->certificate) {
             $profileData['certificate_path'] = $this->certificate->store('candidate/certificates', 'public');
             $this->certificate = null;
         }
-
         if ($this->paklaring) {
             $profileData['paklaring_path'] = $this->paklaring->store('candidate/paklaring', 'public');
             $this->paklaring = null;
         }
 
-        CandidateProfile::updateOrCreate(['user_id' => $user->id], $profileData);
+        if (!empty($profileData)) {
+            CandidateProfile::updateOrCreate(['user_id' => Auth::id()], $profileData);
+            $this->dispatch('notify', ['message' => 'Documents updated successfully.', 'type' => 'success']);
+        } else {
+            $this->dispatch('notify', ['message' => 'No new documents to upload.', 'type' => 'info']);
+        }
+    }
 
-        // Sync educations
+    public function saveEducation(): void
+    {
+        $this->validate([
+            'educations' => ['required', 'array', 'min:1'],
+            'educations.*.degree' => ['required', 'string', 'max:50'],
+            'educations.*.institution_name' => ['required', 'string', 'max:255'],
+            'educations.*.major' => ['required', 'string', 'max:255'],
+            'educations.*.start_year' => ['required', 'integer', 'min:1970', 'max:' . date('Y')],
+            'educations.*.end_year' => ['nullable', 'integer', 'min:1970', 'max:' . (date('Y') + 6)],
+            'educations.*.gpa' => ['nullable', 'numeric', 'min:0', 'max:4'],
+        ]);
+
+        $user = Auth::user();
         $user->education()->delete();
         foreach ($this->educations as $edu) {
             CandidateEducation::create([
@@ -278,7 +280,23 @@ class MyProfile extends Component
             ]);
         }
 
-        // Sync experiences
+        $this->dispatch('notify', ['message' => 'Education history updated successfully.', 'type' => 'success']);
+    }
+
+    public function saveExperience(): void
+    {
+        $this->validate([
+            'experiences' => ['nullable', 'array'],
+            'experiences.*.company_name' => ['required', 'string', 'max:255'],
+            'experiences.*.position' => ['required', 'string', 'max:255'],
+            'experiences.*.start_date' => ['required', 'date'],
+            'experiences.*.end_date' => ['nullable', 'date'],
+            'experiences.*.is_current' => ['boolean'],
+            'experiences.*.last_salary' => ['nullable', 'numeric', 'min:0'],
+            'experiences.*.job_description' => ['nullable', 'string', 'max:2000'],
+        ]);
+
+        $user = Auth::user();
         $user->experiences()->delete();
         foreach ($this->experiences as $exp) {
             CandidateExperience::create([
@@ -293,7 +311,21 @@ class MyProfile extends Component
             ]);
         }
 
-        // Sync organizations
+        $this->dispatch('notify', ['message' => 'Work experience updated successfully.', 'type' => 'success']);
+    }
+
+    public function saveOrganization(): void
+    {
+        $this->validate([
+            'organizations' => ['nullable', 'array'],
+            'organizations.*.organization_name' => ['required', 'string', 'max:255'],
+            'organizations.*.position' => ['required', 'string', 'max:255'],
+            'organizations.*.start_date' => ['required', 'date'],
+            'organizations.*.end_date' => ['nullable', 'date'],
+            'organizations.*.is_current' => ['boolean'],
+        ]);
+
+        $user = Auth::user();
         $user->organizations()->delete();
         foreach ($this->organizations as $org) {
             CandidateOrganization::create([
@@ -306,7 +338,7 @@ class MyProfile extends Component
             ]);
         }
 
-        $this->dispatch('notify', ['message' => 'Personal data updated successfully.', 'type' => 'success']);
+        $this->dispatch('notify', ['message' => 'Organizational experience updated successfully.', 'type' => 'success']);
     }
 
     public function addEducation(): void

@@ -44,9 +44,6 @@ class InterviewManagement extends Component
 
     public string $tab = 'hr';
 
-    public array $selectedIds = [];
-    public bool $selectAll = false;
-
     public function mount(string $tab = 'hr'): void
     {
         $this->authorizeAccess();
@@ -105,55 +102,6 @@ class InterviewManagement extends Component
         $this->upload_file = null;
         
         $this->dispatch('notify', ['message' => __('Evaluation file uploaded successfully.'), 'type' => 'success']);
-    }
-
-    public function updatedSelectAll($value): void
-    {
-        if ($value) {
-            $this->selectedIds = $this->getFilteredQuery()->pluck('id')->map(fn($id) => (string) $id)->toArray();
-        } else {
-            $this->selectedIds = [];
-        }
-    }
-
-    public function resetSelection(): void
-    {
-        $this->selectAll = false;
-        $this->selectedIds = [];
-    }
-
-    public function bulkUpdateStatus(string $newStatus): void
-    {
-        $this->authorizeAccess();
-
-        if (empty($this->selectedIds)) {
-            return;
-        }
-
-        $validStatuses = ['scheduled', 'completed', 'passed', 'failed'];
-        if (!in_array($newStatus, $validStatuses)) {
-            return;
-        }
-
-        $interviews = Interview::whereIn('id', $this->selectedIds)->get();
-        $count = $interviews->count();
-
-        // Block 'passed' or 'failed' if any selected interview is missing evaluation file
-        if (in_array($newStatus, ['passed', 'failed'])) {
-            $missingEval = $interviews->filter(fn($i) => !$i->evaluation_path)->count();
-            if ($missingEval > 0) {
-                $this->dispatch('notify', ['message' => $missingEval . ' ' . __('interview belum memiliki file penilaian. Upload terlebih dahulu.'), 'type' => 'error']);
-                return;
-            }
-        }
-
-        foreach ($interviews as $interview) {
-            $interview->update(['status' => $newStatus]);
-            $this->syncApplicationStage($interview);
-        }
-
-        $this->resetSelection();
-        $this->dispatch('notify', ['message' => $count . ' ' . __('interviews updated successfully.'), 'type' => 'success']);
     }
 
     public function exportCsv()
@@ -291,11 +239,12 @@ class InterviewManagement extends Component
     private function getFilteredQuery()
     {
         $type = $this->tab === 'hr' ? 'HR Interview' : 'User Interview';
+        $targetStage = $this->tab === 'hr' ? RecruitmentStage::HR_INTERVIEW : RecruitmentStage::USER_INTERVIEW;
 
         return Interview::with(['application.candidate', 'application.job.department', 'interviewer'])
             ->where('interview_type', $type)
-            ->whereHas('application', function ($query) {
-                $query->where('recruitment_stage', '!=', RecruitmentStage::REJECTED);
+            ->whereHas('application', function ($query) use ($targetStage) {
+                $query->where('recruitment_stage', $targetStage);
             })
             ->latest('scheduled_at');
     }

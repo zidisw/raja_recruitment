@@ -8,6 +8,7 @@ use App\Enums\UserRole;
 use App\Models\Department;
 use App\Models\Job;
 use App\Models\Site;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -28,7 +29,9 @@ class JobApplications extends Component
 
     public function mount(): void
     {
-        abort_unless(auth()->user()->canAccessRecruitment(), 403);
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        abort_unless($user->canAccessRecruitment(), 403);
     }
 
     public function updatingSearch(): void
@@ -73,8 +76,8 @@ class JobApplications extends Component
 
         return view('livewire.job-applications', [
             'jobs' => $query->paginate($this->perPage),
-            'departments' => Cache::remember('ref.departments', 300, fn () => Department::orderBy('name')->get()),
-            'sites' => Cache::remember('ref.sites', 300, fn () => Site::orderBy('name')->get()),
+            'departments' => Cache::remember('ref.departments', 300, fn () => Department::orderBy('name', 'asc')->get('*')),
+            'sites' => Cache::remember('ref.sites', 300, fn () => Site::orderBy('name', 'asc')->get('*')),
             'isHR' => false,
         ]);
     }
