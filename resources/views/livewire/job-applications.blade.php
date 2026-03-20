@@ -50,7 +50,7 @@
                 </thead>
                 <tbody class="divide-y divide-zinc-100 bg-white dark:divide-zinc-800 dark:bg-zinc-900">
                     @foreach ($jobs as $job)
-                        <tr wire:key="{{ $job->id }}" class="transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                        <tr wire:key="{{ $job->id }}" class="cursor-pointer">
                             <td class="px-6 py-4">
                                 <div class="font-semibold text-zinc-900 dark:text-white">{{ $job->title }}</div>
                                 <div class="text-xs text-zinc-400">{{ $job->is_active ? __('Active') : __('Closed') }}</div>

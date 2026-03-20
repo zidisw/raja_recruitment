@@ -176,10 +176,7 @@ body[data-theme="dark"] .modern-table thead th {
   @apply hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30;
 }
 
-html[data-theme="dark"] .modern-table tbody tr,
-body[data-theme="dark"] .modern-table tbody tr {
-  border-color: rgba(255, 255, 255, 0.05) !important;
-}
+/* removed conflicting border-color !important that breaks divide-y */
 
 html[data-theme="dark"] .modern-table tbody tr:hover,
 body[data-theme="dark"] .modern-table tbody tr:hover {
@@ -463,14 +460,13 @@ body[data-theme="dark"] [data-flux-menu-item][data-active],
 }
 
 /* Global fallback for table inner divider lines (divide-y divide-zinc-100) */
-/* Tailwind v4 divide uses > :not(:last-child), NOT > :not([hidden]) ~ :not([hidden]) */
-tbody.divide-zinc-100 > :not(:last-child) {
+.modern-table tbody > tr {
   border-color: var(--divider-table) !important;
 }
 
-html[data-theme="dark"] tbody.divide-zinc-100,
-body[data-theme="dark"] tbody.divide-zinc-100,
-.dark tbody.divide-zinc-100 {
+html[data-theme="dark"] .modern-table tbody,
+body[data-theme="dark"] .modern-table tbody,
+.dark .modern-table tbody {
   background-color: rgb(24, 24, 27) !important;
 }
 

@@ -228,7 +228,6 @@
                         @php
                             $stageColors = [
                                 'APPLIED' => 'zinc',
-                                'ADMIN_REVIEW' => 'blue',
                                 'HR_INTERVIEW' => 'yellow',
                                 'USER_INTERVIEW' => 'orange',
                                 'PSYCHOTEST' => 'purple',
@@ -245,7 +244,7 @@
                                 : null;
                         @endphp
                         <tr wire:key="{{ $application->id }}"
-                            class="transition-colors duration-200 hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                            class="cursor-pointer">
                             <td class="px-6 py-4">
                                 <button wire:click="toggleExpand({{ $application->id }})" type="button"
                                     class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-zinc-400 transition-all duration-200 hover:bg-zinc-100 hover:text-zinc-600 active:scale-95 dark:hover:bg-zinc-700/70 dark:hover:text-zinc-300"

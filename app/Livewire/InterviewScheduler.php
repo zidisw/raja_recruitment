@@ -38,7 +38,7 @@ class InterviewScheduler extends Component
     public function openScheduler()
     {
         if (!$this->isValidInterviewStatus()) {
-            $this->dispatch('notify', message: __('You can only schedule an interview when the candidate is in the Interview stage.'), type: 'error');
+            $this->dispatch('notify', ['message' => __('You can only schedule an interview when the candidate is in the Interview stage.'), 'type' => 'error']);
             return;
         }
         $this->showModal = true;
@@ -55,7 +55,7 @@ class InterviewScheduler extends Component
     public function saveSchedule()
     {
         if (!$this->isValidInterviewStatus()) {
-            $this->dispatch('notify', message: __('Cannot schedule an interview for the current application stage.'), type: 'error');
+            $this->dispatch('notify', ['message' => __('Cannot schedule an interview for the current application stage.'), 'type' => 'error']);
             return;
         }
 
@@ -94,9 +94,9 @@ class InterviewScheduler extends Component
             Mail::to($interview->interviewer->email)->send(
                 new InterviewInvitationMail($interview, 'interviewer')
             );
-            $this->dispatch('notify', message: __('Interview scheduled and invitation emails sent!'), type: 'success');
+            $this->dispatch('notify', ['message' => __('Interview scheduled and invitation emails sent!'), 'type' => 'success']);
         } catch (\Throwable $e) {
-            $this->dispatch('notify', message: __('Interview scheduled, but failed to send email.'), type: 'error');
+            $this->dispatch('notify', ['message' => __('Interview scheduled, but failed to send email.'), 'type' => 'error']);
         }
 
         $this->application->refresh();

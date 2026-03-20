@@ -138,7 +138,7 @@ class NewsManagement extends Component
             }
         }
 
-        $this->dispatch('notify', message: $this->editingId ? 'Article updated successfully.' : 'Article published successfully.', type: 'success');
+        $this->dispatch('notify', ['message' => $this->editingId ? 'Article updated successfully.' : 'Article published successfully.', 'type' => 'success']);
         $this->showModal = false;
         $this->resetForm();
     }
@@ -156,7 +156,7 @@ class NewsManagement extends Component
             Storage::disk('public')->delete($image->path);
         }
         $article->delete();
-        $this->dispatch('notify', message: 'Article deleted successfully.', type: 'success');
+        $this->dispatch('notify', ['message' => 'Article deleted successfully.', 'type' => 'success']);
     }
 
     public function render(): View

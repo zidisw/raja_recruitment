@@ -141,11 +141,11 @@ class JobManagement extends Component
         if ($this->editingId) {
             $job = Job::findOrFail($this->editingId);
             $job->update($validated);
-            $this->dispatch('notify', message: 'Job posting updated successfully.', type: 'success');
+            $this->dispatch('notify', ['message' => 'Job posting updated successfully.', 'type' => 'success']);
         } else {
             $validated['created_by'] = $user->id;
             $job = Job::create($validated);
-            $this->dispatch('notify', message: 'Job posting created successfully.', type: 'success');
+            $this->dispatch('notify', ['message' => 'Job posting created successfully.', 'type' => 'success']);
         }
 
         if ($this->featuredImage) {
@@ -189,7 +189,7 @@ class JobManagement extends Component
             Storage::disk('public')->delete($image->path);
         }
         $job->delete();
-        $this->dispatch('notify', message: 'Job posting deleted successfully.', type: 'success');
+        $this->dispatch('notify', ['message' => 'Job posting deleted successfully.', 'type' => 'success']);
     }
 
     public function exportExcel(): \Symfony\Component\HttpFoundation\BinaryFileResponse

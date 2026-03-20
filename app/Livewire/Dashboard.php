@@ -22,8 +22,11 @@ class Dashboard extends Component
 {
     public function mount(): void
     {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
         // Candidates have their own portal — redirect them there
-        if (Auth::user()->hasUserRole()) {
+        if ($user && method_exists($user, 'hasUserRole') && $user->hasUserRole()) {
             $this->redirect(route('candidate.dashboard'));
         }
     }
@@ -35,7 +38,7 @@ class Dashboard extends Component
 
         $stats = Cache::remember(
             sprintf('dashboard.stats.%s.%s', $user->id, $user->role->value),
-            now()->addSeconds(30),
+            now()->addMinutes(5),
             function () use ($user) {
                 $stats = [];
 
@@ -86,7 +89,7 @@ class Dashboard extends Component
                             ->count(),
                         'pipeline' => [
                             'applied' => Application::whereIn('job_id', $jobIds)
-                                ->whereIn('recruitment_stage', [RecruitmentStage::APPLIED, RecruitmentStage::ADMIN_REVIEW])
+                                ->where('recruitment_stage', RecruitmentStage::APPLIED)
                                 ->count(),
                             'interview' => Application::whereIn('job_id', $jobIds)
                                 ->whereIn('recruitment_stage', [RecruitmentStage::HR_INTERVIEW, RecruitmentStage::USER_INTERVIEW])

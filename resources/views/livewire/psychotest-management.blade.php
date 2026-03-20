@@ -22,28 +22,42 @@
                     <th class="text-center!">{{ __('Test Date') }}</th>
                     <th class="text-center!">{{ __('Result') }}</th>
                     <th>{{ __('Notes') }}</th>
+                    <th class="text-center!">{{ __('Action') }}</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
-                @forelse ($psychotests as $item)
+                @forelse ($applications_paginated as $app)
                     <tr>
-                        <td class="px-6 py-4 font-semibold">{{ $item->application->candidate->name }}</td>
-                        <td class="px-6 py-4">{{ $item->application->job->title }}</td>
-                        <td class="px-6 py-4 text-center">{{ $item->test_date?->format('d M Y') }}</td>
+                        <td class="px-6 py-4 font-semibold">{{ $app->candidate->name }}</td>
+                        <td class="px-6 py-4">{{ $app->job->title }}</td>
+                        <td class="px-6 py-4 text-center">{{ $app->psychotest?->test_date?->format('d M Y') ?? '—' }}</td>
                         <td class="px-6 py-4 text-center">
-                            <flux:badge size="sm" variant="outline">{{ $item->result }}</flux:badge>
+                            @if($app->psychotest)
+                                <flux:badge size="sm" variant="outline">{{ $app->psychotest->result }}</flux:badge>
+                            @else
+                                <span class="text-zinc-400 text-xs font-semibold px-2 py-1 bg-zinc-100 dark:bg-zinc-800 rounded-md">{{ __('Waiting') }}</span>
+                            @endif
                         </td>
-                        <td class="px-6 py-4">{{ $item->notes ?: '—' }}</td>
+                        <td class="px-6 py-4">{{ $app->psychotest?->notes ?: '—' }}</td>
+                        <td class="px-6 py-4 text-center">
+                            @if($app->psychotest)
+                                <flux:button size="sm" variant="ghost" wire:click="openEdit({{ $app->psychotest->id }})"
+                                    icon="pencil" />
+                            @else
+                                <flux:button size="sm" variant="ghost" wire:click="openCreate({{ $app->id }})"
+                                    icon="plus" />
+                            @endif
+                        </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="px-6 py-8 text-center text-zinc-400">{{ __('No psychotest data yet.') }}</td>
+                        <td colspan="6" class="px-6 py-8 text-center text-zinc-400">{{ __('No candidates in psychotest stage yet.') }}</td>
                     </tr>
                 @endforelse
             </tbody>
         </table>
     </div>
-    <div>{{ $psychotests->links() }}</div>
+    <div>{{ $applications_paginated->links() }}</div>
 
     <flux:modal wire:model="showModal" class="w-full max-w-xl">
         <div class="space-y-4">

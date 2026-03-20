@@ -79,7 +79,7 @@ class PtkManagement extends Component
             $this->validate([
                 'nomor_ptk'  => ['required', 'string', 'max:255', 'unique:ptk,nomor_ptk,' . $this->editingId],
                 'posisi'     => ['required', 'string', 'max:255'],
-                'status'     => ['required', 'in:draft,approved,used,closed'],
+                'status'     => ['required', 'in:draft,approved,closed'],
                 'attachment' => [$this->editingId ? 'nullable' : 'required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
             ]);
 
@@ -103,7 +103,7 @@ class PtkManagement extends Component
                 'jumlah_kebutuhan'   => ['required', 'integer', 'min:1'],
                 'alasan_permintaan'  => ['nullable', 'string'],
                 'tanggal_permintaan' => ['required', 'date'],
-                'status'             => ['required', 'in:draft,approved,used,closed'],
+                'status'             => ['required', 'in:draft,approved,closed'],
             ]);
 
             $data = [
@@ -119,11 +119,11 @@ class PtkManagement extends Component
 
         if ($this->editingId) {
             Ptk::findOrFail($this->editingId)->update($data);
-            $this->dispatch('notify', message: __('PTK berhasil diperbarui.'), type: 'success');
+            $this->dispatch('notify', ['message' => __('PTK berhasil diperbarui.'), 'type' => 'success']);
         } else {
             $data['created_by'] = Auth::id();
             Ptk::create($data);
-            $this->dispatch('notify', message: __('PTK berhasil ditambahkan.'), type: 'success');
+            $this->dispatch('notify', ['message' => __('PTK berhasil ditambahkan.'), 'type' => 'success']);
         }
 
         $this->resetForm();
@@ -133,7 +133,7 @@ class PtkManagement extends Component
     public function delete(Ptk $ptk): void
     {
         if ($ptk->jobs()->exists()) {
-            $this->dispatch('notify', message: __('PTK tidak dapat dihapus karena sudah digunakan di lowongan.'), type: 'error');
+            $this->dispatch('notify', ['message' => __('PTK tidak dapat dihapus karena sudah digunakan di lowongan.'), 'type' => 'error']);
 
             return;
         }
@@ -143,7 +143,7 @@ class PtkManagement extends Component
         }
 
         $ptk->delete();
-        $this->dispatch('notify', message: __('PTK berhasil dihapus.'), type: 'success');
+        $this->dispatch('notify', ['message' => __('PTK berhasil dihapus.'), 'type' => 'success']);
     }
 
     public function render(): \Illuminate\View\View

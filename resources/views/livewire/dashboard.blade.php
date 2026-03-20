@@ -2,10 +2,10 @@
     {{-- Futuristic Welcome Card --}}
     <div class="glass-card-static relative overflow-hidden">
         <div
-            class="absolute -right-8 -top-8 size-32 rounded-full bg-linear-to-br from-brand-500/20 to-brand-400/10 blur-2xl">
+            class="absolute top-0 right-0 size-32 rounded-full bg-linear-to-br from-brand-500/20 to-brand-400/10 blur-3xl translate-x-1/2 -translate-y-1/2">
         </div>
         <div
-            class="absolute -left-4 -bottom-4 size-24 rounded-full bg-linear-to-tr from-blue-500/10 to-purple-500/10 blur-2xl">
+            class="absolute bottom-0 left-0 size-24 rounded-full bg-linear-to-tr from-blue-500/10 to-purple-500/10 blur-2xl -translate-x-1/2 translate-y-1/2">
         </div>
         <div class="relative">
             <h1 class="text-2xl font-bold tracking-tight text-zinc-900 dark:text-white sm:text-3xl">

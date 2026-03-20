@@ -59,7 +59,7 @@ class OnboardingManagement extends Component
         }
 
         $this->showModal = false;
-        $this->dispatch('notify', message: __('Onboarding saved successfully.'), type: 'success');
+        $this->dispatch('notify', ['message' => __('Onboarding saved successfully.'), 'type' => 'success']);
     }
 
     public function render(): \Illuminate\View\View

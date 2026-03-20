@@ -59,14 +59,19 @@ class MyProfile extends Component
 
     public string $linkedin_url = '';
 
+    /** @var \Illuminate\Http\UploadedFile|null */
     public $photo = null;
 
+    /** @var \Illuminate\Http\UploadedFile|null */
     public $ktp_file = null;
 
+    /** @var \Illuminate\Http\UploadedFile|null */
     public $portfolio = null;
 
+    /** @var \Illuminate\Http\UploadedFile|null */
     public $certificate = null;
 
+    /** @var \Illuminate\Http\UploadedFile|null */
     public $paklaring = null;
 
     // Education
@@ -150,8 +155,8 @@ class MyProfile extends Component
 
         $user->save();
 
-        $this->dispatch('profile-updated', name: $user->name);
-        session()->flash('account_success', 'Account information updated successfully.');
+        $this->dispatch('profile-updated', ['name' => $user->name]);
+        $this->dispatch('notify', ['message' => 'Account information updated successfully.', 'type' => 'success']);
     }
 
     public function updatePassword(): void
@@ -173,7 +178,7 @@ class MyProfile extends Component
 
         $this->reset('current_password', 'password', 'password_confirmation');
 
-        session()->flash('password_success', 'Password updated successfully.');
+        $this->dispatch('notify', ['message' => 'Password updated successfully.', 'type' => 'success']);
     }
 
     public function savePersonalData(): void
@@ -301,7 +306,7 @@ class MyProfile extends Component
             ]);
         }
 
-        session()->flash('personal_success', 'Personal data updated successfully.');
+        $this->dispatch('notify', ['message' => 'Personal data updated successfully.', 'type' => 'success']);
     }
 
     public function addEducation(): void

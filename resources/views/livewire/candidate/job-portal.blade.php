@@ -9,17 +9,7 @@
         </div>
     </div>
 
-    @if (session('success'))
-        <flux:callout variant="success" icon="check-circle">
-            <flux:callout.heading>{{ session('success') }}</flux:callout.heading>
-        </flux:callout>
-    @endif
 
-    @if (session('error'))
-        <flux:callout variant="danger" icon="x-circle">
-            <flux:callout.heading>{{ session('error') }}</flux:callout.heading>
-        </flux:callout>
-    @endif
 
     {{-- Filters --}}
     <div class="theme-surface-soft flex flex-col gap-4 rounded-xl border p-4 backdrop-blur-sm">

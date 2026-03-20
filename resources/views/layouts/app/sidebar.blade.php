@@ -70,6 +70,17 @@
 
                     @php
                         $isInterviewRoute = request()->routeIs('interviews.*');
+                        $hrCount = \App\Models\Interview::where('interview_type', 'HR Interview')
+                            ->whereHas('application', function ($q) {
+                                $q->where('recruitment_stage', '!=', \App\Enums\RecruitmentStage::REJECTED);
+                            })->count();
+
+                        $userCount = \App\Models\Interview::where('interview_type', 'User Interview')
+                            ->whereHas('application', function ($q) {
+                                $q->where('recruitment_stage', '!=', \App\Enums\RecruitmentStage::REJECTED);
+                            })->count();
+                            
+                        $totalInterviews = $hrCount + $userCount;
                     @endphp
                     <div x-data="{ open: @js($isInterviewRoute) }"
                         wire:key="interview-nav-{{ $isInterviewRoute ? '1' : '0' }}" class="space-y-0.5">
@@ -81,6 +92,9 @@
                             <span class="flex-1 text-left rtl:text-right text-sm font-medium leading-none">
                                 {{ __('Interview') }}
                             </span>
+                            @if($totalInterviews > 0)
+                                <span class="flex h-5 min-w-5 px-1 items-center justify-center rounded-full bg-brand-500 text-[10px] font-medium text-white">{{ $totalInterviews }}</span>
+                            @endif
                             <svg class="size-4 text-zinc-400 transition-transform duration-200"
                                 x-bind:class="open ? 'rotate-90' : ''" viewBox="0 0 20 20" fill="currentColor"
                                 aria-hidden="true">
@@ -102,12 +116,22 @@
 
                             <flux:sidebar.item icon="user-group" :href="route('interviews.hr')"
                                 :current="request()->routeIs('interviews.hr')" wire:navigate>
-                                {{ __('Interview HR') }}
+                                <div class="flex items-center justify-between w-full">
+                                    <span>{{ __('Interview HR') }}</span>
+                                    @if($hrCount > 0)
+                                        <span class="flex h-5 min-w-5 px-1 items-center justify-center rounded-full bg-brand-500 text-[10px] font-medium text-white">{{ $hrCount }}</span>
+                                    @endif
+                                </div>
                             </flux:sidebar.item>
 
                             <flux:sidebar.item icon="user" :href="route('interviews.user')"
                                 :current="request()->routeIs('interviews.user')" wire:navigate>
-                                {{ __('Interview User') }}
+                                <div class="flex items-center justify-between w-full">
+                                    <span>{{ __('Interview User') }}</span>
+                                    @if($userCount > 0)
+                                        <span class="flex h-5 min-w-5 px-1 items-center justify-center rounded-full bg-brand-500 text-[10px] font-medium text-white">{{ $userCount }}</span>
+                                    @endif
+                                </div>
                             </flux:sidebar.item>
                         </div>
                     </div>

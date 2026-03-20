@@ -8,6 +8,7 @@ use App\Enums\UserRole;
 use App\Models\Department;
 use App\Models\Job;
 use App\Models\Site;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -72,8 +73,8 @@ class JobApplications extends Component
 
         return view('livewire.job-applications', [
             'jobs' => $query->paginate($this->perPage),
-            'departments' => Department::orderBy('name')->get(),
-            'sites' => Site::orderBy('name')->get(),
+            'departments' => Cache::remember('ref.departments', 300, fn () => Department::orderBy('name')->get()),
+            'sites' => Cache::remember('ref.sites', 300, fn () => Site::orderBy('name')->get()),
             'isHR' => false,
         ]);
     }

@@ -28,6 +28,7 @@ class InterviewManagement extends Component
 
     public bool $showUploadModal = false;
     public ?int $uploadingInterviewId = null;
+    /** @var \Illuminate\Http\UploadedFile|null */
     public $upload_file = null;
 
     public ?int $application_id = null;
@@ -37,9 +38,14 @@ class InterviewManagement extends Component
     public string $scheduled_time = '';
     public string $status = 'scheduled';
     public string $hr_notes = '';
+    
+    /** @var \Illuminate\Http\UploadedFile|null */
     public $evaluation_file = null;
 
     public string $tab = 'hr';
+
+    public array $selectedIds = [];
+    public bool $selectAll = false;
 
     public function mount(string $tab = 'hr'): void
     {
@@ -98,7 +104,80 @@ class InterviewManagement extends Component
         $this->uploadingInterviewId = null;
         $this->upload_file = null;
         
-        $this->dispatch('notify', message: __('Evaluation file uploaded successfully.'), type: 'success');
+        $this->dispatch('notify', ['message' => __('Evaluation file uploaded successfully.'), 'type' => 'success']);
+    }
+
+    public function updatedSelectAll($value): void
+    {
+        if ($value) {
+            $this->selectedIds = $this->getFilteredQuery()->pluck('id')->map(fn($id) => (string) $id)->toArray();
+        } else {
+            $this->selectedIds = [];
+        }
+    }
+
+    public function resetSelection(): void
+    {
+        $this->selectAll = false;
+        $this->selectedIds = [];
+    }
+
+    public function bulkUpdateStatus(string $newStatus): void
+    {
+        $this->authorizeAccess();
+
+        if (empty($this->selectedIds)) {
+            return;
+        }
+
+        $validStatuses = ['scheduled', 'completed', 'passed', 'failed'];
+        if (!in_array($newStatus, $validStatuses)) {
+            return;
+        }
+
+        $interviews = Interview::whereIn('id', $this->selectedIds)->get();
+        $count = $interviews->count();
+
+        // Block 'passed' or 'failed' if any selected interview is missing evaluation file
+        if (in_array($newStatus, ['passed', 'failed'])) {
+            $missingEval = $interviews->filter(fn($i) => !$i->evaluation_path)->count();
+            if ($missingEval > 0) {
+                $this->dispatch('notify', ['message' => $missingEval . ' ' . __('interview belum memiliki file penilaian. Upload terlebih dahulu.'), 'type' => 'error']);
+                return;
+            }
+        }
+
+        foreach ($interviews as $interview) {
+            $interview->update(['status' => $newStatus]);
+            $this->syncApplicationStage($interview);
+        }
+
+        $this->resetSelection();
+        $this->dispatch('notify', ['message' => $count . ' ' . __('interviews updated successfully.'), 'type' => 'success']);
+    }
+
+    public function exportCsv()
+    {
+        $interviews = $this->getFilteredQuery()->get();
+        
+        $csvData = "Nama Kandidat,Posisi,Departemen,Pewawancara,Tanggal Interview,Status\n";
+        
+        foreach ($interviews as $interview) {
+            $name = '"' . str_replace('"', '""', $interview->application->candidate->name) . '"';
+            $jobTitle = '"' . str_replace('"', '""', $interview->application->job->title) . '"';
+            $dept = '"' . str_replace('"', '""', $interview->application->job->department?->name ?? '') . '"';
+            $interviewer = '"' . str_replace('"', '""', $interview->interviewer?->name ?? '—') . '"';
+            $date = $interview->scheduled_at ? $interview->scheduled_at->format('Y-m-d H:i') : '';
+            $status = $interview->status;
+            
+            $csvData .= "{$name},{$jobTitle},{$dept},{$interviewer},{$date},{$status}\n";
+        }
+        
+        $filename = "export_interview_{$this->tab}_" . now()->format('Ymd_His') . ".csv";
+        
+        return response()->streamDownload(function () use ($csvData) {
+            echo $csvData;
+        }, $filename);
     }
 
     public function updateInterviewStatus(int $id, string $newStatus): void
@@ -107,16 +186,23 @@ class InterviewManagement extends Component
 
         $validStatuses = ['scheduled', 'completed', 'passed', 'failed'];
         if (!in_array($newStatus, $validStatuses)) {
-            $this->dispatch('notify', message: __('Invalid status selected.'), type: 'error');
+            $this->dispatch('notify', ['message' => __('Invalid status selected.'), 'type' => 'error']);
             return;
         }
 
         $interview = Interview::findOrFail($id);
+
+        // Block 'passed' or 'failed' if evaluation file not uploaded
+        if (in_array($newStatus, ['passed', 'failed']) && !$interview->evaluation_path) {
+            $this->dispatch('notify', ['message' => __('Upload file penilaian terlebih dahulu sebelum mengubah status.'), 'type' => 'error']);
+            return;
+        }
+
         $interview->update(['status' => $newStatus]);
 
         $this->syncApplicationStage($interview);
 
-        $this->dispatch('notify', message: __('Interview status updated successfully.'), type: 'success');
+        $this->dispatch('notify', ['message' => __('Interview status updated successfully.'), 'type' => 'success']);
     }
 
     public function openEdit(Interview $interview): void
@@ -167,8 +253,21 @@ class InterviewManagement extends Component
 
         if ($this->editingId) {
             $interview = Interview::findOrFail($this->editingId);
+
+            // Block 'passed' or 'failed' without evaluation file (existing or newly uploaded)
+            if (in_array($validated['status'], ['passed', 'failed']) && !$interview->evaluation_path && !$this->evaluation_file) {
+                $this->dispatch('notify', ['message' => __('Upload file penilaian terlebih dahulu sebelum mengubah status.'), 'type' => 'error']);
+                return;
+            }
+
             $interview->update($payload);
         } else {
+            // New interview: block 'passed' or 'failed' without evaluation file
+            if (in_array($validated['status'], ['passed', 'failed']) && !$this->evaluation_file) {
+                $this->dispatch('notify', ['message' => __('Upload file penilaian terlebih dahulu sebelum mengubah status.'), 'type' => 'error']);
+                return;
+            }
+
             $interview = Interview::create($payload);
         }
 
@@ -186,18 +285,25 @@ class InterviewManagement extends Component
 
         $this->showModal = false;
         $this->resetForm();
-        $this->dispatch('notify', message: __('Interview saved successfully.'), type: 'success');
+        $this->dispatch('notify', ['message' => __('Interview saved successfully.'), 'type' => 'success']);
+    }
+
+    private function getFilteredQuery()
+    {
+        $type = $this->tab === 'hr' ? 'HR Interview' : 'User Interview';
+
+        return Interview::with(['application.candidate', 'application.job.department', 'interviewer'])
+            ->where('interview_type', $type)
+            ->whereHas('application', function ($query) {
+                $query->where('recruitment_stage', '!=', RecruitmentStage::REJECTED);
+            })
+            ->latest('scheduled_at');
     }
 
     public function render(): \Illuminate\View\View
     {
-        $type = $this->tab === 'hr' ? 'HR Interview' : 'User Interview';
-
         return view('livewire.interview-management', [
-            'interviews' => Interview::with(['application.candidate', 'application.job', 'interviewer'])
-                ->where('interview_type', $type)
-                ->latest('scheduled_at')
-                ->paginate(10),
+            'interviews' => $this->getFilteredQuery()->paginate(10),
             'applications' => Application::with(['candidate', 'job', 'interviews'])
                 ->whereIn('recruitment_stage', [RecruitmentStage::HR_INTERVIEW, RecruitmentStage::USER_INTERVIEW])
                 ->get(),
@@ -213,31 +319,40 @@ class InterviewManagement extends Component
     {
         $application = $interview->application;
 
+        // Condition: If ANY interview is failed, move to REJECTED
         if ($interview->status === 'failed') {
             $application->update([
                 'recruitment_stage' => RecruitmentStage::REJECTED,
                 'stage_updated_at' => now(),
             ]);
-
             return;
         }
 
-        // When a User Interview is scheduled, candidate moves to USER_INTERVIEW stage
-        if ($interview->interview_type === 'User Interview' && $interview->status === 'scheduled') {
-            if ($application->recruitment_stage === RecruitmentStage::HR_INTERVIEW) {
-                $application->update([
-                    'recruitment_stage' => RecruitmentStage::USER_INTERVIEW,
-                    'stage_updated_at' => now(),
-                ]);
-            }
-        }
+        // Fetch the latest interviews for the application
+        $hrInterview = $application->interviews()->where('interview_type', 'HR Interview')->latest('scheduled_at')->first();
+        $userInterview = $application->interviews()->where('interview_type', 'User Interview')->latest('scheduled_at')->first();
 
-        if ($interview->status === 'passed') {
-            if ($interview->interview_type === 'User Interview') {
+        // Condition 2: Move to OFFERING if User Interview is passed AND has form
+        if ($userInterview && $userInterview->status === 'passed' && $userInterview->evaluation_path) {
+            if ($application->recruitment_stage === RecruitmentStage::USER_INTERVIEW) {
                 $application->update([
                     'recruitment_stage' => RecruitmentStage::OFFERING,
                     'stage_updated_at' => now(),
                 ]);
+            }
+            return;
+        }
+
+        // Condition 1: Move from HR_INTERVIEW to USER_INTERVIEW if:
+        // HR is passed AND HR has form AND User Interview exists (scheduled)
+        if ($hrInterview && $hrInterview->status === 'passed' && $hrInterview->evaluation_path) {
+            if ($userInterview) {
+                if ($application->recruitment_stage === RecruitmentStage::HR_INTERVIEW) {
+                    $application->update([
+                        'recruitment_stage' => RecruitmentStage::USER_INTERVIEW,
+                        'stage_updated_at' => now(),
+                    ]);
+                }
             }
         }
     }

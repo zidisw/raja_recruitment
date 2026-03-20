@@ -49,7 +49,7 @@
             </thead>
             <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
                 @forelse ($ptkItems as $item)
-                    <tr wire:key="{{ $item->id }}" class="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
+                    <tr wire:key="{{ $item->id }}" class="cursor-pointer">
                         <td class="px-6 py-4 align-middle text-left">
                             <p class="font-semibold text-zinc-900 dark:text-white">{{ $item->nomor_ptk }}</p>
                             @if ($item->department)
@@ -76,7 +76,7 @@
                             @if ($item->attachment_path)
                                 <div class="flex justify-center">
                                     <a href="{{ Storage::url($item->attachment_path) }}" target="_blank"
-                                        class="inline-flex items-center gap-1 text-xs text-brand-500 hover:text-brand-600 dark:hover:text-brand-400 font-medium transition-colors">
+                                        class="inline-flex items-center gap-1 text-xs text-brand-500 hover:text-brand-600 dark:hover:text-brand-400 font-medium">
                                         <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -94,7 +94,6 @@
                             @php
                                 $statusColor = match ($item->status) {
                                     'approved' => 'text-green-700 bg-green-50 dark:text-green-400 dark:bg-green-500/10',
-                                    'used' => 'text-blue-700 bg-blue-50 dark:text-blue-400 dark:bg-blue-500/10',
                                     'closed' => 'text-red-700 bg-red-50 dark:text-red-400 dark:bg-red-500/10',
                                     default => 'text-zinc-600 bg-zinc-100 dark:text-zinc-400 dark:bg-zinc-800',
                                 };
@@ -207,7 +206,7 @@
                 <div class="flex items-center gap-3">
                     @if (!$editingId)
                         <button wire:click="setMode('')" type="button"
-                            class="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors">
+                            class="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                             </svg>
@@ -238,7 +237,7 @@
 
                     <flux:field>
                         <flux:label>{{ __('Status') }}</flux:label>
-                        <x-custom-select wire:model="status" :options="['draft' => 'Draft', 'approved' => 'Approved', 'used' => 'Used', 'closed' => 'Closed']" />
+                        <x-custom-select wire:model="status" :options="['draft' => 'Draft', 'approved' => 'Approved', 'closed' => 'Closed']" />
                         <flux:error name="status" />
                     </flux:field>
 
@@ -306,7 +305,7 @@
                 <div class="flex items-center gap-3">
                     @if (!$editingId)
                         <button wire:click="setMode('')" type="button"
-                            class="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 transition-colors">
+                            class="p-1.5 rounded-lg hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200">
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
                             </svg>
@@ -353,7 +352,7 @@
                         </flux:field>
                         <flux:field>
                             <flux:label>{{ __('Status') }}</flux:label>
-                            <x-custom-select wire:model="status" :options="['draft' => 'Draft', 'approved' => 'Approved', 'used' => 'Used', 'closed' => 'Closed']" />
+                            <x-custom-select wire:model="status" :options="['draft' => 'Draft', 'approved' => 'Approved', 'closed' => 'Closed']" />
                             <flux:error name="status" />
                         </flux:field>
                     </div>

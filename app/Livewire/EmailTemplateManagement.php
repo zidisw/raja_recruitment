@@ -69,7 +69,7 @@ class EmailTemplateManagement extends Component
         $this->showModal = false;
         $this->reset(['editingId', 'editingStage', 'editingStageLabel', 'editingLevel', 'subject', 'body']);
 
-        $this->dispatch('notify', message: __('Email template saved successfully.'), type: 'success');
+        $this->dispatch('notify', ['message' => __('Email template saved successfully.'), 'type' => 'success']);
     }
 
     public function render(): \Illuminate\View\View

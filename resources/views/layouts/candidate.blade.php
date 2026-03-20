@@ -7,7 +7,7 @@
         @include('partials.navbar')
 
         <div
-            x-data="{ show: false, message: '', type: 'success', timer: null, open(event) { this.message = event.detail.message ?? ''; this.type = event.detail.type ?? 'success'; this.show = true; if (this.timer) clearTimeout(this.timer); this.timer = setTimeout(() => this.show = false, 3500); } }"
+            x-data="{ show: false, message: '', type: 'success', timer: null, open(event) { this.message = event.detail.message ?? event.detail[0]?.message ?? ''; this.type = event.detail.type ?? event.detail[0]?.type ?? 'success'; this.show = true; if (this.timer) clearTimeout(this.timer); this.timer = setTimeout(() => this.show = false, 3500); } }"
             x-init="if (@js(session('success'))) open({ detail: { message: @js(session('success')), type: 'success' } }); if (@js(session('error'))) open({ detail: { message: @js(session('error')), type: 'error' } });"
             @notify.window="open($event)" class="fixed top-4 right-4 z-50 w-full max-w-sm px-4 pointer-events-none">
             <div x-show="show" x-transition:enter="transition ease-out duration-200"

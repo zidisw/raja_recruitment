@@ -1,6 +1,6 @@
 <?php
 
-use App\Livewire\Public\Contact;
+use App\Livewire\Frontend\Contact;
 use App\Models\SmtpSetting;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Livewire;

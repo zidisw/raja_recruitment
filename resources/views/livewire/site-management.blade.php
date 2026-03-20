@@ -41,7 +41,7 @@
                 </thead>
                 <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
                     @foreach ($sites as $site)
-                        <tr wire:key="{{ $site->id }}" class="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
+                        <tr wire:key="{{ $site->id }}" class="cursor-pointer">
                             <td class="px-6 py-4 font-semibold text-zinc-900 dark:text-white">
                                 {{ $site->name }}
                             </td>

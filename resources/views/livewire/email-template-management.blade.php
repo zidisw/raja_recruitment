@@ -36,7 +36,7 @@
                         $staffTemplate = $templates[$stage->value . '_staff'] ?? null;
                         $nonStaffTemplate = $templates[$stage->value . '_non_staff'] ?? null;
                     @endphp
-                    <tr wire:key="{{ $stage->value }}" class="transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                    <tr wire:key="{{ $stage->value }}" class="cursor-pointer">
                         <td class="px-6 py-4 font-medium">{{ $stage->label() }}</td>
                         <td class="px-6 py-4 text-center">
                             @if ($staffTemplate)

@@ -52,10 +52,10 @@ class SiteManagement extends Component
 
         if ($this->editingId) {
             Site::findOrFail($this->editingId)->update($validated);
-            $this->dispatch('notify', message: 'Site updated successfully.', type: 'success');
+            $this->dispatch('notify', ['message' => 'Site updated successfully.', 'type' => 'success']);
         } else {
             Site::create($validated);
-            $this->dispatch('notify', message: 'Site created successfully.', type: 'success');
+            $this->dispatch('notify', ['message' => 'Site created successfully.', 'type' => 'success']);
         }
 
         $this->showModal = false;
@@ -65,7 +65,7 @@ class SiteManagement extends Component
     public function delete(Site $site): void
     {
         $site->delete();
-        $this->dispatch('notify', message: 'Site deleted successfully.', type: 'success');
+        $this->dispatch('notify', ['message' => 'Site deleted successfully.', 'type' => 'success']);
     }
 
     public function render()

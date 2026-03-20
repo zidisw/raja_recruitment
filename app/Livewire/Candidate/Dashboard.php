@@ -17,12 +17,16 @@ class Dashboard extends Component
 {
     public function mount(): void
     {
-        abort_unless(Auth::user()?->hasUserRole(), 403);
+        /** @var \App\Models\User|null $user */
+        $user = Auth::user();
+        abort_unless($user && $user->hasUserRole(), 403);
     }
 
     public function render(): \Illuminate\View\View
     {
-        $userId = Auth::id();
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+        $userId = $user->id;
 
         $myApplications = Application::query()->where('user_id', $userId);
 

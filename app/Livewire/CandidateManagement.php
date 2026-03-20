@@ -13,6 +13,7 @@ use App\Models\Interview;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -38,6 +39,10 @@ class CandidateManagement extends Component
 
     public ?int $expandedRow = null;
 
+    public array $selectedIds = [];
+    
+    public bool $selectAll = false;
+
     // Interview Scheduling fields
     public bool $showScheduleModal = false;
     public ?int $schedulingApplicationId = null;
@@ -58,6 +63,7 @@ class CandidateManagement extends Component
     public function updatingSearch(): void
     {
         $this->resetPage();
+        $this->resetSelection();
     }
 
     public function updatingPerPage(): void
@@ -105,7 +111,7 @@ class CandidateManagement extends Component
             'stage_updated_at' => now(),
         ]);
 
-        $this->dispatch('notify', message: __('Candidate passed administrative screening.'), type: 'success');
+        $this->dispatch('notify', ['message' => __('Candidate passed administrative screening.'), 'type' => 'success']);
     }
 
     public function rejectApplication(int $applicationId): void
@@ -117,7 +123,7 @@ class CandidateManagement extends Component
             'stage_updated_at' => now(),
         ]);
 
-        $this->dispatch('notify', message: __('Candidate rejected.'), type: 'success');
+        $this->dispatch('notify', ['message' => __('Candidate rejected.'), 'type' => 'success']);
     }
 
     public function updateProgressStage(int $applicationId, string $stage): void
@@ -130,12 +136,83 @@ class CandidateManagement extends Component
             'stage_updated_at' => now(),
         ]);
 
-        $this->dispatch('notify', message: __('Recruitment stage updated.'), type: 'success');
+        $this->dispatch('notify', ['message' => __('Recruitment stage updated.'), 'type' => 'success']);
     }
 
     public function toggleExpand(int $applicationId): void
     {
         $this->expandedRow = $this->expandedRow === $applicationId ? null : $applicationId;
+    }
+
+    public function updatedSelectAll($value): void
+    {
+        if ($value) {
+            $this->selectedIds = $this->getFilteredQuery()->pluck('id')->map(fn($id) => (string) $id)->toArray();
+        } else {
+            $this->selectedIds = [];
+        }
+    }
+
+    public function resetSelection(): void
+    {
+        $this->selectAll = false;
+        $this->selectedIds = [];
+    }
+
+    public function bulkPassAdministrative(): void
+    {
+        if (empty($this->selectedIds)) {
+            return;
+        }
+
+        Application::whereIn('id', $this->selectedIds)->update([
+            'recruitment_stage' => RecruitmentStage::HR_INTERVIEW,
+            'stage_updated_at' => now(),
+        ]);
+
+        $this->dispatch('notify', ['message' => __('Kandidat yang dipilih berhasil diloloskan ke On Progress.'), 'type' => 'success']);
+        $this->resetSelection();
+    }
+
+    public function bulkReject(): void
+    {
+        if (empty($this->selectedIds)) {
+            return;
+        }
+
+        Application::whereIn('id', $this->selectedIds)->update([
+            'recruitment_stage' => RecruitmentStage::REJECTED,
+            'stage_updated_at' => now(),
+        ]);
+
+        $this->dispatch('notify', ['message' => __('Kandidat yang dipilih berhasil ditolak.'), 'type' => 'success']);
+        $this->resetSelection();
+    }
+
+    public function exportCsv()
+    {
+        $applications = $this->getFilteredQuery()->with(['candidate', 'job.department', 'job.site'])->get();
+        
+        $csvData = "Nama Kandidat,Email,Posisi,Departemen,Site,Tanggal Lamar,Stage,Status Lolos Administrasi\n";
+        
+        foreach ($applications as $app) {
+            $name = '"' . str_replace('"', '""', $app->candidate->name) . '"';
+            $email = '"' . str_replace('"', '""', $app->candidate->email) . '"';
+            $jobTitle = '"' . str_replace('"', '""', $app->job->title) . '"';
+            $dept = '"' . str_replace('"', '""', $app->job->department?->name ?? '') . '"';
+            $site = '"' . str_replace('"', '""', $app->job->site?->name ?? '') . '"';
+            $appliedDate = $app->created_at->format('Y-m-d');
+            $stage = $app->recruitment_stage->name;
+            $passedAdmin = $app->stage_updated_at ? $app->stage_updated_at->format('Y-m-d') : '';
+            
+            $csvData .= "{$name},{$email},{$jobTitle},{$dept},{$site},{$appliedDate},{$stage},{$passedAdmin}\n";
+        }
+        
+        $filename = "export_kandidat_{$this->tab}_" . now()->format('Ymd_His') . ".csv";
+        
+        return response()->streamDownload(function () use ($csvData) {
+            echo $csvData;
+        }, $filename);
     }
 
     public function openScheduleInterview(int $applicationId): void
@@ -170,16 +247,13 @@ class CandidateManagement extends Component
         ]);
 
         $this->showScheduleModal = false;
-        $this->dispatch('notify', message: __('HR Interview scheduled successfully.'), type: 'success');
+        $this->dispatch('notify', ['message' => __('HR Interview scheduled successfully.'), 'type' => 'success']);
     }
 
-    public function render(): \Illuminate\View\View
+    private function getFilteredQuery()
     {
         $query = Application::with([
             'candidate.profile',
-            'candidate.education',
-            'candidate.experiences',
-            'candidate.organizations',
             'job.department',
             'job.site',
         ])
@@ -212,21 +286,30 @@ class CandidateManagement extends Component
         if ($this->tab === 'administrasi') {
             $query->whereIn('recruitment_stage', [
                 RecruitmentStage::APPLIED,
-                RecruitmentStage::ADMIN_REVIEW,
             ]);
         }
 
-        // On Progress: candidates who passed administration and are still waiting for HR Interview scheduling.
+        // On Progress: candidates actively progressing through the pipeline.
         if ($this->tab === 'on-progress') {
-            $query->where('recruitment_stage', RecruitmentStage::HR_INTERVIEW)
-                ->whereDoesntHave('hrInterview');
+            $query->whereNotIn('recruitment_stage', [
+                RecruitmentStage::APPLIED,
+                RecruitmentStage::HIRED,
+                RecruitmentStage::REJECTED,
+            ]);
         }
+        
+        return $query;
+    }
+
+    public function render(): \Illuminate\View\View
+    {
+        $query = $this->getFilteredQuery();
 
         return view('livewire.candidate-management', [
             'applications' => $query->paginate($this->perPage),
-            'departments' => Department::query()->orderBy('name')->get(['id', 'name']),
-            'sites' => Site::query()->orderBy('name')->get(['id', 'name']),
-            'interviewers' => User::whereIn('role', [UserRole::Admin, UserRole::HR, UserRole::Interviewer])->get(),
+            'departments' => Cache::remember('ref.departments', 300, fn () => Department::query()->orderBy('name')->get(['id', 'name'])),
+            'sites' => Cache::remember('ref.sites', 300, fn () => Site::query()->orderBy('name')->get(['id', 'name'])),
+            'interviewers' => Cache::remember('ref.interviewers', 300, fn () => User::whereIn('role', [UserRole::Admin, UserRole::HR, UserRole::Interviewer])->get()),
             'progressStages' => [
                 RecruitmentStage::HR_INTERVIEW,
                 RecruitmentStage::USER_INTERVIEW,

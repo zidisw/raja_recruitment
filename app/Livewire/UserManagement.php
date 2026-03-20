@@ -90,12 +90,12 @@ class UserManagement extends Component
                 $updateData['password'] = Hash::make($validated['password']);
             }
             User::findOrFail($this->editingId)->update($updateData);
-            $this->dispatch('notify', message: 'User updated successfully.', type: 'success');
+            $this->dispatch('notify', ['message' => 'User updated successfully.', 'type' => 'success']);
         } else {
             $validated['password'] = Hash::make($validated['password']);
             $validated['email_verified_at'] = now();
             User::create($validated);
-            $this->dispatch('notify', message: 'User created successfully.', type: 'success');
+            $this->dispatch('notify', ['message' => 'User created successfully.', 'type' => 'success']);
         }
 
         $this->showModal = false;

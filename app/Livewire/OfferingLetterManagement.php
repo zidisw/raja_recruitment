@@ -30,9 +30,12 @@ class OfferingLetterManagement extends Component
         abort_unless(Auth::user()->canAccessRecruitment(), 403);
     }
 
-    public function openCreate(): void
+    public function openCreate(?int $appId = null): void
     {
         $this->resetForm();
+        if ($appId) {
+            $this->application_id = $appId;
+        }
         $this->showModal = true;
     }
 
@@ -83,14 +86,15 @@ class OfferingLetterManagement extends Component
 
         $this->showModal = false;
         $this->resetForm();
-        $this->dispatch('notify', message: __('Offering letter saved successfully.'), type: 'success');
+        $this->dispatch('notify', ['message' => __('Offering letter saved successfully.'), 'type' => 'success']);
     }
 
     public function render(): \Illuminate\View\View
     {
         return view('livewire.offering-letter-management', [
-            'offerings' => OfferingLetter::with('application.candidate', 'application.job')
-                ->latest('offer_date')
+            'applications_paginated' => Application::with(['candidate', 'job', 'offeringLetter'])
+                ->whereIn('recruitment_stage', [RecruitmentStage::OFFERING, RecruitmentStage::PSYCHOTEST])
+                ->latest('updated_at')
                 ->paginate(10),
             'applications' => Application::with(['candidate', 'job'])
                 ->whereIn('recruitment_stage', [RecruitmentStage::OFFERING, RecruitmentStage::PSYCHOTEST])

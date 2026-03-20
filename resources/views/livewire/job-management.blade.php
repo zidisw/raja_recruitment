@@ -80,7 +80,7 @@
                 </thead>
                 <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
                     @foreach ($jobs as $job)
-                        <tr wire:key="{{ $job->id }}" class="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
+                        <tr wire:key="{{ $job->id }}" class="cursor-pointer">
                             <td class="px-6 py-4">
                                 <p class="font-semibold text-zinc-900 dark:text-white">{{ $job->title }}</p>
                                 @if ($job->closed_at)

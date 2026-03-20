@@ -250,6 +250,7 @@ class ProfileSetup extends Component
             ]);
         }
 
+        session()->flash('success', 'Profile setup completed successfully!');
         $this->redirect(route('candidate.portal'));
     }
 

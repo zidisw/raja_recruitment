@@ -45,7 +45,7 @@ class Profile extends Component
 
         $user->save();
 
-        $this->dispatch('profile-updated', name: $user->name);
+        $this->dispatch('profile-updated', ['name' => $user->name]);
     }
 
     /**
@@ -63,7 +63,7 @@ class Profile extends Component
 
         $user->sendEmailVerificationNotification();
 
-        Session::flash('status', 'verification-link-sent');
+        $this->dispatch('notify', ['message' => __('Verification link sent successfully.'), 'type' => 'success']);
     }
 
     #[Computed]

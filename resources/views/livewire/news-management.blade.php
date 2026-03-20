@@ -19,7 +19,7 @@
 
     @if ($articles->isEmpty())
         <div
-            class="flex flex-col items-center justify-center p-16 rounded-2xl border border-dashed border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/50 transition-colors duration-300">
+            class="flex flex-col items-center justify-center p-16 rounded-2xl border border-dashed border-zinc-200 dark:border-zinc-700 bg-zinc-50 dark:bg-zinc-900/50">
             <flux:icon.newspaper class="w-16 h-16 text-zinc-300 dark:text-zinc-600 mb-6" />
             <flux:heading size="lg" class="mb-2">{{ __('No Articles Found') }}</flux:heading>
             <flux:text class="text-center max-w-md">
@@ -41,7 +41,7 @@
                 </thead>
                 <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
                     @foreach ($articles as $article)
-                        <tr wire:key="{{ $article->id }}" class="hover:bg-zinc-50 dark:hover:bg-zinc-800/50 transition-colors">
+                        <tr wire:key="{{ $article->id }}" class="cursor-pointer">
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-3">
                                     @if ($article->featuredImage)
@@ -167,7 +167,7 @@
                                 class="relative w-32 h-24 rounded-xl overflow-hidden shrink-0 bg-zinc-100 dark:bg-zinc-800">
                                 <img src="{{ $featuredImage->temporaryUrl() }}" class="w-full h-full object-cover">
                                 <button wire:click="$set('featuredImage', null)" type="button"
-                                    class="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600 transition-colors">
+                                    class="absolute top-1 right-1 bg-red-500 text-white rounded-full p-0.5 hover:bg-red-600">
                                     <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
                                             d="M6 18L18 6M6 6l12 12" />
@@ -196,7 +196,7 @@
                                     file:text-sm file:font-semibold file:bg-zinc-100 file:text-zinc-700
                                     dark:file:bg-zinc-800 dark:file:text-zinc-300
                                     hover:file:bg-zinc-200 dark:hover:file:bg-zinc-700 file:cursor-pointer
-                                    focus:outline-none transition-colors">
+                                    focus:outline-none">
                             <p class="text-xs text-zinc-400 mt-1.5">JPG, PNG or WebP. Max 5MB.</p>
                             <div wire:loading wire:target="featuredImage"
                                 class="mt-2 text-xs text-zinc-400 flex items-center gap-2">
@@ -256,7 +256,7 @@
                             file:text-sm file:font-semibold file:bg-zinc-100 file:text-zinc-700
                             dark:file:bg-zinc-800 dark:file:text-zinc-300
                             hover:file:bg-zinc-200 dark:hover:file:bg-zinc-700 file:cursor-pointer
-                            focus:outline-none transition-colors">
+                            focus:outline-none">
                     <p class="text-xs text-zinc-400">Select multiple photos for the gallery. Max 5MB each.</p>
                     <div wire:loading wire:target="galleryImages" class="text-xs text-zinc-400 flex items-center gap-2">
                         <svg class="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">

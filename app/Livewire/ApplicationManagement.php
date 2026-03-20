@@ -207,7 +207,7 @@ class ApplicationManagement extends Component
                 foreach ($applications as $app) {
                     try {
                         Mail::to($app->candidate->email)
-                            ->send(new BulkCustomEmail(
+                            ->queue(new BulkCustomEmail(
                                 subject: $this->bulkEmailSubject,
                                 body: $this->bulkEmailBody,
                                 candidateName: $app->candidate->name,
@@ -221,7 +221,7 @@ class ApplicationManagement extends Component
 
         $this->showBulkEmailModal = false;
         $this->bulkEmailStep = 1;
-        $this->dispatch('notify', message: __('Bulk email sent successfully.'), type: 'success');
+        $this->dispatch('notify', ['message' => __('Bulk email sent successfully.'), 'type' => 'success']);
     }
 
     // ─── Bulk Reject ──────────────────────────────────────────────────────────
@@ -325,7 +325,7 @@ class ApplicationManagement extends Component
         $this->bulkRejectStep = 1;
         $this->expandedRow = null;
 
-        $this->dispatch('notify', message: __('Bulk reject completed. :count candidates marked as Not Selected.', ['count' => count($ids)]), type: 'success');
+        $this->dispatch('notify', ['message' => __('Bulk reject completed. :count candidates marked as Not Selected.', ['count' => count($ids)]), 'type' => 'success']);
     }
 
     public function render(): \Illuminate\View\View
@@ -398,16 +398,18 @@ class ApplicationManagement extends Component
         $bulkRejectSafeCount = 0;
         if ($this->showBulkRejectModal && $this->bulkRejectStage !== '' && $this->bulkRejectStep >= 2) {
             $belowStages = $this->stagesBelowThreshold($this->bulkRejectStage);
-            $bulkRejectCount = Application::where('job_id', $this->job->id)
-                ->whereIn('recruitment_stage', $belowStages)
-                ->whereNotIn('recruitment_stage', [RecruitmentStage::REJECTED->value, RecruitmentStage::HIRED->value])
-                ->count();
             $bulkRejectPreview = Application::with('candidate.profile')
                 ->where('job_id', $this->job->id)
                 ->whereIn('recruitment_stage', $belowStages)
                 ->whereNotIn('recruitment_stage', [RecruitmentStage::REJECTED->value, RecruitmentStage::HIRED->value])
                 ->limit(50)
                 ->get();
+            $bulkRejectCount = $bulkRejectPreview->count() < 50
+                ? $bulkRejectPreview->count()
+                : Application::where('job_id', $this->job->id)
+                    ->whereIn('recruitment_stage', $belowStages)
+                    ->whereNotIn('recruitment_stage', [RecruitmentStage::REJECTED->value, RecruitmentStage::HIRED->value])
+                    ->count();
 
             $pipeline = RecruitmentStage::pipelineStages();
             $thresholdStage = RecruitmentStage::from($this->bulkRejectStage);

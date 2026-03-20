@@ -74,7 +74,7 @@ class SmtpSettings extends Component
         Config::set('mail.from.address', $validated['from_address']);
         Config::set('mail.from.name', $validated['from_name']);
 
-        $this->dispatch('notify', message: 'SMTP settings saved successfully.', type: 'success');
+        $this->dispatch('notify', ['message' => 'SMTP settings saved successfully.', 'type' => 'success']);
     }
 
     public function sendTestEmail(): void

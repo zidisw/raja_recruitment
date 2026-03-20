@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace App\Notifications;
 
 use App\Models\Application;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class ApplicationReceived extends Notification
+class ApplicationReceived extends Notification implements ShouldQueue
 {
+    use Queueable;
 
     public function __construct(public readonly Application $application) {}
 

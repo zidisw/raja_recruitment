@@ -29,10 +29,22 @@ class PsychotestManagement extends Component
         abort_unless(Auth::user()->canAccessRecruitment(), 403);
     }
 
-    public function openCreate(): void
+    public function openCreate(?int $appId = null): void
     {
         $this->reset(['application_id', 'test_date', 'notes']);
+        if ($appId) {
+            $this->application_id = $appId;
+        }
         $this->result = 'passed';
+        $this->showModal = true;
+    }
+
+    public function openEdit(Psychotest $psychotest): void
+    {
+        $this->application_id = $psychotest->application_id;
+        $this->test_date = $psychotest->test_date?->format('Y-m-d') ?? '';
+        $this->result = $psychotest->result;
+        $this->notes = (string) $psychotest->notes;
         $this->showModal = true;
     }
 
@@ -64,14 +76,15 @@ class PsychotestManagement extends Component
         }
 
         $this->showModal = false;
-        $this->dispatch('notify', message: __('Psychotest result saved.'), type: 'success');
+        $this->dispatch('notify', ['message' => __('Psychotest result saved.'), 'type' => 'success']);
     }
 
     public function render(): \Illuminate\View\View
     {
         return view('livewire.psychotest-management', [
-            'psychotests' => Psychotest::with('application.candidate', 'application.job')
-                ->latest('test_date')
+            'applications_paginated' => Application::with(['candidate', 'job', 'psychotest'])
+                ->whereIn('recruitment_stage', [RecruitmentStage::PSYCHOTEST, RecruitmentStage::MCU])
+                ->latest('updated_at')
                 ->paginate(10),
             'applications' => Application::with(['candidate', 'job'])
                 ->whereIn('recruitment_stage', [RecruitmentStage::PSYCHOTEST, RecruitmentStage::MCU])

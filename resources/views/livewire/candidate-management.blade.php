@@ -25,9 +25,10 @@
                 {{ $tab === 'administrasi' ? __('Administrasi') : ($tab === 'on-progress' ? __('On Progress') : __('Riwayat')) }}
             </flux:badge>
         </div>
-        <div class="flex items-center gap-3">
-            <flux:input wire:model.live.debounce.300ms="search" placeholder="{{ __('Search candidates...') }}"
-                class="flex-1" icon="magnifying-glass" />
+        <div class="flex flex-col gap-3 md:flex-row md:items-center">
+            <flux:input wire:model.live.debounce.300ms="search" icon="magnifying-glass"
+                placeholder="{{ __('Search candidates...') }}" class="w-full md:w-64" />
+            <flux:button wire:click="exportCsv" variant="ghost" icon="document-arrow-down" class="max-md:w-full">{{ __('Export CSV') }}</flux:button>
             <div class="w-24"><x-custom-select wire:model.live="perPage" :options="['10' => '10', '30' => '30', '50' => '50']" /></div>
         </div>
         <div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
@@ -47,10 +48,23 @@
         </div>
     </div>
 
+    @if(count($selectedIds) > 0)
+        <div class="mb-4 flex flex-wrap items-center gap-3 bg-blue-50/50 dark:bg-blue-900/20 p-3 rounded-xl border border-blue-100 dark:border-blue-800/30">
+            <span class="text-sm font-medium text-blue-700 dark:text-blue-400">{{ count($selectedIds) }} {{ __('kandidat terpilih') }}</span>
+            @if ($tab === 'administrasi')
+                <flux:button size="sm" variant="primary" wire:click="bulkPassAdministrative">{{ __('Loloskan Terpilih') }}</flux:button>
+                <flux:button size="sm" variant="danger" wire:click="bulkReject" class="btn-danger-glow">{{ __('Tolak') }}</flux:button>
+            @endif
+        </div>
+    @endif
+
     <div class="glass-card-static overflow-hidden p-0!">
         <table class="w-full text-sm modern-table">
             <thead>
                 <tr>
+                    <th class="w-12 px-4 py-3 text-center">
+                        <flux:checkbox wire:model.live="selectAll" />
+                    </th>
                     <th class="w-16"></th>
                     <th>{{ __('Candidate Name') }}</th>
                     <th>{{ __('Applied Position') }}</th>
@@ -71,7 +85,10 @@
                         $isExpanded = $expandedRow === $application->id;
                         $isTerminal = $application->recruitment_stage->isTerminal();
                     @endphp
-                    <tr class="transition-colors duration-200 hover:bg-zinc-50 dark:hover:bg-zinc-800/50">
+                    <tr class="cursor-pointer">
+                        <td class="w-12 px-4 py-3 text-center" @click.stop>
+                            <flux:checkbox wire:model.live="selectedIds" value="{{ $application->id }}" />
+                        </td>
                         <td class="px-6 py-4">
                             <button wire:click="toggleExpand({{ $application->id }})" type="button"
                                 class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-zinc-400 transition-all duration-200 hover:bg-zinc-100 hover:text-zinc-600 active:scale-95 dark:hover:bg-zinc-700/70 dark:hover:text-zinc-300"
@@ -108,11 +125,44 @@
                                         {{ $application->recruitment_stage->label() }}
                                     </flux:badge>
                                 @else
-                                    <div class="w-44 inline-block">
-                                        <x-custom-select
-                                            wire:change="updateProgressStage({{ $application->id }}, $event.target.value)"
-                                            :options="collect($allStages)->reject(fn($s) => $s->isTerminal())->mapWithKeys(fn($s) => [$s->value => $s->label()])->toArray()" :placeholder="$application->recruitment_stage->label()" />
-                                    </div>
+                                    @php
+                                        $stageConfig = [
+                                            'APPLIED'        => ['label' => 'Applied', 'badge' => 'text-zinc-600 bg-zinc-50 border-zinc-200 dark:bg-zinc-800/50 dark:border-zinc-700 dark:text-zinc-400', 'dot' => 'bg-zinc-400'],
+                                            'HR_INTERVIEW'   => ['label' => 'HR Interview', 'badge' => 'text-amber-600 bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:border-amber-800/50 dark:text-amber-400', 'dot' => 'bg-amber-500'],
+                                            'USER_INTERVIEW' => ['label' => 'User Interview', 'badge' => 'text-orange-600 bg-orange-50 border-orange-200 dark:bg-orange-900/20 dark:border-orange-800/50 dark:text-orange-400', 'dot' => 'bg-orange-500'],
+                                            'OFFERING'       => ['label' => 'Offering', 'badge' => 'text-cyan-600 bg-cyan-50 border-cyan-200 dark:bg-cyan-900/20 dark:border-cyan-800/50 dark:text-cyan-400', 'dot' => 'bg-cyan-500'],
+                                            'PSYCHOTEST'     => ['label' => 'Psychotest', 'badge' => 'text-purple-600 bg-purple-50 border-purple-200 dark:bg-purple-900/20 dark:border-purple-800/50 dark:text-purple-400', 'dot' => 'bg-purple-500'],
+                                            'MCU'            => ['label' => 'MCU', 'badge' => 'text-indigo-600 bg-indigo-50 border-indigo-200 dark:bg-indigo-900/20 dark:border-indigo-800/50 dark:text-indigo-400', 'dot' => 'bg-indigo-500'],
+                                            'ONBOARDING'     => ['label' => 'Onboarding', 'badge' => 'text-lime-600 bg-lime-50 border-lime-200 dark:bg-lime-900/20 dark:border-lime-800/50 dark:text-lime-400', 'dot' => 'bg-lime-500'],
+                                            'HIRED'          => ['label' => 'Hired', 'badge' => 'text-emerald-600 bg-emerald-50 border-emerald-200 dark:bg-emerald-900/20 dark:border-emerald-800/50 dark:text-emerald-400', 'dot' => 'bg-emerald-500'],
+                                        ];
+                                        $currentStage = $stageConfig[$application->recruitment_stage->value] ?? $stageConfig['APPLIED'];
+                                    @endphp
+                                    <x-custom-dropdown align="right" width="w-48">
+                                        <x-slot name="trigger">
+                                            <div class="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg border cursor-pointer {{ $currentStage['badge'] }}">
+                                                <span class="size-2 rounded-full {{ $currentStage['dot'] }}"></span>
+                                                {{ $currentStage['label'] }}
+                                                <flux:icon.chevron-down class="size-3 opacity-60" />
+                                            </div>
+                                        </x-slot>
+
+                                        <x-slot name="content">
+                                            <div class="py-1">
+                                                @foreach($stageConfig as $key => $cfg)
+                                                    <button type="button"
+                                                        wire:click="updateProgressStage({{ $application->id }}, '{{ $key }}')"
+                                                        class="w-full flex items-center gap-2.5 px-4 py-2 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 {{ $application->recruitment_stage->value === $key ? 'font-semibold text-brand-500' : 'text-zinc-700 dark:text-zinc-300' }}">
+                                                        <span class="size-2 rounded-full {{ $cfg['dot'] }}"></span>
+                                                        {{ $cfg['label'] }}
+                                                        @if($application->recruitment_stage->value === $key)
+                                                            <flux:icon.check class="size-4 ml-auto" />
+                                                        @endif
+                                                    </button>
+                                                @endforeach
+                                            </div>
+                                        </x-slot>
+                                    </x-custom-dropdown>
                                 @endif
                             @endif
                         </td>
@@ -122,8 +172,8 @@
                                 @if ($tab === 'administrasi')
                                     <flux:button size="sm" variant="ghost"
                                         @click="$dispatch('confirm-action', {
-                                            title: 'Loloskan Administrasi?',
-                                            description: 'Kandidat akan maju ke tahap HR Interview.',
+                                            title: 'Loloskan Kandidat?',
+                                            description: 'Kandidat akan masuk ke tahap On Progress (Interview HR).',
                                             variant: 'info',
                                             method: 'passAdministrative',
                                             args: [{{ $application->id }}],
@@ -154,7 +204,7 @@
                     @if ($isExpanded)
                         <tr wire:key="candidate-{{ $application->id }}-expanded"
                             wire:transition.opacity.duration.200ms class="bg-zinc-50/50 dark:bg-zinc-800/30">
-                            <td colspan="6" class="px-6 py-4">
+                            <td colspan="7" class="px-6 py-4">
                                 <div x-data="{ show: false }" x-init="requestAnimationFrame(() => show = true)" x-show="show"
                                     x-transition:enter="transition ease-out duration-220"
                                     x-transition:enter-start="opacity-0 -translate-y-1"
@@ -240,7 +290,7 @@
                     @endif
                 @empty
                     <tr>
-                        <td colspan="6" class="px-6 py-8 text-center text-zinc-400">{{ __('No candidates found.') }}</td>
+                        <td colspan="7" class="px-6 py-8 text-center text-zinc-400">{{ __('No candidates found.') }}</td>
                     </tr>
                 @endforelse
             </tbody>

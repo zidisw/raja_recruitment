@@ -7,7 +7,6 @@ namespace App\Enums;
 enum RecruitmentStage: string
 {
     case APPLIED = 'APPLIED';
-    case ADMIN_REVIEW = 'ADMIN_REVIEW';
     case HR_INTERVIEW = 'HR_INTERVIEW';
     case USER_INTERVIEW = 'USER_INTERVIEW';
     case OFFERING = 'OFFERING';
@@ -21,7 +20,6 @@ enum RecruitmentStage: string
     {
         return match ($this) {
             self::APPLIED => 'Applied',
-            self::ADMIN_REVIEW => 'Administrative Screening',
             self::HR_INTERVIEW => 'HR Interview',
             self::USER_INTERVIEW => 'User Interview',
             self::OFFERING => 'Offering',
@@ -39,8 +37,7 @@ enum RecruitmentStage: string
     public function next(): ?self
     {
         return match ($this) {
-            self::APPLIED => self::ADMIN_REVIEW,
-            self::ADMIN_REVIEW => self::HR_INTERVIEW,
+            self::APPLIED => self::HR_INTERVIEW,
             self::HR_INTERVIEW => self::USER_INTERVIEW,
             self::USER_INTERVIEW => self::OFFERING,
             self::OFFERING => self::PSYCHOTEST,
@@ -66,7 +63,6 @@ enum RecruitmentStage: string
     {
         return match ($this) {
             self::APPLIED => 0,
-            self::ADMIN_REVIEW => 1,
             self::HR_INTERVIEW => 2,
             self::USER_INTERVIEW => 3,
             self::OFFERING => 5,
@@ -85,7 +81,7 @@ enum RecruitmentStage: string
     {
         return match ($value) {
             0 => self::APPLIED,
-            1 => self::ADMIN_REVIEW,
+            1 => self::HR_INTERVIEW,
             2 => self::HR_INTERVIEW,
             3 => self::USER_INTERVIEW,
             4 => self::PSYCHOTEST,
@@ -104,7 +100,6 @@ enum RecruitmentStage: string
     {
         return [
             self::APPLIED,
-            self::ADMIN_REVIEW,
             self::HR_INTERVIEW,
             self::USER_INTERVIEW,
             self::OFFERING,

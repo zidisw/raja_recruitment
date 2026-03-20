@@ -48,10 +48,10 @@ class DepartmentManagement extends Component
 
         if ($this->editingId) {
             Department::findOrFail($this->editingId)->update($validated);
-            $this->dispatch('notify', message: 'Department updated successfully.', type: 'success');
+            $this->dispatch('notify', ['message' => 'Department updated successfully.', 'type' => 'success']);
         } else {
             Department::create($validated);
-            $this->dispatch('notify', message: 'Department created successfully.', type: 'success');
+            $this->dispatch('notify', ['message' => 'Department created successfully.', 'type' => 'success']);
         }
 
         $this->showModal = false;
@@ -61,7 +61,7 @@ class DepartmentManagement extends Component
     public function delete(Department $department): void
     {
         $department->delete();
-        $this->dispatch('notify', message: 'Department deleted successfully.', type: 'success');
+        $this->dispatch('notify', ['message' => 'Department deleted successfully.', 'type' => 'success']);
     }
 
     public function render()

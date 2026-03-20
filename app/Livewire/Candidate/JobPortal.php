@@ -12,6 +12,7 @@ use App\Models\Job;
 use App\Models\Site;
 use App\Notifications\ApplicationReceived;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -76,7 +77,7 @@ class JobPortal extends Component
             ->exists();
 
         if ($alreadyApplied) {
-            $this->dispatch('notify', message: __('You have already applied for this position.'), type: 'error');
+            $this->dispatch('notify', ['message' => __('You have already applied for this position.'), 'type' => 'error']);
 
             return;
         }
@@ -86,7 +87,7 @@ class JobPortal extends Component
             ->count();
 
         if ($activeApplicationsCount >= 2) {
-            $this->dispatch('notify', message: __('You can only have 2 active applications at a time.'), type: 'error');
+            $this->dispatch('notify', ['message' => __('You can only have 2 active applications at a time.'), 'type' => 'error']);
 
             return;
         }
@@ -103,7 +104,7 @@ class JobPortal extends Component
             // Notification failure should not block the application
         }
 
-        $this->dispatch('notify', message: __('Application submitted successfully!'), type: 'success');
+        $this->dispatch('notify', ['message' => __('Application submitted successfully!'), 'type' => 'success']);
     }
 
     public function openTracking(int $jobId): void
@@ -156,8 +157,8 @@ class JobPortal extends Component
         return view('livewire.candidate.job-portal', [
             'jobs' => $query->paginate(10),
             'appliedJobIds' => $appliedJobIds,
-            'departments' => Department::orderBy('name')->get(),
-            'sites' => Site::orderBy('name')->get(),
+            'departments' => Cache::remember('ref.departments', 300, fn () => Department::orderBy('name')->get()),
+            'sites' => Cache::remember('ref.sites', 300, fn () => Site::orderBy('name')->get()),
             'trackingApplication' => $trackingApplication,
         ]);
     }

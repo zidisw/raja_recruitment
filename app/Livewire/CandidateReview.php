@@ -70,7 +70,7 @@ class CandidateReview extends Component
         $this->notes = '';
         $this->application->refresh()->load(['candidate.profile', 'candidate.education', 'candidate.experiences', 'candidate.organizations', 'job', 'stageLogs.decidedBy']);
 
-        $this->dispatch('notify', message: __('Candidate advanced to') . ' ' . $this->application->recruitment_stage->label() . '.', type: 'success');
+        $this->dispatch('notify', ['message' => __('Candidate advanced to') . ' ' . $this->application->recruitment_stage->label() . '.', 'type' => 'success']);
     }
 
     public function reject(): void
@@ -97,7 +97,7 @@ class CandidateReview extends Component
         $this->notes = '';
         $this->application->refresh()->load(['candidate.profile', 'candidate.education', 'candidate.experiences', 'candidate.organizations', 'job', 'stageLogs.decidedBy']);
 
-        $this->dispatch('notify', message: __('Candidate marked as Not Selected.'), type: 'success');
+        $this->dispatch('notify', ['message' => __('Candidate marked as Not Selected.'), 'type' => 'success']);
     }
 
     public function render(): \Illuminate\View\View

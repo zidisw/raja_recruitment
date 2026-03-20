@@ -29,10 +29,22 @@ class McuManagement extends Component
         abort_unless(Auth::user()->canAccessRecruitment(), 403);
     }
 
-    public function openCreate(): void
+    public function openCreate(?int $appId = null): void
     {
         $this->reset(['application_id', 'mcu_date', 'notes']);
+        if ($appId) {
+            $this->application_id = $appId;
+        }
         $this->result = 'fit';
+        $this->showModal = true;
+    }
+
+    public function openEdit(Mcu $mcu): void
+    {
+        $this->application_id = $mcu->application_id;
+        $this->mcu_date = $mcu->mcu_date?->format('Y-m-d') ?? '';
+        $this->result = $mcu->result;
+        $this->notes = (string) $mcu->notes;
         $this->showModal = true;
     }
 
@@ -61,13 +73,16 @@ class McuManagement extends Component
         }
 
         $this->showModal = false;
-        $this->dispatch('notify', message: __('MCU result saved.'), type: 'success');
+        $this->dispatch('notify', ['message' => __('MCU result saved.'), 'type' => 'success']);
     }
 
     public function render(): \Illuminate\View\View
     {
         return view('livewire.mcu-management', [
-            'mcus' => Mcu::with('application.candidate', 'application.job')->latest('mcu_date')->paginate(10),
+            'applications_paginated' => Application::with(['candidate', 'job', 'mcu'])
+                ->whereIn('recruitment_stage', [RecruitmentStage::MCU, RecruitmentStage::ONBOARDING])
+                ->latest('updated_at')
+                ->paginate(10),
             'applications' => Application::with(['candidate', 'job'])
                 ->whereIn('recruitment_stage', [RecruitmentStage::MCU, RecruitmentStage::ONBOARDING])
                 ->orWhereHas('mcu')

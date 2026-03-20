@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire\Public;
+namespace App\Livewire\Frontend;
 
 use App\Models\Article;
 use App\Models\Job;

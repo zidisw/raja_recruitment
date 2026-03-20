@@ -297,7 +297,7 @@
                                 })"
                                 variant="primary" icon="check"
                                 class="w-full bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600">
-                                {{ __('Loloskan ke') }}: {{ $application->nextStage()->label() }}
+                                {{ __('Loloskan') }}
                             </flux:button>
                         @endif
                         <flux:button
