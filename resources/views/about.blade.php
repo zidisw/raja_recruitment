@@ -271,6 +271,54 @@
         </div>
     </section>
 
+    {{-- Our Clients --}}
+    <style>
+        @keyframes marquee {
+            from { transform: translateX(0); }
+            to   { transform: translateX(-50%); }
+        }
+        .animate-marquee {
+            animation: marquee 35s linear infinite;
+        }
+        .animate-marquee:hover {
+            animation-play-state: paused;
+        }
+    </style>
+    <section class="py-16 bg-white dark:bg-slate-900 border-b border-slate-100 dark:border-slate-800 transition-colors duration-300 overflow-hidden">
+        <div class="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8 mb-10 text-center">
+            <div class="flex items-center justify-center gap-3 mb-3">
+                <div class="w-8 h-0.5 bg-brand-500"></div>
+                <h2 class="text-sm font-bold tracking-widest uppercase text-brand-500">Trusted Partners</h2>
+                <div class="w-8 h-0.5 bg-brand-500"></div>
+            </div>
+            <h3 class="text-3xl font-extrabold text-slate-900 dark:text-white">Our Clients</h3>
+        </div>
+        <div class="overflow-hidden">
+            <div class="flex gap-6 animate-marquee w-max">
+                @php
+                    $clientImages = [
+                        'WhatsApp Image 2026-03-09 at 15.42.09 (1).jpeg',
+                        'WhatsApp Image 2026-03-09 at 15.42.09.jpeg',
+                        'WhatsApp Image 2026-03-09 at 15.42.10.jpeg',
+                        'WhatsApp Image 2026-03-09 at 15.42.11 (1).jpeg',
+                        'WhatsApp Image 2026-03-09 at 15.42.11.jpeg',
+                        'WhatsApp Image 2026-03-09 at 15.42.12 (1).jpeg',
+                        'WhatsApp Image 2026-03-09 at 15.42.12.jpeg',
+                        'WhatsApp Image 2026-03-09 at 15.42.13 (1).jpeg',
+                    ];
+                    $doubleLoop = array_merge($clientImages, $clientImages);
+                @endphp
+                @foreach ($doubleLoop as $clientImg)
+                    <div class="shrink-0 h-24 w-48 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm p-3 flex items-center justify-center">
+                        <img src="{{ asset('rjs-photos/our-client/' . $clientImg) }}"
+                            alt="Client"
+                            class="max-h-full max-w-full object-contain">
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    </section>
+
     {{-- Services --}}
     <section class="py-24 bg-white dark:bg-slate-900 transition-colors duration-300">
         <div class="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
