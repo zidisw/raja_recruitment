@@ -172,10 +172,7 @@ class JobPortal extends Component
         }
 
         if ($this->search) {
-            $query->where(function ($q): void {
-                $q->where('title', 'like', "%{$this->search}%")
-                    ->orWhere('description', 'like', "%{$this->search}%");
-            });
+            $query->whereAny(['title', 'description'], 'like', "%{$this->search}%");
         }
 
         if ($this->department_filter) {

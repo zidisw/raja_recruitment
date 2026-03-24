@@ -60,10 +60,10 @@
                                         </a>
                                     @endif
 
-                                    <flux:button size="sm" variant="ghost" wire:click="openEdit({{ $app->offeringLetter->id }})"
+                                    <flux:button size="sm" variant="ghost" wire:click="openEdit({{ $app->offeringLetter->id }})" wire:target="openEdit({{ $app->offeringLetter->id }})"
                                         icon="pencil" title="{{ __('Edit Offering') }}" />
                                 @else
-                                    <flux:button size="sm" variant="primary" wire:click="openCreate({{ $app->id }})">
+                                    <flux:button size="sm" variant="primary" wire:click="openCreate({{ $app->id }})" wire:target="openCreate({{ $app->id }})">
                                         {{ __('Create Offer') }}
                                     </flux:button>
                                 @endif

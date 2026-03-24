@@ -151,11 +151,7 @@ class PtkManagement extends Component
         $query = Ptk::with('createdBy')->latest();
 
         if ($this->search !== '') {
-            $query->where(function ($q): void {
-                $q->where('nomor_ptk', 'like', '%' . $this->search . '%')
-                    ->orWhere('posisi', 'like', '%' . $this->search . '%')
-                    ->orWhere('department', 'like', '%' . $this->search . '%');
-            });
+            $query->whereAny(['nomor_ptk', 'posisi', 'department'], 'like', '%' . $this->search . '%');
         }
 
         return view('livewire.ptk-management', [

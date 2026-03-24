@@ -63,7 +63,10 @@ class Job extends Model
 
     public function images(): HasMany
     {
-        return $this->hasMany(JobImage::class)->orderBy('sort_order');
+        $relation = $this->hasMany(JobImage::class);
+        $relation->orderBy('sort_order');
+
+        return $relation;
     }
 
     public function featuredImage(): HasOne
@@ -73,7 +76,7 @@ class Job extends Model
 
     public function scopeActive(Builder $query): Builder
     {
-        return $query->where('is_active', true)->where(function ($q) {
+        return $query->where('is_active', true)->whereNested(function (Builder $q) {
             $q->whereNull('closed_at')->orWhere('closed_at', '>=', now());
         });
     }

@@ -13,7 +13,33 @@
             <flux:sidebar.collapse class="lg:hidden" />
         </flux:sidebar.header>
 
-        <flux:sidebar.nav>
+        <div class="flex-1 min-h-0 relative flex flex-col w-full" 
+             x-data="{ 
+                 showTopShadow: false, 
+                 showBottomShadow: false,
+                 checkScroll() {
+                     const el = this.$refs.scrollableNav;
+                     if (!el) return;
+                     this.showTopShadow = el.scrollTop > 5;
+                     this.showBottomShadow = Math.ceil(el.scrollTop + el.clientHeight) < el.scrollHeight - 5;
+                 }
+             }" 
+             x-init="
+                setTimeout(() => checkScroll(), 100);
+                const observer = new MutationObserver(() => checkScroll());
+                observer.observe($el, { childList: true, subtree: true, attributes: true });
+                window.addEventListener('resize', () => checkScroll());
+             ">
+             
+            <!-- Top Shadow Indicator -->
+            <div x-show="showTopShadow" 
+                 x-transition.opacity.duration.300ms
+                 class="absolute top-0 inset-x-0 h-6 bg-linear-to-b from-zinc-50 dark:from-zinc-900 to-transparent z-10 pointer-events-none"></div>
+
+            <div class="flex-1 overflow-y-auto scroll-smooth [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]" 
+                 x-ref="scrollableNav" 
+                 @scroll.passive="checkScroll()">
+                <flux:sidebar.nav class="pb-4">
             @php $role = auth()->user()->role; @endphp
 
             <flux:sidebar.group :heading="__('Platform')" class="grid">
@@ -191,11 +217,16 @@
                     </flux:sidebar.item>
                 </flux:sidebar.group>
             @endif
-        </flux:sidebar.nav>
+                </flux:sidebar.nav>
+            </div>
+            
+            <!-- Bottom Shadow Indicator -->
+            <div x-show="showBottomShadow"
+                 x-transition.opacity.duration.300ms 
+                 class="absolute bottom-0 inset-x-0 h-6 bg-linear-to-t from-zinc-50 dark:from-zinc-900 to-transparent z-10 pointer-events-none"></div>
+        </div>
 
-        <flux:spacer />
-
-        <div class="hidden lg:flex flex-col gap-3 sidebar-footer overflow-visible max-w-full">
+        <div class="hidden lg:flex flex-col gap-3 sidebar-footer overflow-visible max-w-full mt-auto pt-4 border-t border-zinc-200/50 dark:border-white/10 shrink-0">
             {{-- Theme Toggle --}}
             <button x-data x-on:click="
                     const nextAppearance = $flux.dark ? 'light' : 'dark';

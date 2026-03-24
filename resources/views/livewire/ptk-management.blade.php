@@ -110,7 +110,7 @@
                         </td>
                         <td class="px-6 py-4 align-middle text-center">
                             <div class="flex justify-center gap-2">
-                                <flux:button wire:click="openEdit({{ $item->id }})" size="sm" variant="ghost" icon="pencil"
+                                <flux:button wire:click="openEdit({{ $item->id }})" wire:target="openEdit({{ $item->id }})" size="sm" variant="ghost" icon="pencil"
                                     class="app-action-btn" />
                                 <flux:button
                                     @click="$dispatch('confirm-action', {

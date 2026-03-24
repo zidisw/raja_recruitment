@@ -114,12 +114,12 @@
                                 @if (in_array($job->id, $appliedJobIds))
                                     <div class="flex items-center gap-2">
                                         <flux:badge color="green" icon="check" size="sm">{{ __('Applied') }}</flux:badge>
-                                        <flux:button wire:click="openTracking({{ $job->id }})" size="xs" variant="ghost" icon="chart-bar">
+                                        <flux:button wire:click="openTracking({{ $job->id }})" wire:target="openTracking({{ $job->id }})" size="xs" variant="ghost" icon="chart-bar">
                                             {{ __('Track') }}
                                         </flux:button>
                                     </div>
                                 @else
-                                    <flux:button wire:click="apply({{ $job->id }})" variant="primary" size="sm"
+                                    <flux:button wire:click="apply({{ $job->id }})" wire:target="apply({{ $job->id }})" variant="primary" size="sm"
                                         wire:loading.attr="disabled" wire:target="apply({{ $job->id }})"
                                         class="bg-linear-to-r from-brand-500 to-brand-600 hover:from-brand-600 hover:to-brand-700">
                                         <span wire:loading.remove wire:target="apply({{ $job->id }})">{{ __('Apply Now') }}</span>

@@ -46,7 +46,7 @@ class Dashboard extends Component
                     $stats = [
                         'total_applications' => Application::count(),
                         'active_jobs' => Job::where('is_active', true)->count(),
-                        'total_candidates' => User::whereIn('role', [UserRole::User, UserRole::Candidate])->count(),
+                        'total_candidates' => User::query()->whereIn('role', [UserRole::User, UserRole::Candidate])->count(),
                         'hired_this_month' => Application::where('recruitment_stage', RecruitmentStage::HIRED)
                             ->whereMonth('stage_updated_at', now()->month)
                             ->count(),

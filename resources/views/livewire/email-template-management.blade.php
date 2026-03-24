@@ -46,13 +46,13 @@
                             @if ($staffTemplate)
                                 <div class="flex flex-col items-center gap-1">
                                     <flux:badge color="green" size="sm">{{ __('Set') }}</flux:badge>
-                                    <flux:button wire:click="openEdit({{ $stage->value }}, 'staff')" size="sm" variant="ghost"
+                                    <flux:button wire:click="openEdit({{ $stage->value }}, 'staff')" wire:target="openEdit({{ $stage->value }}, 'staff')" size="sm" variant="ghost"
                                         icon="pencil">
                                         {{ __('Edit') }}
                                     </flux:button>
                                 </div>
                             @else
-                                <flux:button wire:click="openEdit({{ $stage->value }}, 'staff')" size="sm" variant="ghost"
+                                <flux:button wire:click="openEdit({{ $stage->value }}, 'staff')" wire:target="openEdit({{ $stage->value }}, 'staff')" size="sm" variant="ghost"
                                     icon="plus">
                                     {{ __('Create') }}
                                 </flux:button>
@@ -62,13 +62,13 @@
                             @if ($nonStaffTemplate)
                                 <div class="flex flex-col items-center gap-1">
                                     <flux:badge color="green" size="sm">{{ __('Set') }}</flux:badge>
-                                    <flux:button wire:click="openEdit({{ $stage->value }}, 'non_staff')" size="sm"
+                                    <flux:button wire:click="openEdit({{ $stage->value }}, 'non_staff')" wire:target="openEdit({{ $stage->value }}, 'non_staff')" size="sm"
                                         variant="ghost" icon="pencil">
                                         {{ __('Edit') }}
                                     </flux:button>
                                 </div>
                             @else
-                                <flux:button wire:click="openEdit({{ $stage->value }}, 'non_staff')" size="sm" variant="ghost"
+                                <flux:button wire:click="openEdit({{ $stage->value }}, 'non_staff')" wire:target="openEdit({{ $stage->value }}, 'non_staff')" size="sm" variant="ghost"
                                     icon="plus">
                                     {{ __('Create') }}
                                 </flux:button>

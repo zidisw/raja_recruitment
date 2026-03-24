@@ -45,10 +45,10 @@
                         <td class="px-6 py-4">{{ $app->mcu?->notes ?: '—' }}</td>
                         <td class="px-6 py-4 text-center">
                             @if($app->mcu)
-                                <flux:button size="sm" variant="ghost" wire:click="openEdit({{ $app->mcu->id }})"
+                                <flux:button size="sm" variant="ghost" wire:click="openEdit({{ $app->mcu->id }})" wire:target="openEdit({{ $app->mcu->id }})"
                                     icon="pencil" />
                             @else
-                                <flux:button size="sm" variant="ghost" wire:click="openCreate({{ $app->id }})"
+                                <flux:button size="sm" variant="ghost" wire:click="openCreate({{ $app->id }})" wire:target="openCreate({{ $app->id }})"
                                     icon="plus" />
                             @endif
                         </td>

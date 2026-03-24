@@ -311,7 +311,7 @@
                                     <div class="mb-3 flex items-center justify-between">
                                         <flux:heading size="sm">{{ __('Education') }} #{{ $i + 1 }}</flux:heading>
                                         @if (count($educations) > 1)
-                                            <flux:button type="button" wire:click="removeEducation({{ $i }})" size="sm" variant="ghost" icon="trash" class="text-red-500" />
+                                            <flux:button type="button" wire:click="removeEducation({{ $i }})" wire:target="removeEducation({{ $i }})" size="sm" variant="ghost" icon="trash" class="text-red-500" />
                                         @endif
                                     </div>
                                     <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -396,7 +396,7 @@
                                 <div wire:key="exp-{{ $i }}" class="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700">
                                     <div class="mb-3 flex items-center justify-between">
                                         <flux:heading size="sm">{{ __('Experience') }} #{{ $i + 1 }}</flux:heading>
-                                        <flux:button type="button" wire:click="removeExperience({{ $i }})" size="sm" variant="ghost" icon="trash" class="text-red-500" />
+                                        <flux:button type="button" wire:click="removeExperience({{ $i }})" wire:target="removeExperience({{ $i }})" size="sm" variant="ghost" icon="trash" class="text-red-500" />
                                     </div>
                                     <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                         <flux:field class="sm:col-span-2">
@@ -476,7 +476,7 @@
                                 <div wire:key="org-{{ $i }}" class="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700">
                                     <div class="mb-3 flex items-center justify-between">
                                         <flux:heading size="sm">{{ __('Organization') }} #{{ $i + 1 }}</flux:heading>
-                                        <flux:button type="button" wire:click="removeOrganization({{ $i }})" size="sm" variant="ghost" icon="trash" class="text-red-500" />
+                                        <flux:button type="button" wire:click="removeOrganization({{ $i }})" wire:target="removeOrganization({{ $i }})" size="sm" variant="ghost" icon="trash" class="text-red-500" />
                                     </div>
                                     <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                         <flux:field class="sm:col-span-2">

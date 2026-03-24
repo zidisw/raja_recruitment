@@ -38,7 +38,10 @@ class Article extends Model
 
     public function images(): HasMany
     {
-        return $this->hasMany(ArticleImage::class)->orderBy('sort_order');
+        $relation = $this->hasMany(ArticleImage::class);
+        $relation->orderBy('sort_order');
+
+        return $relation;
     }
 
     public function featuredImage(): HasOne

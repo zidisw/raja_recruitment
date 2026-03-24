@@ -86,7 +86,7 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 text-center">
-                                <flux:button wire:click="openEdit({{ $user->id }})" size="sm" variant="ghost" icon="pencil" />
+                                <flux:button wire:click="openEdit({{ $user->id }})" wire:target="openEdit({{ $user->id }})" size="sm" variant="ghost" icon="pencil" />
                             </td>
                         </tr>
                     @endforeach

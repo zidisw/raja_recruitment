@@ -128,7 +128,7 @@
                                     {{ $application->stage_updated_at ? $application->stage_updated_at->format('d M Y') : '—' }}
                                 </span>
                             @else
-                                @if ($isTerminal)
+                                @if ($isTerminal && !auth()->user()->isSuperAdmin())
                                     <flux:badge color="{{ $application->recruitment_stage === \App\Enums\RecruitmentStage::HIRED ? 'green' : 'red' }}" size="sm">
                                         {{ $application->recruitment_stage->label() }}
                                     </flux:badge>
@@ -143,6 +143,7 @@
                                             'MCU'            => ['label' => 'MCU', 'badge' => 'text-indigo-600 bg-indigo-50 border-indigo-200 dark:bg-indigo-900/20 dark:border-indigo-800/50 dark:text-indigo-400', 'dot' => 'bg-indigo-500'],
                                             'ONBOARDING'     => ['label' => 'Onboarding', 'badge' => 'text-lime-600 bg-lime-50 border-lime-200 dark:bg-lime-900/20 dark:border-lime-800/50 dark:text-lime-400', 'dot' => 'bg-lime-500'],
                                             'HIRED'          => ['label' => 'Hired', 'badge' => 'text-emerald-600 bg-emerald-50 border-emerald-200 dark:bg-emerald-900/20 dark:border-emerald-800/50 dark:text-emerald-400', 'dot' => 'bg-emerald-500'],
+                                            'REJECTED'       => ['label' => 'Rejected', 'badge' => 'text-red-600 bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800/50 dark:text-red-400', 'dot' => 'bg-red-500'],
                                         ];
                                         $currentStage = $stageConfig[$application->recruitment_stage->value] ?? $stageConfig['APPLIED'];
                                     @endphp

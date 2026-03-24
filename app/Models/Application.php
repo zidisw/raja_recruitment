@@ -55,7 +55,10 @@ class Application extends Model
 
     public function stageLogs(): HasMany
     {
-        return $this->hasMany(ApplicationStageLog::class)->orderBy('created_at');
+        $relation = $this->hasMany(ApplicationStageLog::class);
+        $relation->orderBy('created_at');
+
+        return $relation;
     }
 
     public function interviews(): HasMany

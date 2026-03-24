@@ -215,7 +215,7 @@
                                             <flux:modal.close>
                                                 <flux:button variant="ghost">{{ __('Batal') }}</flux:button>
                                             </flux:modal.close>
-                                            <flux:button variant="primary" class="bg-emerald-600" wire:click="acceptOffer({{ $application->id }})" x-on:click="$dispatch('modal-close')">
+                                            <flux:button variant="primary" class="bg-emerald-600" wire:click="acceptOffer({{ $application->id }})" wire:target="acceptOffer({{ $application->id }})" x-on:click="$dispatch('modal-close')">
                                                 {{ __('Ya, Saya Terima') }}
                                             </flux:button>
                                         </div>
@@ -230,7 +230,7 @@
                                             <flux:modal.close>
                                                 <flux:button variant="ghost">{{ __('Batal') }}</flux:button>
                                             </flux:modal.close>
-                                            <flux:button variant="danger" wire:click="rejectOffer({{ $application->id }})" x-on:click="$dispatch('modal-close')">
+                                            <flux:button variant="danger" wire:click="rejectOffer({{ $application->id }})" wire:target="rejectOffer({{ $application->id }})" x-on:click="$dispatch('modal-close')">
                                                 {{ __('Ya, Tolak') }}
                                             </flux:button>
                                         </div>

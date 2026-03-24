@@ -118,6 +118,10 @@ class CandidateManagement extends Component
     {
         $application = Application::findOrFail($applicationId);
 
+        if ($application->recruitment_stage->isTerminal() && !Auth::user()->isSuperAdmin()) {
+            abort(403, 'Hanya superadmin yang dapat mengubah status untuk kandidat yang sudah berada di log terminal (Rejected/Hired).');
+        }
+
         $application->update([
             'recruitment_stage' => RecruitmentStage::REJECTED,
             'stage_updated_at' => now(),
@@ -129,6 +133,11 @@ class CandidateManagement extends Component
     public function updateProgressStage(int $applicationId, string $stage): void
     {
         $application = Application::findOrFail($applicationId);
+        
+        if ($application->recruitment_stage->isTerminal() && !Auth::user()->isSuperAdmin()) {
+            abort(403, 'Hanya superadmin yang dapat mengubah status untuk kandidat yang sudah berada di log terminal (Rejected/Hired).');
+        }
+
         $nextStage = RecruitmentStage::from($stage);
 
         $application->update([

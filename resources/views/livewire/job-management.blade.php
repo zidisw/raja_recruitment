@@ -119,9 +119,9 @@
                             </td>
                             <td class="px-6 py-4 text-center">
                                 <div class="flex items-center justify-center gap-2">
-                                    <flux:button wire:click="toggleActive({{ $job->id }})" size="sm" variant="ghost"
+                                    <flux:button wire:click="toggleActive({{ $job->id }})" wire:target="toggleActive({{ $job->id }})" size="sm" variant="ghost"
                                         icon="{{ $job->is_active ? 'eye-slash' : 'eye' }}" class="app-action-btn" />
-                                    <flux:button wire:click="openEdit({{ $job->id }})" size="sm" variant="ghost" icon="pencil"
+                                    <flux:button wire:click="openEdit({{ $job->id }})" wire:target="openEdit({{ $job->id }})" size="sm" variant="ghost" icon="pencil"
                                         class="app-action-btn" />
                                     <flux:button
                                         @click="$dispatch('confirm-action', {

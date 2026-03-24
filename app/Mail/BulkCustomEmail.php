@@ -19,7 +19,7 @@ class BulkCustomEmail extends Mailable implements ShouldQueue
     public string $resolvedBody;
 
     public function __construct(
-        private readonly string $subject,
+        private readonly string $customSubject,
         private readonly string $body,
         private readonly string $candidateName,
         private readonly string $jobTitle,
@@ -27,7 +27,7 @@ class BulkCustomEmail extends Mailable implements ShouldQueue
         $this->resolvedSubject = str_replace(
             ['{name}', '{job}'],
             [$this->candidateName, $this->jobTitle],
-            $this->subject
+            $this->customSubject
         );
 
         $this->resolvedBody = str_replace(

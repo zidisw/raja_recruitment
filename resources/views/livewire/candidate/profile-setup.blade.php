@@ -162,7 +162,7 @@
                     <div class="mb-4 flex items-center justify-between">
                         <flux:heading size="sm">{{ __('Education') }} #{{ $i + 1 }}</flux:heading>
                         @if (count($educations) > 1)
-                            <flux:button wire:click="removeEducation({{ $i }})" variant="ghost" icon="trash" size="sm"
+                            <flux:button wire:click="removeEducation({{ $i }})" wire:target="removeEducation({{ $i }})" variant="ghost" icon="trash" size="sm"
                                 class="text-red-500 hover:text-red-600" />
                         @endif
                     </div>
@@ -257,7 +257,7 @@
                 <div wire:key="exp-{{ $i }}" class="rounded-xl border border-zinc-200 p-5 dark:border-zinc-700">
                     <div class="mb-4 flex items-center justify-between">
                         <flux:heading size="sm">{{ __('Experience') }} #{{ $i + 1 }}</flux:heading>
-                        <flux:button wire:click="removeExperience({{ $i }})" variant="ghost" icon="trash" size="sm"
+                        <flux:button wire:click="removeExperience({{ $i }})" wire:target="removeExperience({{ $i }})" variant="ghost" icon="trash" size="sm"
                             class="text-red-500 hover:text-red-600" />
                     </div>
 
@@ -338,7 +338,7 @@
                 <div wire:key="org-{{ $i }}" class="rounded-xl border border-zinc-200 p-5 dark:border-zinc-700">
                     <div class="mb-4 flex items-center justify-between">
                         <flux:heading size="sm">{{ __('Organization') }} #{{ $i + 1 }}</flux:heading>
-                        <flux:button wire:click="removeOrganization({{ $i }})" variant="ghost" icon="trash" size="sm"
+                        <flux:button wire:click="removeOrganization({{ $i }})" wire:target="removeOrganization({{ $i }})" variant="ghost" icon="trash" size="sm"
                             class="text-red-500 hover:text-red-600" />
                     </div>
 
