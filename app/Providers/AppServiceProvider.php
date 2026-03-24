@@ -46,6 +46,22 @@ class AppServiceProvider extends ServiceProvider
                 ]
             );
         });
+
+        \Illuminate\Support\Facades\View::composer('layouts.app.sidebar', function ($view) {
+            $hrCount = 0;
+            $userCount = 0;
+            if (\Illuminate\Support\Facades\Auth::check() && \Illuminate\Support\Facades\Auth::user()->canAccessRecruitment()) {
+                $hrCount = \App\Models\Interview::where('interview_type', 'HR Interview')
+                    ->whereHas('application', function ($q) {
+                        $q->where('recruitment_stage', '!=', \App\Enums\RecruitmentStage::REJECTED);
+                    })->count();
+                $userCount = \App\Models\Interview::where('interview_type', 'User Interview')
+                    ->whereHas('application', function ($q) {
+                        $q->where('recruitment_stage', '!=', \App\Enums\RecruitmentStage::REJECTED);
+                    })->count();
+            }
+            $view->with(compact('hrCount', 'userCount'));
+        });
     }
 
     protected function loadSmtpFromDatabase(): void

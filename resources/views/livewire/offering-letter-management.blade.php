@@ -106,7 +106,7 @@
                     <flux:label>{{ __('File Offering (PDF)') }}</flux:label>
                     <input type="file" wire:model="offer_file" class="block w-full text-sm text-zinc-600 dark:text-zinc-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-zinc-100 file:text-zinc-700 hover:file:bg-zinc-200 dark:file:bg-zinc-800 dark:file:text-zinc-300 dark:hover:file:bg-zinc-700 focus:outline-none cursor-pointer" />
                     <flux:error name="offer_file" />
-                    @if($editingId && $app_offering = \App\Models\OfferingLetter::find($editingId))
+                    @if($editingId && $app_offering = $this->currentOfferingLetter)
                         @if($app_offering->file_path)
                             <div class="mt-2 text-xs">
                                 <a href="{{ Storage::url($app_offering->file_path) }}" target="_blank" class="text-brand-500 hover:underline inline-flex items-center gap-1">

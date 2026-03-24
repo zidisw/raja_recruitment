@@ -8,9 +8,11 @@ use App\Enums\RecruitmentStage;
 use App\Enums\UserRole;
 use App\Exports\ApplicationsExport;
 use App\Mail\BulkCustomEmail;
+use App\Jobs\ProcessBulkCandidateEmails;
 use App\Models\Application;
 use App\Models\ApplicationStageLog;
 use App\Models\Job;
+use App\Services\ApplicationService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Attributes\Layout;
@@ -202,26 +204,18 @@ class ApplicationManagement extends Component
 
     public function sendBulkEmail(): void
     {
-        $this->bulkEmailRecipientsQuery()
-            ->chunk(100, function ($applications): void {
-                foreach ($applications as $app) {
-                    try {
-                        Mail::to($app->candidate->email)
-                            ->queue(new BulkCustomEmail(
-                                subject: $this->bulkEmailSubject,
-                                body: $this->bulkEmailBody,
-                                candidateName: $app->candidate->name,
-                                jobTitle: $this->job->title,
-                            ));
-                    } catch (\Throwable) {
-                        // Continue sending to remaining recipients
-                    }
-                }
-            });
+        $applicationIds = $this->bulkEmailRecipientsQuery()->pluck('id')->toArray();
+
+        ProcessBulkCandidateEmails::dispatch(
+            $applicationIds,
+            $this->bulkEmailSubject,
+            $this->bulkEmailBody,
+            $this->job->title
+        );
 
         $this->showBulkEmailModal = false;
         $this->bulkEmailStep = 1;
-        $this->dispatch('notify', ['message' => __('Bulk email sent successfully.'), 'type' => 'success']);
+        $this->dispatch('notify', ['message' => __('Bulk email process started in the background.'), 'type' => 'success']);
     }
 
     // ─── Bulk Reject ──────────────────────────────────────────────────────────
@@ -281,51 +275,29 @@ class ApplicationManagement extends Component
 
         $belowStages = $this->stagesBelowThreshold($this->bulkRejectStage);
 
-        $toReject = Application::where('job_id', $this->job->id)
+        $toRejectIds = Application::where('job_id', $this->job->id)
             ->whereIn('recruitment_stage', $belowStages)
             ->whereNotIn('recruitment_stage', [RecruitmentStage::REJECTED->value, RecruitmentStage::HIRED->value])
-            ->get(['id', 'recruitment_stage']);
+            ->pluck('id')
+            ->toArray();
 
-        if ($toReject->isEmpty()) {
+        if (empty($toRejectIds)) {
             $this->showBulkRejectModal = false;
-
             return;
         }
 
         $now = now();
-        $decidedBy = auth()->id();
         $notes = filled($this->bulkRejectNotes)
             ? trim($this->bulkRejectNotes) . ' [Bulk Rejection — ' . $now->format('d M Y') . ']'
             : 'Tidak lolos seleksi massal — ' . $now->format('d M Y H:i');
 
-        $ids = $toReject->pluck('id')->all();
-
-        // Batch insert stage logs in chunks of 500
-        $logsData = $toReject->map(fn($app) => [
-            'application_id' => $app->id,
-            'stage'          => $app->recruitment_stage instanceof RecruitmentStage ? $app->recruitment_stage->value : $app->recruitment_stage,
-            'decision'       => 'rejected',
-            'notes'          => $notes,
-            'decided_by'     => $decidedBy,
-            'created_at'     => $now,
-        ])->all();
-
-        foreach (array_chunk($logsData, 500) as $chunk) {
-            ApplicationStageLog::insert($chunk);
-        }
-
-        // Batch update
-        Application::whereIn('id', $ids)->update([
-            'recruitment_stage' => RecruitmentStage::REJECTED,
-            'status'            => RecruitmentStage::REJECTED->toInt(),
-            'stage_updated_at'  => $now,
-        ]);
+        app(ApplicationService::class)->bulkReject($toRejectIds, auth()->id(), $notes);
 
         $this->showBulkRejectModal = false;
         $this->bulkRejectStep = 1;
         $this->expandedRow = null;
 
-        $this->dispatch('notify', ['message' => __('Bulk reject completed. :count candidates marked as Not Selected.', ['count' => count($ids)]), 'type' => 'success']);
+        $this->dispatch('notify', ['message' => __('Bulk reject completed. :count candidates marked as Not Selected.', ['count' => count($toRejectIds)]), 'type' => 'success']);
     }
 
     public function render(): \Illuminate\View\View

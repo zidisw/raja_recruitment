@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -40,6 +41,26 @@ class NewsManagement extends Component
     public $featuredImage = null;
 
     public array $galleryImages = [];
+
+    #[Computed]
+    public function existingFeaturedImage(): ?ArticleImage
+    {
+        if (! $this->editingId) {
+            return null;
+        }
+
+        return Article::find($this->editingId)?->featuredImage;
+    }
+
+    #[Computed]
+    public function existingGalleryImages()
+    {
+        if (! $this->editingId) {
+            return collect();
+        }
+
+        return Article::find($this->editingId)?->images->where('is_featured', false) ?? collect();
+    }
 
     public function mount(): void
     {

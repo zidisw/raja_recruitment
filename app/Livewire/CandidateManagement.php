@@ -206,7 +206,7 @@ class CandidateManagement extends Component
 
     public function exportCsv()
     {
-        $applications = $this->getFilteredQuery()->with(['candidate', 'job.department', 'job.site'])->get();
+        $applications = $this->getFilteredQuery()->get();
         
         $csvData = "Nama Kandidat,Email,Posisi,Departemen,Site,Tanggal Lamar,Stage,Status Lolos Administrasi\n";
         

@@ -30,7 +30,16 @@ use App\Livewire\Superadmin\SmtpSettings;
 use App\Livewire\UserManagement;
 use Illuminate\Support\Facades\Route;
 
-Route::view('/', 'welcome')->name('home');
+Route::get('/', function () {
+    $latestArticles = \App\Models\Article::query()
+        ->published()
+        ->with('featuredImage')
+        ->latest('published_at')
+        ->limit(3)
+        ->get();
+    
+    return view('welcome', compact('latestArticles'));
+})->name('home');
 Route::view('/about', 'about')->name('about');
 Route::get('/articles', ArticleList::class)->name('articles.index');
 Route::get('/articles/{article:slug}', ArticleDetail::class)->name('articles.show');

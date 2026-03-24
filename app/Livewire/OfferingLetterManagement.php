@@ -11,6 +11,7 @@ use App\Models\Application;
 use App\Models\OfferingLetter;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -28,6 +29,15 @@ class OfferingLetterManagement extends Component
     public string $offer_date = '';
     public $offer_file; // For uploading new file
     public string $status = 'waiting_response';
+
+    #[Computed]
+    public function currentOfferingLetter(): ?OfferingLetter
+    {
+        if (! $this->editingId) {
+            return null;
+        }
+        return OfferingLetter::find($this->editingId);
+    }
 
     public function mount(): void
     {

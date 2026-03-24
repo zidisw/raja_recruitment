@@ -179,7 +179,7 @@
                                 </button>
                             </div>
                         @elseif ($editingId)
-                            @php $existingFeatured = \App\Models\Article::find($editingId)?->featuredImage; @endphp
+                            @php $existingFeatured = $this->existingFeaturedImage; @endphp
                             @if ($existingFeatured)
                                 <div
                                     class="relative w-32 h-24 rounded-xl overflow-hidden shrink-0 bg-zinc-100 dark:bg-zinc-800 group">
@@ -222,7 +222,7 @@
                     <flux:label>{{ __('Gallery Images') }}</flux:label>
 
                     @if ($editingId)
-                        @php $galleryExisting = \App\Models\Article::find($editingId)?->images->where('is_featured', false) ?? collect(); @endphp
+                        @php $galleryExisting = $this->existingGalleryImages; @endphp
                         @if ($galleryExisting->isNotEmpty())
                             <div class="flex flex-wrap gap-3">
                                 @foreach ($galleryExisting as $img)

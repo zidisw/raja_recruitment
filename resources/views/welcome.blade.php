@@ -407,15 +407,8 @@
     </section>
 
     <section id="news" class="py-24 bg-white dark:bg-slate-900 lg:py-32 transition-colors duration-300">
-        @php
-            $latestArticles = \App\Models\Article::query()
-                ->published()
-                ->with('featuredImage')
-                ->latest('published_at')
-                ->limit(3)
-                ->get();
-        @endphp
         <div class="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
+
             <div class="flex justify-between items-end mb-12">
                 <div class="max-w-2xl">
                     <div class="flex items-center gap-3 mb-4">

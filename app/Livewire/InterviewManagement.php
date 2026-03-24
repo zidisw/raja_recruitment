@@ -12,6 +12,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -51,6 +52,16 @@ class InterviewManagement extends Component
         if (in_array($tab, ['hr', 'user'])) {
             $this->tab = $tab;
         }
+    }
+
+    #[Computed]
+    public function lockedApplication(): ?Application
+    {
+        if (! $this->application_id) {
+            return null;
+        }
+
+        return Application::with(['candidate', 'job'])->find($this->application_id);
     }
 
     private function authorizeAccess(): void

@@ -96,17 +96,7 @@
 
                     @php
                         $isInterviewRoute = request()->routeIs('interviews.*');
-                        $hrCount = \App\Models\Interview::where('interview_type', 'HR Interview')
-                            ->whereHas('application', function ($q) {
-                                $q->where('recruitment_stage', '!=', \App\Enums\RecruitmentStage::REJECTED);
-                            })->count();
-
-                        $userCount = \App\Models\Interview::where('interview_type', 'User Interview')
-                            ->whereHas('application', function ($q) {
-                                $q->where('recruitment_stage', '!=', \App\Enums\RecruitmentStage::REJECTED);
-                            })->count();
-                            
-                        $totalInterviews = $hrCount + $userCount;
+                        $totalInterviews = ($hrCount ?? 0) + ($userCount ?? 0);
                     @endphp
                     <div x-data="{ open: @js($isInterviewRoute) }"
                         wire:key="interview-nav-{{ $isInterviewRoute ? '1' : '0' }}" class="space-y-0.5">

@@ -145,7 +145,7 @@
                         <flux:label>{{ __('Candidate & Position') }}</flux:label>
                         <div class="px-3 py-2 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl border border-zinc-200 dark:border-white/10 text-sm font-medium text-zinc-600 dark:text-zinc-300">
                             @php
-                                $lockedApp = $application_id ? \App\Models\Application::with(['candidate', 'job'])->find($application_id) : null;
+                                $lockedApp = $this->lockedApplication;
                                 $lockedLabel = $lockedApp ? $lockedApp->candidate->name . ' - ' . $lockedApp->job->title : '—';
                             @endphp
                             {{ $lockedLabel }}
