@@ -14,6 +14,7 @@ class Psychotest extends Model
         'test_date',
         'result',
         'notes',
+        'file_path',
     ];
 
     protected function casts(): array

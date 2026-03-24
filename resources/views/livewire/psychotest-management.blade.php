@@ -4,7 +4,6 @@
             <flux:heading size="xl" level="1">{{ __('Psychotest') }}</flux:heading>
             <flux:subheading size="lg">{{ __('Psychotest results and notes') }}</flux:subheading>
         </div>
-        <flux:button wire:click="openCreate" variant="primary" icon="plus">{{ __('Add Result') }}</flux:button>
     </div>
 
     @if (session('success'))
@@ -69,8 +68,13 @@
             <form wire:submit="save" class="space-y-4">
                 <flux:field>
                     <flux:label>{{ __('Candidate & Position') }}</flux:label>
-                    <x-custom-select wire:model="application_id" :options="['' => __('Select candidate')] + $applications->mapWithKeys(fn($a) => [$a->id => $a->candidate->name . ' - ' . $a->job->title])->toArray()" :searchable="true" />
-                    <flux:error name="application_id" />
+                    <div class="px-3 py-2 bg-zinc-50 dark:bg-zinc-800/50 rounded-xl border border-zinc-200 dark:border-white/10 text-sm font-medium text-zinc-600 dark:text-zinc-300">
+                        @php
+                            $lockedApp = $this->lockedApplication;
+                            $lockedLabel = $lockedApp ? $lockedApp->candidate->name . ' - ' . $lockedApp->job->title : '—';
+                        @endphp
+                        {{ $lockedLabel }}
+                    </div>
                 </flux:field>
                 <flux:field>
                     <flux:label>{{ __('Test Date') }}</flux:label>
@@ -81,6 +85,21 @@
                     <flux:label>{{ __('Result') }}</flux:label><x-custom-select wire:model="result"
                         :options="['passed' => 'passed', 'failed' => 'failed']" />
                     <flux:error name="result" />
+                </flux:field>
+                <flux:field>
+                    <flux:label>{{ __('Psychotest Document (PDF)') }}</flux:label>
+                    <div class="space-y-3">
+                        @if($editingId && $app_psychotest = $this->currentPsychotest)
+                            @if($app_psychotest->file_path)
+                                <a href="{{ Storage::url($app_psychotest->file_path) }}" target="_blank" class="text-brand-500 hover:underline inline-flex items-center gap-1">
+                                    <flux:icon.document-text class="size-4"/> {{ __('View Current Document') }}
+                                </a>
+                            @endif
+                        @endif
+                        <flux:input type="file" wire:model="psychotest_file" accept=".pdf" />
+                        <div wire:loading wire:target="psychotest_file" class="text-sm text-brand-500">{{ __('Uploading...') }}</div>
+                    </div>
+                    <flux:error name="psychotest_file" />
                 </flux:field>
                 <flux:field>
                     <flux:label>{{ __('Notes') }}</flux:label>

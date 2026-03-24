@@ -14,6 +14,7 @@ class Mcu extends Model
         'mcu_date',
         'result',
         'notes',
+        'file_path',
     ];
 
     protected function casts(): array
