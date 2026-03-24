@@ -10,6 +10,7 @@ use App\Enums\UserRole;
 use App\Models\Application;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -20,7 +21,8 @@ class MyApplications extends Component
 
     public string $search = '';
 
-    public string $statusFilter = '';
+    #[Url]
+    public string $tab = 'on_progress';
 
     public function mount(): void
     {
@@ -32,7 +34,7 @@ class MyApplications extends Component
         $this->resetPage();
     }
 
-    public function updatingStatusFilter(): void
+    public function updatingTab(): void
     {
         $this->resetPage();
     }
@@ -97,8 +99,12 @@ class MyApplications extends Component
             });
         }
 
-        if ($this->statusFilter !== '') {
-            $query->where('recruitment_stage', $this->statusFilter);
+        if ($this->tab === 'on_progress') {
+            $query->whereNotIn('recruitment_stage', [RecruitmentStage::REJECTED, RecruitmentStage::HIRED]);
+        } elseif ($this->tab === 'hired') {
+            $query->where('recruitment_stage', RecruitmentStage::HIRED);
+        } elseif ($this->tab === 'history') {
+            $query->where('recruitment_stage', RecruitmentStage::REJECTED);
         }
 
         return view('livewire.candidate.my-applications', [

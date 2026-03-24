@@ -9,29 +9,50 @@
         </div>
     </div>
 
+    {{-- Tabs Navigation --}}
+    <div class="flex overflow-x-auto border-b border-zinc-200 dark:border-white/10 hide-scrollbar pb-px mb-4 gap-4">
+        <button wire:click="$set('tab', 'on_progress')" 
+            class="flex items-center gap-2 px-1 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap {{ $tab === 'on_progress' ? 'border-brand-500 text-brand-600 dark:text-brand-400' : 'border-transparent text-zinc-500 hover:text-zinc-700 hover:border-zinc-300 dark:text-zinc-400 dark:hover:text-zinc-300 dark:hover:border-zinc-700' }}">
+            <flux:icon.arrow-path class="size-4" />
+            {{ __('Sedang Diproses') }}
+        </button>
+        <button wire:click="$set('tab', 'hired')" 
+            class="flex items-center gap-2 px-1 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap {{ $tab === 'hired' ? 'border-brand-500 text-brand-600 dark:text-brand-400' : 'border-transparent text-zinc-500 hover:text-zinc-700 hover:border-zinc-300 dark:text-zinc-400 dark:hover:text-zinc-300 dark:hover:border-zinc-700' }}">
+            <flux:icon.check-badge class="size-4" />
+            {{ __('Diterima') }}
+        </button>
+        <button wire:click="$set('tab', 'history')" 
+            class="flex items-center gap-2 px-1 py-3 text-sm font-medium border-b-2 transition-colors whitespace-nowrap {{ $tab === 'history' ? 'border-brand-500 text-brand-600 dark:text-brand-400' : 'border-transparent text-zinc-500 hover:text-zinc-700 hover:border-zinc-300 dark:text-zinc-400 dark:hover:text-zinc-300 dark:hover:border-zinc-700' }}">
+            <flux:icon.clock class="size-4" />
+            {{ __('Riwayat') }}
+        </button>
+    </div>
+
     {{-- Filters --}}
-    <div class="theme-surface-soft flex flex-col gap-3 sm:flex-row rounded-xl border p-4 backdrop-blur-sm">
-        <flux:field class="flex-1">
-            <flux:input wire:model.live.debounce.300ms="search" placeholder="{{ __('Search job title...') }}" icon="magnifying-glass" />
+    <div class="theme-surface-soft flex flex-col gap-3 rounded-xl border p-4 backdrop-blur-sm">
+        <flux:field class="w-full">
+            <flux:input wire:model.live.debounce.300ms="search" placeholder="{{ __('Cari posisi pekerjaan...') }}" icon="magnifying-glass" />
         </flux:field>
-        <div class="min-w-44">
-            <x-custom-select
-                wire:model.live="statusFilter"
-                placeholder="{{ __('All Statuses') }}"
-                :options="['' => __('All Statuses')] + collect($statuses)->mapWithKeys(fn($s) => [$s->value => $s->label()])->toArray()"
-            />
-        </div>
     </div>
 
     @if ($applications->isEmpty())
         <div class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-200 bg-white/50 p-16 dark:border-zinc-700 dark:bg-zinc-900/50">
             <flux:icon.document-text class="mb-6 h-16 w-16 text-zinc-300 dark:text-zinc-600" />
-            <flux:heading size="lg" class="mb-2">{{ __('No Applications Yet') }}</flux:heading>
-            <flux:text class="mb-6 max-w-md text-center">{{ __('You have not applied to any positions yet.') }}</flux:text>
-            <flux:button variant="primary" href="{{ route('candidate.portal') }}" wire:navigate
-                class="bg-linear-to-r from-brand-500 to-brand-600">
-                {{ __('Browse Jobs') }}
-            </flux:button>
+            
+            @if ($tab === 'on_progress')
+                <flux:heading size="lg" class="mb-2">{{ __('Belum Ada Lamaran Diproses') }}</flux:heading>
+                <flux:text class="mb-6 max-w-md text-center">{{ __('Anda belum memiliki lamaran yang sedang berjalan atau aktif saat ini.') }}</flux:text>
+                <flux:button variant="primary" href="{{ route('candidate.portal') }}" wire:navigate
+                    class="bg-linear-to-r from-brand-500 to-brand-600">
+                    {{ __('Cari Lowongan') }}
+                </flux:button>
+            @elseif ($tab === 'hired')
+                <flux:heading size="lg" class="mb-2">{{ __('Belum Ada Lamaran Diterima') }}</flux:heading>
+                <flux:text class="mb-6 max-w-md text-center">{{ __('Lamaran Anda yang berhasil diterima akan muncul di sini.') }}</flux:text>
+            @else
+                <flux:heading size="lg" class="mb-2">{{ __('Belum Ada Riwayat Lamaran') }}</flux:heading>
+                <flux:text class="mb-6 max-w-md text-center">{{ __('Riwayat lamaran yang ditolak atau tidak dilanjutkan akan muncul di sini.') }}</flux:text>
+            @endif
         </div>
     @else
         <div class="flex flex-col gap-5">

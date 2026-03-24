@@ -63,8 +63,8 @@ class Dashboard extends Component
                             ->map(fn($item) => [
                                 'name' => $item->recruitment_stage instanceof RecruitmentStage
                                     ? $item->recruitment_stage->label()
-                                    : RecruitmentStage::from($item->recruitment_stage)->label(),
-                                'data' => [(int) $item->total],
+                                    : (RecruitmentStage::tryFrom($item->recruitment_stage ?? '')?->label() ?? 'Unknown'),
+                                'data' => [(int) ($item->total ?? 0)],
                             ])
                             ->values(),
 

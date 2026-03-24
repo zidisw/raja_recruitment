@@ -753,3 +753,29 @@ body[data-theme="dark"] .app-toast-close:hover {
 [data-flux-main] {
   background: transparent !important;
 }
+
+/* --- ApexCharts Dark Mode Tooltip ------------------------------------ */
+.dark .apexcharts-tooltip,
+html[data-theme="dark"] .apexcharts-tooltip,
+body[data-theme="dark"] .apexcharts-tooltip {
+  background: rgb(39, 39, 42) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5) !important;
+  color: rgb(244, 244, 245) !important;
+}
+
+.dark .apexcharts-tooltip-title,
+html[data-theme="dark"] .apexcharts-tooltip-title,
+body[data-theme="dark"] .apexcharts-tooltip-title {
+  background: rgb(24, 24, 27) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.dark .apexcharts-tooltip-text,
+html[data-theme="dark"] .apexcharts-tooltip-text,
+body[data-theme="dark"] .apexcharts-tooltip-text,
+.dark .apexcharts-tooltip span,
+html[data-theme="dark"] .apexcharts-tooltip span,
+body[data-theme="dark"] .apexcharts-tooltip span {
+  color: rgb(244, 244, 245) !important;
+}
