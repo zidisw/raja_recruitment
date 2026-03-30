@@ -10,6 +10,7 @@ use App\Models\Application;
 use App\Models\ApplicationStageLog;
 use App\Models\Job;
 use App\Notifications\ApplicationStatusChanged;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -24,14 +25,14 @@ class CandidateReview extends Component
 
     public function mount(Job $job, Application $application): void
     {
-        $user = auth()->user();
+        $user = Auth::user();
 
         abort_unless($user->canAccessRecruitment(), 403);
 
         abort_unless($application->job_id === $job->id, 404);
 
         $this->job = $job;
-        $this->application = $application->load(['candidate.profile', 'candidate.education', 'candidate.experiences', 'candidate.organizations', 'job', 'stageLogs.decidedBy']);
+        $this->application = $application->load(['candidate.profile', 'candidate.education', 'candidate.experiences', 'candidate.organizations', 'job', 'stageLogs.decidedBy', 'psychotest', 'mcu']);
     }
 
     public function advance(): void
@@ -51,7 +52,7 @@ class CandidateReview extends Component
             'stage' => $this->application->recruitment_stage->value,
             'decision' => 'passed',
             'notes' => $this->notes,
-            'decided_by' => auth()->id(),
+            'decided_by' => Auth::id(),
         ]);
 
         $this->application->update([
@@ -68,7 +69,7 @@ class CandidateReview extends Component
         }
 
         $this->notes = '';
-        $this->application->refresh()->load(['candidate.profile', 'candidate.education', 'candidate.experiences', 'candidate.organizations', 'job', 'stageLogs.decidedBy']);
+        $this->application->refresh()->load(['candidate.profile', 'candidate.education', 'candidate.experiences', 'candidate.organizations', 'job', 'stageLogs.decidedBy', 'psychotest', 'mcu']);
 
         $this->dispatch('notify', ['message' => __('Candidate advanced to') . ' ' . $this->application->recruitment_stage->label() . '.', 'type' => 'success']);
     }
@@ -86,7 +87,7 @@ class CandidateReview extends Component
             'stage' => $this->application->recruitment_stage->value,
             'decision' => 'rejected',
             'notes' => $this->notes,
-            'decided_by' => auth()->id(),
+            'decided_by' => Auth::id(),
         ]);
 
         $this->application->update([
@@ -95,7 +96,7 @@ class CandidateReview extends Component
         ]);
 
         $this->notes = '';
-        $this->application->refresh()->load(['candidate.profile', 'candidate.education', 'candidate.experiences', 'candidate.organizations', 'job', 'stageLogs.decidedBy']);
+        $this->application->refresh()->load(['candidate.profile', 'candidate.education', 'candidate.experiences', 'candidate.organizations', 'job', 'stageLogs.decidedBy', 'psychotest', 'mcu']);
 
         $this->dispatch('notify', ['message' => __('Candidate marked as Not Selected.'), 'type' => 'success']);
     }

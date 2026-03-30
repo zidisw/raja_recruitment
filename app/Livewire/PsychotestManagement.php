@@ -21,6 +21,7 @@ class PsychotestManagement extends Component
     use WithPagination, WithFileUploads;
 
     public bool $showModal = false;
+    public ?int $expandedRow = null;
     public ?int $editingId = null;
     public ?int $application_id = null;
     public string $test_date = '';
@@ -45,6 +46,11 @@ class PsychotestManagement extends Component
         }
 
         return Application::with(['candidate', 'job'])->find($this->application_id);
+    }
+
+    public function toggleExpand(int $applicationId): void
+    {
+        $this->expandedRow = $this->expandedRow === $applicationId ? null : $applicationId;
     }
 
     public function mount(): void
@@ -100,15 +106,31 @@ class PsychotestManagement extends Component
         );
 
         $application = $psychotest->application;
+        $oldStage = $application->recruitment_stage->value;
+
         if ($validated['result'] === 'passed') {
             $application->update([
                 'recruitment_stage' => RecruitmentStage::MCU,
                 'stage_updated_at' => now(),
             ]);
+            \App\Models\ApplicationStageLog::create([
+                'application_id' => $application->id,
+                'stage' => $oldStage,
+                'decision' => 'passed',
+                'notes' => 'Hasil Psychotest: Passed',
+                'decided_by' => Auth::id(),
+            ]);
         } else {
             $application->update([
                 'recruitment_stage' => RecruitmentStage::REJECTED,
                 'stage_updated_at' => now(),
+            ]);
+            \App\Models\ApplicationStageLog::create([
+                'application_id' => $application->id,
+                'stage' => $oldStage,
+                'decision' => 'rejected',
+                'notes' => 'Hasil Psychotest: Failed. ' . ($validated['notes'] ?? ''),
+                'decided_by' => Auth::id(),
             ]);
         }
 

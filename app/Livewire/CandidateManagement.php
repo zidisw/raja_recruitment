@@ -106,9 +106,19 @@ class CandidateManagement extends Component
     {
         $application = Application::findOrFail($applicationId);
 
+        $oldStage = $application->recruitment_stage->value;
+
         $application->update([
             'recruitment_stage' => RecruitmentStage::HR_INTERVIEW,
             'stage_updated_at' => now(),
+        ]);
+
+        \App\Models\ApplicationStageLog::create([
+            'application_id' => $application->id,
+            'stage' => $oldStage,
+            'decision' => 'passed',
+            'notes' => 'Lolos ke tahap HR Interview (Administrasi)',
+            'decided_by' => Auth::id(),
         ]);
 
         $this->dispatch('notify', ['message' => __('Candidate passed administrative screening.'), 'type' => 'success']);
@@ -122,9 +132,19 @@ class CandidateManagement extends Component
             abort(403, 'Hanya superadmin yang dapat mengubah status untuk kandidat yang sudah berada di log terminal (Rejected/Hired).');
         }
 
+        $oldStage = $application->recruitment_stage->value;
+
         $application->update([
             'recruitment_stage' => RecruitmentStage::REJECTED,
             'stage_updated_at' => now(),
+        ]);
+
+        \App\Models\ApplicationStageLog::create([
+            'application_id' => $application->id,
+            'stage' => $oldStage,
+            'decision' => 'rejected',
+            'notes' => 'Ditolak secara langsung (Administrasi/Riwayat)',
+            'decided_by' => Auth::id(),
         ]);
 
         $this->dispatch('notify', ['message' => __('Candidate rejected.'), 'type' => 'success']);
@@ -138,11 +158,20 @@ class CandidateManagement extends Component
             abort(403, 'Hanya superadmin yang dapat mengubah status untuk kandidat yang sudah berada di log terminal (Rejected/Hired).');
         }
 
+        $oldStage = $application->recruitment_stage->value;
         $nextStage = RecruitmentStage::from($stage);
 
         $application->update([
             'recruitment_stage' => $nextStage,
             'stage_updated_at' => now(),
+        ]);
+
+        \App\Models\ApplicationStageLog::create([
+            'application_id' => $application->id,
+            'stage' => $oldStage,
+            'decision' => $nextStage === RecruitmentStage::REJECTED ? 'rejected' : 'passed',
+            'notes' => 'Status diubah secara manual via dropdown',
+            'decided_by' => Auth::id(),
         ]);
 
         $this->dispatch('notify', ['message' => __('Recruitment stage updated.'), 'type' => 'success']);
@@ -180,10 +209,28 @@ class CandidateManagement extends Component
             return;
         }
 
+        // Pre-fetch old stages so we log the correct stage they passed
+        $applications = Application::whereIn('id', $this->selectedIds)->get(['id', 'recruitment_stage']);
+        
         Application::whereIn('id', $this->selectedIds)->update([
             'recruitment_stage' => RecruitmentStage::HR_INTERVIEW,
             'stage_updated_at' => now(),
         ]);
+
+        $logs = [];
+        $now = now();
+        $adminId = Auth::id();
+        foreach ($applications as $app) {
+            $logs[] = [
+                'application_id' => $app->id,
+                'stage' => $app->recruitment_stage->value,
+                'decision' => 'passed',
+                'notes' => 'Lolos masal ke tahap HR Interview',
+                'decided_by' => $adminId,
+                'created_at' => $now,
+            ];
+        }
+        \App\Models\ApplicationStageLog::insert($logs);
 
         $this->dispatch('notify', ['message' => __('Kandidat yang dipilih berhasil diloloskan ke On Progress.'), 'type' => 'success']);
         $this->resetSelection();
@@ -195,10 +242,27 @@ class CandidateManagement extends Component
             return;
         }
 
+        $applications = Application::whereIn('id', $this->selectedIds)->get(['id', 'recruitment_stage']);
+
         Application::whereIn('id', $this->selectedIds)->update([
             'recruitment_stage' => RecruitmentStage::REJECTED,
             'stage_updated_at' => now(),
         ]);
+
+        $logs = [];
+        $now = now();
+        $adminId = Auth::id();
+        foreach ($applications as $app) {
+            $logs[] = [
+                'application_id' => $app->id,
+                'stage' => $app->recruitment_stage->value,
+                'decision' => 'rejected',
+                'notes' => 'Ditolak masal',
+                'decided_by' => $adminId,
+                'created_at' => $now,
+            ];
+        }
+        \App\Models\ApplicationStageLog::insert($logs);
 
         $this->dispatch('notify', ['message' => __('Kandidat yang dipilih berhasil ditolak.'), 'type' => 'success']);
         $this->resetSelection();

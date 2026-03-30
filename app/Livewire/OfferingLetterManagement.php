@@ -23,6 +23,7 @@ class OfferingLetterManagement extends Component
     use WithPagination, WithFileUploads;
 
     public bool $showModal = false;
+    public ?int $expandedRow = null;
     public ?int $editingId = null;
 
     public ?int $application_id = null;
@@ -42,6 +43,11 @@ class OfferingLetterManagement extends Component
     public function mount(): void
     {
         abort_unless(Auth::user()->canAccessRecruitment(), 403);
+    }
+
+    public function toggleExpand(int $applicationId): void
+    {
+        $this->expandedRow = $this->expandedRow === $applicationId ? null : $applicationId;
     }
 
     public function openCreate(?int $appId = null): void

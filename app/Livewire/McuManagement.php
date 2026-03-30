@@ -21,6 +21,7 @@ class McuManagement extends Component
     use WithPagination, WithFileUploads;
 
     public bool $showModal = false;
+    public ?int $expandedRow = null;
     public ?int $editingId = null;
     public ?int $application_id = null;
     public string $mcu_date = '';
@@ -45,6 +46,11 @@ class McuManagement extends Component
         }
 
         return Application::with(['candidate', 'job'])->find($this->application_id);
+    }
+
+    public function toggleExpand(int $applicationId): void
+    {
+        $this->expandedRow = $this->expandedRow === $applicationId ? null : $applicationId;
     }
 
     public function mount(): void
@@ -97,15 +103,31 @@ class McuManagement extends Component
         $mcu = Mcu::updateOrCreate(['application_id' => $validated['application_id']], $data);
 
         $application = $mcu->application;
+        $oldStage = $application->recruitment_stage->value;
+
         if ($validated['result'] === 'fit') {
             $application->update([
                 'recruitment_stage' => RecruitmentStage::ONBOARDING,
                 'stage_updated_at' => now(),
             ]);
+            \App\Models\ApplicationStageLog::create([
+                'application_id' => $application->id,
+                'stage' => $oldStage,
+                'decision' => 'passed',
+                'notes' => 'Hasil MCU: Fit',
+                'decided_by' => Auth::id(),
+            ]);
         } else {
             $application->update([
                 'recruitment_stage' => RecruitmentStage::REJECTED,
                 'stage_updated_at' => now(),
+            ]);
+            \App\Models\ApplicationStageLog::create([
+                'application_id' => $application->id,
+                'stage' => $oldStage,
+                'decision' => 'rejected',
+                'notes' => 'Hasil MCU: Unfit. ' . ($validated['notes'] ?? ''),
+                'decided_by' => Auth::id(),
             ]);
         }
 

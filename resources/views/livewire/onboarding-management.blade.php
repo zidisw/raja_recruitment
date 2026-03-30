@@ -18,6 +18,7 @@
             <thead>
                 <tr>
                     <th class="w-12 text-center!">{{ __('No.') }}</th>
+                    <th class="w-12"></th>
                     <th>{{ __('Candidate') }}</th>
                     <th>{{ __('Position') }}</th>
                     <th class="text-center!">{{ __('Joining Date') }}</th>
@@ -30,6 +31,15 @@
                         <td class="px-4 py-4 text-center text-zinc-500 font-medium">
                             {{ $onboardings->firstItem() + $loop->index }}
                         </td>
+                        <td class="px-4 py-3">
+                            @php $isExpanded = $expandedRow === $item->application_id; @endphp
+                            <button wire:click="toggleExpand({{ $item->application_id }})" type="button"
+                                class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-zinc-400 transition-all duration-200 hover:bg-zinc-100 dark:hover:bg-zinc-700/70 hover:text-zinc-600 dark:hover:text-zinc-300 active:scale-95"
+                                aria-label="{{ $isExpanded ? __('Collapse details') : __('Expand details') }}">
+                                <flux:icon.chevron-right
+                                    class="size-4 transition-transform duration-300 ease-out {{ $isExpanded ? 'rotate-90' : '' }}" />
+                            </button>
+                        </td>
                         <td class="px-6 py-4 font-semibold">{{ $item->application->candidate->name }}</td>
                         <td class="px-6 py-4">{{ $item->application->job->title }}</td>
                         <td class="px-6 py-4 text-center">{{ $item->joining_date?->format('d M Y') }}</td>
@@ -37,9 +47,17 @@
                             <flux:badge size="sm" variant="outline">{{ $item->onboarding_status }}</flux:badge>
                         </td>
                     </tr>
+                    @if ($expandedRow === $item->application_id)
+                        <tr wire:key="onboarding-candidate-{{ $item->application_id }}-expanded"
+                            wire:transition.opacity.duration.200ms class="bg-zinc-50/50 dark:bg-zinc-800/30">
+                            <td colspan="6" class="px-6 py-4">
+                                <x-candidate-expanded-row :application="$item->application" />
+                            </td>
+                        </tr>
+                    @endif
                 @empty
                     <tr>
-                        <td colspan="5" class="px-6 py-8 text-center text-zinc-400">{{ __('No onboarding data yet.') }}</td>
+                        <td colspan="6" class="px-6 py-8 text-center text-zinc-400">{{ __('No onboarding data yet.') }}</td>
                     </tr>
                 @endforelse
             </tbody>

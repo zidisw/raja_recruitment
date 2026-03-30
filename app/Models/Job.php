@@ -76,7 +76,7 @@ class Job extends Model
 
     public function scopeActive(Builder $query): Builder
     {
-        return $query->where('is_active', true)->whereNested(function (Builder $q) {
+        return $query->where('is_active', true)->whereNested(function ($q) {
             $q->whereNull('closed_at')->orWhere('closed_at', '>=', now());
         });
     }

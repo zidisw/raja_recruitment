@@ -28,6 +28,7 @@ class InterviewManagement extends Component
     public ?int $editingId = null;
 
     public bool $showUploadModal = false;
+    public ?int $expandedRow = null;
     public ?int $uploadingInterviewId = null;
     /** @var \Illuminate\Http\UploadedFile|null */
     public $upload_file = null;
@@ -62,6 +63,11 @@ class InterviewManagement extends Component
         }
 
         return Application::with(['candidate', 'job'])->find($this->application_id);
+    }
+
+    public function toggleExpand(int $applicationId): void
+    {
+        $this->expandedRow = $this->expandedRow === $applicationId ? null : $applicationId;
     }
 
     private function authorizeAccess(): void

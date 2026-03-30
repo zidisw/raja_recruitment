@@ -19,6 +19,7 @@ class OnboardingManagement extends Component
     use WithPagination;
 
     public bool $showModal = false;
+    public ?int $expandedRow = null;
     public ?int $application_id = null;
     public string $joining_date = '';
     public string $onboarding_status = 'pending';
@@ -26,6 +27,11 @@ class OnboardingManagement extends Component
     public function mount(): void
     {
         abort_unless(Auth::user()->canAccessRecruitment(), 403);
+    }
+
+    public function toggleExpand(int $applicationId): void
+    {
+        $this->expandedRow = $this->expandedRow === $applicationId ? null : $applicationId;
     }
 
     public function openCreate(): void

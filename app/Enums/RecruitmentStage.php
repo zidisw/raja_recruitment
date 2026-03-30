@@ -68,8 +68,8 @@ enum RecruitmentStage: string
             self::OFFERING => 5,
             self::PSYCHOTEST => 4,
             self::MCU => 6,
-            self::ONBOARDING => 6,
-            self::HIRED => 7,
+            self::ONBOARDING => 7,
+            self::HIRED => 8,
             self::REJECTED => 99,
         };
     }
@@ -87,7 +87,8 @@ enum RecruitmentStage: string
             4 => self::PSYCHOTEST,
             5 => self::OFFERING,
             6 => self::MCU,
-            7 => self::HIRED,
+            7 => self::ONBOARDING,
+            8 => self::HIRED,
             99 => self::REJECTED,
             default => self::APPLIED,
         };

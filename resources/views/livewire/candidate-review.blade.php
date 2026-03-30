@@ -191,13 +191,25 @@
                     $logMap = $application->stageLogs->keyBy(fn($l) => $l->stage instanceof \App\Enums\RecruitmentStage ? $l->stage->value : $l->stage);
                     $isRejected = $application->recruitment_stage === \App\Enums\RecruitmentStage::REJECTED;
                     $currentIndex = array_search($application->recruitment_stage, $allStages);
+                    // Find the index of the stage where rejection happened, if applicable
+                    $rejectedIndex = false;
+                    if ($isRejected) {
+                        foreach ($allStages as $idx => $s) {
+                            $l = $logMap->get($s->value);
+                            if ($l && $l->decision === 'rejected') {
+                                $rejectedIndex = $idx;
+                                break;
+                            }
+                        }
+                    }
                 @endphp
                 <div class="flex flex-col">
                     @foreach ($allStages as $i => $stage)
                         @php
                             $log = $logMap->get($stage->value);
                             $stageIndex = $i;
-                            $isPastByProgress = !$isRejected && $currentIndex !== false && $stageIndex < $currentIndex;
+                            $isPastByProgress = (!$isRejected && $currentIndex !== false && $stageIndex < $currentIndex) || 
+                                                ($isRejected && $rejectedIndex !== false && $stageIndex < $rejectedIndex);
                             $isPassed = ($log && $log->decision === 'passed') || $isPastByProgress;
                             $isRejectedHere = $log && $log->decision === 'rejected';
                             $isCurrent = !$isRejected && $currentIndex === $stageIndex;
@@ -255,15 +267,8 @@
                                 </div>
 
                                 @if ($log)
-                                    <div
-                                        class="mt-1.5 rounded-lg p-2.5 text-xs {{ $isPassed ? 'bg-green-50 dark:bg-green-900/20' : 'bg-red-50 dark:bg-red-900/20' }}">
-                                        @if ($log->notes)
-                                            <p class="text-zinc-700 dark:text-zinc-300 mb-1">{{ $log->notes }}</p>
-                                        @endif
-                                        <p class="text-zinc-400">
-                                            {{ $log->created_at->format('d M Y H:i:s') }}
-                                            · {{ __('by') }} {{ $log->decidedBy->name }}
-                                        </p>
+                                    <div class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                                        {{ $log->created_at->format('d M Y H:i:s') }} · by {{ $log->decidedBy?->name ?? 'Sistem' }}
                                     </div>
                                 @endif
                             </div>
@@ -315,15 +320,107 @@
                     </div>
                 </div>
             @else
-                <div class="rounded-xl border border-zinc-200 p-6 dark:border-zinc-700">
-                    <p class="text-sm text-zinc-500">
-                        @if ($application->recruitment_stage === \App\Enums\RecruitmentStage::HIRED)
-                            {{ __('This candidate has been hired.') }}
-                        @else
-                            {{ __('This application has been closed.') }}
-                        @endif
-                    </p>
+                <div class="rounded-xl border border-red-200 bg-red-50/50 p-6 dark:border-red-900/50 dark:bg-red-900/10">
+                    <div class="flex items-start gap-4">
+                        <div class="mt-0.5 rounded-full bg-red-100 p-2 text-red-600 dark:bg-red-900/50 dark:text-red-400">
+                            <flux:icon.x-circle class="size-6" />
+                        </div>
+                        <div class="flex-1">
+                            <flux:heading size="md" class="text-red-900 dark:text-red-100 mb-1">
+                                @if ($application->recruitment_stage === \App\Enums\RecruitmentStage::HIRED)
+                                    <span class="text-emerald-700 dark:text-emerald-400">{{ __('Kandidat Telah Diterima') }}</span>
+                                @else
+                                    {{ __('Kandidat Tidak Lolos') }}
+                                @endif
+                            </flux:heading>
+                            
+                            @if ($application->recruitment_stage === \App\Enums\RecruitmentStage::REJECTED)
+                                @php
+                                    $rejectedStage = null;
+                                    $rejectedNotes = null;
+                                    $rejectedDate = $application->stage_updated_at;
+                                    
+                                    // 1. Check if rejected due to MCU fit=unfit
+                                    if ($application->mcu && $application->mcu->result === 'unfit') {
+                                        $rejectedStage = __('Medical Check Up (MCU)');
+                                        $rejectedNotes = $application->mcu->notes;
+                                        $rejectedDate = $application->mcu->updated_at;
+                                    } 
+                                    // 2. Check if rejected due to Psychotest result=failed
+                                    elseif ($application->psychotest && $application->psychotest->result === 'failed') {
+                                        $rejectedStage = __('Psychotest');
+                                        $rejectedNotes = $application->psychotest->notes;
+                                        $rejectedDate = $application->psychotest->updated_at;
+                                    } 
+                                    // 3. Check Stage Logs for manual rejection
+                                    else {
+                                        $rejectionLog = $application->stageLogs->where('decision', 'rejected')->last();
+                                        if ($rejectionLog) {
+                                            $rejectedStage = $rejectionLog->stage instanceof \App\Enums\RecruitmentStage 
+                                                ? $rejectionLog->stage->label() 
+                                                : \App\Enums\RecruitmentStage::tryFrom($rejectionLog->stage)?->label() ?? $rejectionLog->stage;
+                                            $rejectedNotes = $rejectionLog->notes;
+                                            $rejectedDate = $rejectionLog->created_at;
+                                        }
+                                    }
+                                @endphp
+                                
+                                <div class="mt-3 space-y-2 text-sm text-red-800 dark:text-red-200/80">
+                                    @if($rejectedStage)
+                                        <p><span class="font-semibold">{{ __('Gagal pada tahap:') }}</span> {{ $rejectedStage }}</p>
+                                    @endif
+                                    
+                                    @if($rejectedNotes)
+                                        <div class="rounded-lg bg-red-100/50 dark:bg-red-900/30 p-3 italic">
+                                            "{{ $rejectedNotes }}"
+                                        </div>
+                                    @endif
+                                    
+                                    <p class="text-xs text-red-600 dark:text-red-400/80 mt-2">
+                                        {{ __('Diputuskan pada:') }} {{ $rejectedDate ? $rejectedDate->format('d M Y, H:i') : '—' }}
+                                    </p>
+                                </div>
+                            @elseif ($application->recruitment_stage === \App\Enums\RecruitmentStage::HIRED)
+                                <p class="text-sm text-emerald-800 dark:text-emerald-200/80 mt-1">
+                                    {{ __('Kandidat ini telah menyelesaikan semua tahapan tes dan resmi diterima.') }}
+                                </p>
+                            @else
+                                <p class="text-sm text-zinc-500 mt-1">
+                                    {{ __('This application has been closed.') }}
+                                </p>
+                            @endif
+                        </div>
+                    </div>
                 </div>
+            @endif
+            {{-- Audit Trail / Status Change History --}}
+            @if(in_array(auth()->user()->role->value, ['admin', 'super_admin', 'hr']))
+                @if($application->stageLogs->isNotEmpty())
+                    <div class="rounded-xl border border-zinc-200 p-6 dark:border-zinc-700">
+                        <flux:heading size="md" class="mb-4">{{ __('Riwayat Perubahan Status') }}</flux:heading>
+                        <div class="flex flex-col gap-4">
+                            @foreach ($application->stageLogs->sortByDesc('created_at') as $log)
+                                <div class="relative pl-4 border-l-2 {{ $log->decision === 'rejected' ? 'border-red-400' : 'border-blue-400' }}">
+                                    <div class="absolute -left-[5px] top-1.5 h-2 w-2 rounded-full {{ $log->decision === 'rejected' ? 'bg-red-500' : 'bg-blue-500' }}"></div>
+                                    <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
+                                        {{ $log->stage instanceof \App\Enums\RecruitmentStage ? $log->stage->label() : (\App\Enums\RecruitmentStage::tryFrom($log->stage)?->label() ?? $log->stage) }}
+                                        <span class="font-normal text-xs ml-2 py-0.5 px-1.5 rounded-md {{ $log->decision === 'rejected' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' }}">
+                                            {{ ucfirst($log->decision) }}
+                                        </span>
+                                    </p>
+                                    <p class="text-xs text-zinc-500 mt-1">
+                                        {{ $log->created_at->format('d M Y, H:i') }} • {{ __('Oleh:') }} {{ $log->decidedBy?->name ?? 'Sistem' }}
+                                    </p>
+                                    @if($log->notes && $log->decision === 'rejected')
+                                        <div class="mt-2 text-xs italic text-zinc-600 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 p-2 rounded-md">
+                                            "{{ $log->notes }}"
+                                        </div>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
             @endif
         </div>
     </div>

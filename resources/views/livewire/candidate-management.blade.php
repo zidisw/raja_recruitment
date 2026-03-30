@@ -52,8 +52,25 @@
         <div class="mb-4 flex flex-wrap items-center gap-3 bg-blue-50/50 dark:bg-blue-900/20 p-3 rounded-xl border border-blue-100 dark:border-blue-800/30">
             <span class="text-sm font-medium text-blue-700 dark:text-blue-400">{{ count($selectedIds) }} {{ __('kandidat terpilih') }}</span>
             @if ($tab === 'administrasi')
-                <flux:button size="sm" variant="primary" wire:click="bulkPassAdministrative">{{ __('Loloskan Terpilih') }}</flux:button>
-                <flux:button size="sm" variant="danger" wire:click="bulkReject" class="btn-danger-glow">{{ __('Tolak') }}</flux:button>
+                <flux:button size="sm" variant="primary"
+                    @click="$dispatch('confirm-action', {
+                        title: 'Loloskan Kandidat Terpilih?',
+                        description: '{{ count($selectedIds) }} kandidat akan dipindahkan ke tahap On Progress (Interview HR).',
+                        variant: 'info',
+                        method: 'bulkPassAdministrative',
+                        confirmLabel: 'Ya, Loloskan Semua'
+                    })"
+                >{{ __('Loloskan Terpilih') }}</flux:button>
+                
+                <flux:button size="sm" variant="danger" class="btn-danger-glow"
+                    @click="$dispatch('confirm-action', {
+                        title: 'Tolak Kandidat Terpilih?',
+                        description: '{{ count($selectedIds) }} kandidat akan ditandai sebagai tidak lolos.',
+                        variant: 'danger',
+                        method: 'bulkReject',
+                        confirmLabel: 'Ya, Tolak Semua'
+                    })"
+                >{{ __('Tolak') }}</flux:button>
             @endif
         </div>
     @endif
@@ -159,12 +176,43 @@
                                         <x-slot name="content">
                                             <div class="py-1">
                                                 @foreach($stageConfig as $key => $cfg)
+                                                    @php
+                                                        $isCurrent = $application->recruitment_stage->value === $key;
+                                                        $isPreceding = array_search($key, array_keys($stageConfig)) < array_search($application->recruitment_stage->value, array_keys($stageConfig));
+                                                        $isRejected = $key === 'REJECTED';
+                                                        
+                                                        // Determine variant and message
+                                                        $variant = 'info';
+                                                        $title = 'Ubah Tahapan Kandidat?';
+                                                        $desc = "Pindahkan kandidat ke tahap {$cfg['label']}.";
+                                                        $btnLabel = 'Ya, Ubah';
+                                                        
+                                                        if ($isRejected) {
+                                                            $variant = 'danger';
+                                                            $title = 'Tolak Kandidat?';
+                                                            $desc = 'Kandidat akan ditandai sebagai tidak lolos rekrutmen.';
+                                                            $btnLabel = 'Ya, Tolak';
+                                                        } elseif ($isPreceding) {
+                                                            $variant = 'warning';
+                                                            $title = 'Turunkan Tahapan?';
+                                                            $desc = "Anda memindahkan kandidat MUNDUR ke tahap {$cfg['label']}. Apakah Anda yakin?";
+                                                        }
+                                                    @endphp
                                                     <button type="button"
-                                                        wire:click="updateProgressStage({{ $application->id }}, '{{ $key }}')"
-                                                        class="w-full flex items-center gap-2.5 px-4 py-2 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 {{ $application->recruitment_stage->value === $key ? 'font-semibold text-brand-500' : 'text-zinc-700 dark:text-zinc-300' }}">
+                                                        @if(!$isCurrent)
+                                                            @click="$dispatch('confirm-action', {
+                                                                title: '{{ $title }}',
+                                                                description: '{{ $desc }}',
+                                                                variant: '{{ $variant }}',
+                                                                method: 'updateProgressStage',
+                                                                args: [{{ $application->id }}, '{{ $key }}'],
+                                                                confirmLabel: '{{ $btnLabel }}'
+                                                            })"
+                                                        @endif
+                                                        class="w-full flex items-center gap-2.5 px-4 py-2 text-sm hover:bg-zinc-100 dark:hover:bg-zinc-800 {{ $isCurrent ? 'font-semibold text-brand-500 cursor-default' : 'text-zinc-700 dark:text-zinc-300' }}">
                                                         <span class="size-2 rounded-full {{ $cfg['dot'] }}"></span>
                                                         {{ $cfg['label'] }}
-                                                        @if($application->recruitment_stage->value === $key)
+                                                        @if($isCurrent)
                                                             <flux:icon.check class="size-4 ml-auto" />
                                                         @endif
                                                     </button>
@@ -215,86 +263,8 @@
                         <tr wire:key="candidate-{{ $application->id }}-expanded"
                             wire:transition.opacity.duration.200ms class="bg-zinc-50/50 dark:bg-zinc-800/30">
                             <td colspan="7" class="px-6 py-4">
-                                <div x-data="{ show: false }" x-init="requestAnimationFrame(() => show = true)" x-show="show"
-                                    x-transition:enter="transition ease-out duration-220"
-                                    x-transition:enter-start="opacity-0 -translate-y-1"
-                                    x-transition:enter-end="opacity-100 translate-y-0"
-                                    class="grid grid-cols-2 gap-x-8 gap-y-3 text-sm sm:grid-cols-3 lg:grid-cols-4">
-                                    <div>
-                                        <span class="text-xs font-medium uppercase tracking-wide text-zinc-400">{{ __('Gender') }}</span>
-                                        <p class="mt-0.5 capitalize text-zinc-700 dark:text-zinc-300">{{ $profile?->gender ?? '—' }}</p>
-                                    </div>
-                                    <div>
-                                        <span class="text-xs font-medium uppercase tracking-wide text-zinc-400">{{ __('Date of Birth') }}</span>
-                                        <p class="mt-0.5 text-zinc-700 dark:text-zinc-300">
-                                            @if ($profile?->date_of_birth)
-                                                {{ $profile->date_of_birth->format('d/m/y') }}
-                                                <span class="text-zinc-400">({{ $profile->date_of_birth->age }} {{ __('y.o.') }})</span>
-                                            @else
-                                                —
-                                            @endif
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <span class="text-xs font-medium uppercase tracking-wide text-zinc-400">{{ __('Religion') }}</span>
-                                        <p class="mt-0.5 text-zinc-700 dark:text-zinc-300">{{ $profile?->religion ?? '—' }}</p>
-                                    </div>
-                                    <div>
-                                        <span class="text-xs font-medium uppercase tracking-wide text-zinc-400">{{ __('Marital Status') }}</span>
-                                        <p class="mt-0.5 capitalize text-zinc-700 dark:text-zinc-300">{{ $profile?->marital_status ?? '—' }}</p>
-                                    </div>
-                                    <div>
-                                        <span class="text-xs font-medium uppercase tracking-wide text-zinc-400">{{ __('NIK') }}</span>
-                                        <p class="mt-0.5 text-zinc-700 dark:text-zinc-300">{{ $profile?->nik ?? '—' }}</p>
-                                    </div>
-                                    <div>
-                                        <span class="text-xs font-medium uppercase tracking-wide text-zinc-400">{{ __('Education') }}</span>
-                                        @php $latestEdu = $application->candidate->education->sortByDesc('end_year')->first(); @endphp
-                                        <p class="mt-0.5 text-zinc-700 dark:text-zinc-300">
-                                            {{ $latestEdu ? $latestEdu->degree . ' — ' . $latestEdu->institution_name : '—' }}
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <span class="text-xs font-medium uppercase tracking-wide text-zinc-400">{{ __('Work Exp.') }}</span>
-                                        <p class="mt-0.5 text-zinc-700 dark:text-zinc-300">
-                                            @if ($application->candidate->experiences->isNotEmpty())
-                                                <span class="text-green-600 dark:text-green-400">✓ {{ $application->candidate->experiences->count() }} {{ __('job(s)') }}</span>
-                                            @else
-                                                <span class="text-zinc-400">{{ __('None') }}</span>
-                                            @endif
-                                        </p>
-                                    </div>
-                                    <div>
-                                        <span class="text-xs font-medium uppercase tracking-wide text-zinc-400">{{ __('Organization') }}</span>
-                                        <p class="mt-0.5 text-zinc-700 dark:text-zinc-300">
-                                            @if ($application->candidate->organizations->isNotEmpty())
-                                                <span class="text-green-600 dark:text-green-400">✓ {{ $application->candidate->organizations->count() }} {{ __('org(s)') }}</span>
-                                            @else
-                                                <span class="text-zinc-400">{{ __('None') }}</span>
-                                            @endif
-                                        </p>
-                                    </div>
-                                    <div class="col-span-2 sm:col-span-3 lg:col-span-4">
-                                        <span class="text-xs font-medium uppercase tracking-wide text-zinc-400">{{ __('Documents') }}</span>
-                                        <div class="mt-1 flex flex-wrap gap-1.5">
-                                            @if ($profile?->ktp_path)
-                                                <flux:badge variant="outline" size="sm" icon="identification">{{ __('ID Card') }}</flux:badge>
-                                            @endif
-                                            @if ($profile?->portfolio_path)
-                                                <flux:badge variant="outline" size="sm" icon="document">{{ __('Portfolio') }}</flux:badge>
-                                            @endif
-                                            @if ($profile?->certificate_path)
-                                                <flux:badge variant="outline" size="sm" icon="academic-cap">{{ __('Certificate') }}</flux:badge>
-                                            @endif
-                                            @if ($profile?->paklaring_path)
-                                                <flux:badge variant="outline" size="sm" icon="document-text">{{ __('Paklaring') }}</flux:badge>
-                                            @endif
-                                            @if (!$profile?->ktp_path && !$profile?->portfolio_path && !$profile?->certificate_path && !$profile?->paklaring_path)
-                                                <span class="text-xs text-zinc-400">{{ __('No documents uploaded') }}</span>
-                                            @endif
-                                        </div>
-                                    </div>
-                                </div>
+                                <x-candidate-expanded-row :application="$application" />
+                            </td>
                             </td>
                         </tr>
                     @endif
