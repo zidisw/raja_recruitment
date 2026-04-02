@@ -71,33 +71,30 @@ class Dashboard extends Component
                         'monthly_trend' => $this->monthlyTrend(),
                     ];
                 } elseif ($user->hasAdminRole()) {
-                    $jobIds = Job::query()->pluck('id');
-
                     $stats = [
                         'total_open_jobs' => Job::where('is_active', true)->count(),
-                        'total_applicants' => Application::whereIn('job_id', $jobIds)->count(),
-                        'administrative_passed' => Application::whereIn('job_id', $jobIds)
-                            ->whereIn('recruitment_stage', [RecruitmentStage::HR_INTERVIEW, RecruitmentStage::USER_INTERVIEW, RecruitmentStage::OFFERING, RecruitmentStage::PSYCHOTEST, RecruitmentStage::MCU, RecruitmentStage::ONBOARDING, RecruitmentStage::HIRED])
+                        'total_applicants' => Application::count(),
+                        'administrative_passed' => Application::query()
+                            ->whereIn('recruitment_stage', [RecruitmentStage::ADMINISTRASI, RecruitmentStage::HR_INTERVIEW, RecruitmentStage::USER_INTERVIEW, RecruitmentStage::OFFERING, RecruitmentStage::PSYCHOTEST, RecruitmentStage::MCU, RecruitmentStage::ONBOARDING, RecruitmentStage::HIRED])
                             ->count(),
-                        'interview_scheduled' => Interview::whereHas('application', fn ($q) => $q->whereIn('job_id', $jobIds))
+                        'interview_scheduled' => Interview::query()
                             ->where('status', 'scheduled')
                             ->count(),
-                        'offering_sent' => OfferingLetter::whereHas('application', fn ($q) => $q->whereIn('job_id', $jobIds))
-                            ->count(),
-                        'hired_candidates' => Application::whereIn('job_id', $jobIds)
+                        'offering_sent' => OfferingLetter::count(),
+                        'hired_candidates' => Application::query()
                             ->where('recruitment_stage', RecruitmentStage::HIRED)
                             ->count(),
                         'pipeline' => [
-                            'applied' => Application::whereIn('job_id', $jobIds)
+                            'applied' => Application::query()
                                 ->where('recruitment_stage', RecruitmentStage::APPLIED)
                                 ->count(),
-                            'interview' => Application::whereIn('job_id', $jobIds)
+                            'interview' => Application::query()
                                 ->whereIn('recruitment_stage', [RecruitmentStage::HR_INTERVIEW, RecruitmentStage::USER_INTERVIEW])
                                 ->count(),
-                            'offer' => Application::whereIn('job_id', $jobIds)
+                            'offer' => Application::query()
                                 ->where('recruitment_stage', RecruitmentStage::OFFERING)
                                 ->count(),
-                            'hired' => Application::whereIn('job_id', $jobIds)
+                            'hired' => Application::query()
                                 ->where('recruitment_stage', RecruitmentStage::HIRED)
                                 ->count(),
                         ],

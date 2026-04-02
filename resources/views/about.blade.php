@@ -310,7 +310,7 @@
                 @endphp
                 @foreach ($doubleLoop as $clientImg)
                     <div class="shrink-0 h-24 w-48 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm p-3 flex items-center justify-center">
-                        <img src="{{ asset('rjs-photos/our-client/' . $clientImg) }}"
+                        <img src="{{ asset('rjs-photos/client/' . $clientImg) }}"
                             alt="Client"
                             class="max-h-full max-w-full object-contain">
                     </div>

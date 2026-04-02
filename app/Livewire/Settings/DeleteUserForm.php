@@ -3,8 +3,9 @@
 namespace App\Livewire\Settings;
 
 use App\Concerns\PasswordValidationRules;
-use App\Livewire\Actions\Logout;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
 use Livewire\Component;
 
 class DeleteUserForm extends Component
@@ -16,15 +17,23 @@ class DeleteUserForm extends Component
     /**
      * Delete the currently authenticated user.
      */
-    public function deleteUser(Logout $logout): void
+    public function deleteUser(): void
     {
         $this->validate([
             'password' => $this->currentPasswordRules(),
         ]);
 
-        $user = Auth::user();
-        $user->delete();
-        $logout();
+        $userId = Auth::id();
+
+        if (! $userId) {
+            return;
+        }
+
+        User::query()->whereKey($userId)->delete();
+
+        Auth::guard('web')->logout();
+        Session::invalidate();
+        Session::regenerateToken();
 
         $this->redirect('/', navigate: true);
     }

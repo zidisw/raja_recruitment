@@ -1,15 +1,20 @@
-<div class="flex flex-col gap-8">
-    <div>
-        @if ($tab === 'administrasi')
-            <flux:heading size="xl" level="1">{{ __('Administrasi Kandidat') }}</flux:heading>
-            <flux:subheading size="lg">{{ __('Pengecekan berkas dan CV kandidat') }}</flux:subheading>
-        @elseif ($tab === 'on-progress')
-            <flux:heading size="xl" level="1">{{ __('Kandidat On Progress') }}</flux:heading>
-            <flux:subheading size="lg">{{ __('Kandidat yang sedang dalam proses rekrutmen') }}</flux:subheading>
-        @else
-            <flux:heading size="xl" level="1">{{ __('Riwayat Kandidat') }}</flux:heading>
-            <flux:subheading size="lg">{{ __('Seluruh riwayat kandidat yang pernah melamar') }}</flux:subheading>
-        @endif
+<div class="flex flex-col gap-5">
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <div>
+            @if ($tab === 'administrasi')
+                <flux:heading size="xl" level="1">{{ __('Administrasi Kandidat') }}</flux:heading>
+                <flux:subheading size="lg">{{ __('Pengecekan berkas dan CV kandidat') }}</flux:subheading>
+            @elseif ($tab === 'on-progress')
+                <flux:heading size="xl" level="1">{{ __('Kandidat On Progress') }}</flux:heading>
+                <flux:subheading size="lg">{{ __('Kandidat yang sedang dalam proses rekrutmen') }}</flux:subheading>
+            @else
+                <flux:heading size="xl" level="1">{{ __('Riwayat Kandidat') }}</flux:heading>
+                <flux:subheading size="lg">{{ __('Seluruh riwayat kandidat yang pernah melamar') }}</flux:subheading>
+            @endif
+        </div>
+        <div class="flex gap-2">
+            <flux:button wire:click="exportCsv" variant="ghost" icon="document-arrow-down" class="w-full md:w-auto">{{ __('Export CSV') }}</flux:button>
+        </div>
     </div>
 
     @if (session('success'))
@@ -18,38 +23,50 @@
         </flux:callout>
     @endif
 
-    <div class="glass-card-static p-4 sm:p-5">
-        <div class="mb-3 flex items-center justify-between gap-2">
-            <flux:heading size="sm">{{ __('Filters') }}</flux:heading>
-            <flux:badge variant="outline">
-                {{ $tab === 'administrasi' ? __('Administrasi') : ($tab === 'on-progress' ? __('On Progress') : __('Riwayat')) }}
-            </flux:badge>
-        </div>
-        <div class="flex flex-col gap-3 md:flex-row md:items-center">
-            <flux:input wire:model.live.debounce.300ms="search" icon="magnifying-glass"
-                placeholder="{{ __('Search candidates...') }}" class="w-full md:w-64" />
-            <flux:button wire:click="exportCsv" variant="ghost" icon="document-arrow-down" class="max-md:w-full">{{ __('Export CSV') }}</flux:button>
-            <div class="w-24"><x-custom-select wire:model.live="perPage" :options="['10' => '10', '30' => '30', '50' => '50']" /></div>
-        </div>
-        <div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
-            <x-custom-select wire:model.live="filterDepartment" placeholder="{{ __('All Departments') }}"
-                :options="['' => __('All Departments')] + $departments->pluck('name', 'id')->toArray()" />
-            <x-custom-select wire:model.live="filterSite" placeholder="{{ __('All Sites') }}"
-                :options="['' => __('All Sites')] + $sites->pluck('name', 'id')->toArray()" />
-            <x-custom-select wire:model.live="filterStage" placeholder="{{ __('All Stages') }}"
-                :options="['' => __('All Stages')] + collect($allStages)->mapWithKeys(fn($stage) => [$stage->value => $stage->label()])->toArray()" />
+    <div class="flex flex-col gap-3">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
+            <flux:field class="sm:w-md">
+                <flux:input wire:model.live.debounce.300ms="search" icon="magnifying-glass"
+                    placeholder="{{ __('Search candidates...') }}" />
+            </flux:field>
+            <div class="min-w-40">
+                <x-custom-select wire:model.live="filterDepartment" placeholder="{{ __('All Departments') }}"
+                    :options="['' => __('All Departments')] + $departments->pluck('name', 'id')->toArray()" />
+            </div>
+            <div class="min-w-36">
+                <x-custom-select wire:model.live="filterSite" placeholder="{{ __('All Sites') }}"
+                    :options="['' => __('All Sites')] + $sites->pluck('name', 'id')->toArray()" />
+            </div>
+            <div class="min-w-36">
+                <x-custom-select wire:model.live="filterStage" placeholder="{{ __('All Stages') }}"
+                    :options="['' => __('All Stages')] + collect($allStages)->mapWithKeys(fn($stage) => [$stage->value => $stage->label()])->toArray()" />
+            </div>
             @if ($tab === 'riwayat')
-                <x-custom-select wire:model.live="filterStatus" placeholder="{{ __('All Statuses') }}"
-                    :options="['' => __('All Statuses')] + collect($statusOptions)->mapWithKeys(fn($status) => [$status->value => $status->label()])->toArray()" />
+                <div class="min-w-36">
+                    <x-custom-select wire:model.live="filterStatus" placeholder="{{ __('All Statuses') }}"
+                        :options="['' => __('All Statuses')] + collect($statusOptions)->mapWithKeys(fn($status) => [$status->value => $status->label()])->toArray()" />
+                </div>
             @endif
-            <flux:button wire:click="resetDetailedFilters" variant="ghost" icon="x-mark" class="w-full">
+            <flux:button wire:click="resetDetailedFilters" variant="ghost" icon="x-mark" class="w-full sm:w-auto">
                 {{ __('Reset Filters') }}
             </flux:button>
+            <div class="flex items-center justify-end gap-2 sm:ml-auto">
+                <span class="text-sm text-zinc-500">{{ __('Per page:') }}</span>
+                <div class="w-20">
+                    <x-custom-select wire:model.live="perPage" :options="['10' => '10', '30' => '30', '50' => '50']" />
+                </div>
+            </div>
         </div>
     </div>
 
-    @if(count($selectedIds) > 0)
-        <div class="mb-4 flex flex-wrap items-center gap-3 bg-blue-50/50 dark:bg-blue-900/20 p-3 rounded-xl border border-blue-100 dark:border-blue-800/30">
+    <div class="flex items-center justify-start">
+        <flux:button wire:click="toggleSelectionMode" variant="ghost" icon="check-circle" size="sm" class="w-full sm:w-auto">
+            {{ $selectionMode ? __('Tutup Pilih') : __('Pilih Kandidat') }}
+        </flux:button>
+    </div>
+
+    @if($selectionMode && count($selectedIds) > 0)
+        <div class="flex flex-wrap items-center gap-3 bg-blue-50/50 dark:bg-blue-900/20 p-3 rounded-xl border border-blue-100 dark:border-blue-800/30">
             <span class="text-sm font-medium text-blue-700 dark:text-blue-400">{{ count($selectedIds) }} {{ __('kandidat terpilih') }}</span>
             @if ($tab === 'administrasi')
                 <flux:button size="sm" variant="primary"
@@ -72,6 +89,7 @@
                     })"
                 >{{ __('Tolak') }}</flux:button>
             @endif
+            <flux:button size="sm" variant="ghost" wire:click="toggleSelectionMode">{{ __('Selesai Pilih') }}</flux:button>
         </div>
     @endif
 
@@ -79,7 +97,7 @@
         <table class="w-full text-sm modern-table">
             <thead>
                 <tr>
-                    @if ($tab === 'administrasi')
+                    @if ($selectionMode)
                         <th class="w-12 px-4 py-3 text-center">
                             <flux:checkbox wire:model.live="selectAll" />
                         </th>
@@ -106,7 +124,7 @@
                         $isTerminal = $application->recruitment_stage->isTerminal();
                     @endphp
                     <tr class="cursor-pointer">
-                        @if ($tab === 'administrasi')
+                        @if ($selectionMode)
                             <td class="w-12 px-4 py-3 text-center" @click.stop>
                                 <flux:checkbox wire:model.live="selectedIds" value="{{ $application->id }}" />
                             </td>
@@ -153,6 +171,7 @@
                                     @php
                                         $stageConfig = [
                                             'APPLIED'        => ['label' => 'Applied', 'badge' => 'text-zinc-600 bg-zinc-50 border-zinc-200 dark:bg-zinc-800/50 dark:border-zinc-700 dark:text-zinc-400', 'dot' => 'bg-zinc-400'],
+                                            'ADMINISTRASI'   => ['label' => 'Administrasi', 'badge' => 'text-sky-600 bg-sky-50 border-sky-200 dark:bg-sky-900/20 dark:border-sky-800/50 dark:text-sky-400', 'dot' => 'bg-sky-500'],
                                             'HR_INTERVIEW'   => ['label' => 'HR Interview', 'badge' => 'text-amber-600 bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:border-amber-800/50 dark:text-amber-400', 'dot' => 'bg-amber-500'],
                                             'USER_INTERVIEW' => ['label' => 'User Interview', 'badge' => 'text-orange-600 bg-orange-50 border-orange-200 dark:bg-orange-900/20 dark:border-orange-800/50 dark:text-orange-400', 'dot' => 'bg-orange-500'],
                                             'OFFERING'       => ['label' => 'Offering', 'badge' => 'text-cyan-600 bg-cyan-50 border-cyan-200 dark:bg-cyan-900/20 dark:border-cyan-800/50 dark:text-cyan-400', 'dot' => 'bg-cyan-500'],
@@ -251,6 +270,16 @@
                                         wire:target="openScheduleInterview({{ $application->id }})">
                                         {{ __('Jadwalkan') }}
                                     </flux:button>
+                                @elseif ($tab === 'riwayat' && auth()->user()->isSuperAdmin())
+                                    <flux:button size="sm" variant="ghost" class="text-red-500 btn-danger-glow"
+                                        @click="$dispatch('confirm-action', {
+                                            title: 'Hapus Kandidat dari Riwayat?',
+                                            description: 'Data lamaran dan jejak proses rekrutmen akan dihapus permanen. Aksi ini tidak dapat dibatalkan.',
+                                            variant: 'danger',
+                                            method: 'deleteApplication',
+                                            args: [{{ $application->id }}],
+                                            confirmLabel: 'Ya, Hapus'
+                                        })">{{ __('Delete') }}</flux:button>
                                 @endif
                                 <flux:button size="sm" variant="ghost"
                                     href="{{ route('applications.review', [$application->job, $application]) }}"
@@ -262,15 +291,14 @@
                     @if ($isExpanded)
                         <tr wire:key="candidate-{{ $application->id }}-expanded"
                             wire:transition.opacity.duration.200ms class="bg-zinc-50/50 dark:bg-zinc-800/30">
-                            <td colspan="7" class="px-6 py-4">
+                            <td colspan="{{ $selectionMode ? 8 : 7 }}" class="px-6 py-4">
                                 <x-candidate-expanded-row :application="$application" />
-                            </td>
                             </td>
                         </tr>
                     @endif
                 @empty
                     <tr>
-                        <td colspan="7" class="px-6 py-8 text-center text-zinc-400">{{ __('No candidates found.') }}</td>
+                        <td colspan="{{ $selectionMode ? 8 : 7 }}" class="px-6 py-8 text-center text-zinc-400">{{ __('No candidates found.') }}</td>
                     </tr>
                 @endforelse
             </tbody>

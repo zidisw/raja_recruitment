@@ -77,7 +77,7 @@
                             <span class="ml-1 capitalize">{{ $profile->marital_status }}</span>
                         </div>
                         <div class="col-span-2">
-                            <span class="font-medium text-zinc-600 dark:text-zinc-400">{{ __('ID Card Address') }}:</span>
+                            <span class="font-medium text-zinc-600 dark:text-zinc-400">{{ __('KTP Address') }}:</span>
                             <span class="ml-1">{{ $profile->address_ktp }}</span>
                         </div>
                         <div class="col-span-2">
@@ -157,7 +157,7 @@
                     <div class="flex flex-wrap gap-3">
                         @if ($profile->ktp_path)
                             <a href="{{ Storage::url($profile->ktp_path) }}" target="_blank">
-                                <flux:button variant="ghost" icon="identification" size="sm">{{ __('ID Card') }}</flux:button>
+                                <flux:button variant="ghost" icon="identification" size="sm">{{ __('KTP') }}</flux:button>
                             </a>
                         @endif
                         @if ($profile->portfolio_path)
@@ -202,18 +202,41 @@
                             }
                         }
                     }
+
+                    // Pre-calculate status for visual continuity on connecting lines
+                    $stageStatuses = [];
+                    foreach ($allStages as $idx => $s) {
+                        $log = $logMap->get($s->value);
+                        $isPastByProgress = (!$isRejected && $currentIndex !== false && $idx < $currentIndex) ||
+                            ($isRejected && $rejectedIndex !== false && $idx < $rejectedIndex);
+                        $isPassed = ($log && $log->decision === 'passed') || $isPastByProgress;
+                        $isRejectedHere = $log && $log->decision === 'rejected';
+                        $isCurrent = !$isRejected && $currentIndex === $idx;
+                        $isReached = $isPassed || $isCurrent || $isRejectedHere;
+
+                        $stageStatuses[$idx] = [
+                            'isPassed' => $isPassed,
+                            'isRejectedHere' => $isRejectedHere,
+                            'isCurrent' => $isCurrent,
+                            'isReached' => $isReached,
+                            'log' => $log,
+                        ];
+                    }
                 @endphp
                 <div class="flex flex-col">
                     @foreach ($allStages as $i => $stage)
                         @php
-                            $log = $logMap->get($stage->value);
-                            $stageIndex = $i;
-                            $isPastByProgress = (!$isRejected && $currentIndex !== false && $stageIndex < $currentIndex) || 
-                                                ($isRejected && $rejectedIndex !== false && $stageIndex < $rejectedIndex);
-                            $isPassed = ($log && $log->decision === 'passed') || $isPastByProgress;
-                            $isRejectedHere = $log && $log->decision === 'rejected';
-                            $isCurrent = !$isRejected && $currentIndex === $stageIndex;
-                            $isUpcoming = !$isRejected && $currentIndex !== false && $stageIndex > $currentIndex;
+                            $status = $stageStatuses[$i];
+                            $isPassed = $status['isPassed'];
+                            $isRejectedHere = $status['isRejectedHere'];
+                            $isCurrent = $status['isCurrent'];
+                            $log = $status['log'];
+
+                            // The top line connects the previous stage to this one. It's colored if THIS stage is reached.
+                            $topLineActive = $status['isReached'];
+
+                            // The bottom line connects this stage to the next one. It's colored if the NEXT stage is reached.
+                            $bottomLineActive = isset($stageStatuses[$i + 1]) && $stageStatuses[$i + 1]['isReached'];
                         @endphp
 
                         <div class="flex gap-3">
@@ -222,7 +245,7 @@
                                 {{-- Top line (except first) --}}
                                 @if ($i > 0)
                                     <div
-                                        class="w-px flex-none h-3 {{ $isPassed || $isRejectedHere ? 'bg-green-400' : ($isCurrent ? 'bg-blue-400' : 'bg-zinc-200 dark:bg-zinc-700') }}">
+                                        class="w-px flex-none h-3 {{ $topLineActive ? 'bg-green-400' : 'bg-zinc-200 dark:bg-zinc-700' }}">
                                     </div>
                                 @else
                                     <div class="h-3"></div>
@@ -230,8 +253,8 @@
 
                                 {{-- Circle --}}
                                 <div
-                                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold
-                                            {{ $isPassed ? 'bg-green-500 text-white' : ($isRejectedHere ? 'bg-red-500 text-white' : ($isCurrent ? 'bg-blue-500 text-white ring-4 ring-blue-500/20' : 'bg-zinc-200 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400')) }}">
+                                    class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold relative
+                                                {{ $isPassed ? 'bg-green-500 text-white' : ($isRejectedHere ? 'bg-red-500 text-white' : ($isCurrent ? 'bg-blue-500 text-white ring-4 ring-blue-500/20' : 'bg-zinc-200 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400')) }}">
                                     @if ($isPassed)
                                         <flux:icon.check class="size-4" />
                                     @elseif ($isRejectedHere)
@@ -244,31 +267,32 @@
                                 {{-- Bottom line (except last) --}}
                                 @if (!$loop->last)
                                     <div
-                                        class="w-px flex-1 min-h-3 {{ $isPassed ? 'bg-green-400' : 'bg-zinc-200 dark:bg-zinc-700' }}">
+                                        class="w-px flex-1 min-h-3 {{ $bottomLineActive ? 'bg-green-400' : 'bg-zinc-200 dark:bg-zinc-700' }}">
                                     </div>
                                 @endif
                             </div>
 
                             {{-- Stage content --}}
-                            <div class="pb-4 pt-3 flex-1 min-w-0">
+                            <div class="pb-4 pt-1 flex-1 min-w-0">
                                 <div class="flex items-center gap-2 flex-wrap">
                                     <span
-                                        class="text-sm font-semibold
-                                                {{ $isPassed ? 'text-green-700 dark:text-green-400' : ($isRejectedHere ? 'text-red-700 dark:text-red-400' : ($isCurrent ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-400 dark:text-zinc-500')) }}">
+                                        class="text-sm font-semibold mt-1
+                                                    {{ $isPassed ? 'text-green-700 dark:text-green-400' : ($isRejectedHere ? 'text-red-700 dark:text-red-400' : ($isCurrent ? 'text-blue-600 dark:text-blue-400' : 'text-zinc-500 dark:text-zinc-400')) }}">
                                         {{ $stage->label() }}
                                     </span>
                                     @if ($isCurrent)
-                                        <flux:badge color="blue" size="sm">{{ __('Tahap Saat Ini') }}</flux:badge>
+                                        <flux:badge color="blue" size="sm" class="mt-1">{{ __('Tahap Saat Ini') }}</flux:badge>
                                     @elseif ($isPassed)
-                                        <flux:badge color="green" size="sm">{{ __('Lolos') }}</flux:badge>
+                                        <flux:badge color="green" size="sm" class="mt-1">{{ __('Lolos') }}</flux:badge>
                                     @elseif ($isRejectedHere)
-                                        <flux:badge color="red" size="sm">{{ __('Tidak Lolos') }}</flux:badge>
+                                        <flux:badge color="red" size="sm" class="mt-1">{{ __('Tidak Lolos') }}</flux:badge>
                                     @endif
                                 </div>
 
                                 @if ($log)
                                     <div class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
-                                        {{ $log->created_at->format('d M Y H:i:s') }} · by {{ $log->decidedBy?->name ?? 'Sistem' }}
+                                        {{ $log->created_at->format('d M Y H:i:s') }} · by
+                                        {{ $log->decidedBy?->name ?? 'Sistem' }}
                                     </div>
                                 @endif
                             </div>
@@ -292,28 +316,24 @@
 
                     <div class="flex flex-col gap-2">
                         @if ($application->nextStage())
-                            <flux:button
-                                @click="$dispatch('confirm-action', {
-                                    title: 'Loloskan Kandidat?',
-                                    description: 'Kandidat akan dilanjutkan ke tahap {{ $application->nextStage()->label() }}.',
-                                    variant: 'info',
-                                    method: 'advance',
-                                    confirmLabel: 'Ya, Loloskan'
-                                })"
-                                variant="primary" icon="check"
+                            <flux:button @click="$dispatch('confirm-action', {
+                                            title: 'Loloskan Kandidat?',
+                                            description: 'Kandidat akan dilanjutkan ke tahap {{ $application->nextStage()->label() }}.',
+                                            variant: 'info',
+                                            method: 'advance',
+                                            confirmLabel: 'Ya, Loloskan'
+                                        })" variant="primary" icon="check"
                                 class="w-full bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600">
                                 {{ __('Loloskan') }}
                             </flux:button>
                         @endif
-                        <flux:button
-                            @click="$dispatch('confirm-action', {
-                                title: 'Tandai Tidak Lolos?',
-                                description: 'Kandidat akan ditandai sebagai tidak lolos. Aksi ini tidak dapat dibatalkan.',
-                                variant: 'danger',
-                                method: 'reject',
-                                confirmLabel: 'Ya, Tidak Lolos'
-                            })"
-                            variant="danger" icon="x-mark"
+                        <flux:button @click="$dispatch('confirm-action', {
+                                    title: 'Tandai Tidak Lolos?',
+                                    description: 'Kandidat akan ditandai sebagai tidak lolos. Aksi ini tidak dapat dibatalkan.',
+                                    variant: 'danger',
+                                    method: 'reject',
+                                    confirmLabel: 'Ya, Tidak Lolos'
+                                })" variant="danger" icon="x-mark"
                             class="w-full btn-danger-glow bg-red-600 text-white hover:bg-red-700 dark:bg-red-500 dark:hover:bg-red-600">
                             {{ __('Tandai Tidak Lolos') }}
                         </flux:button>
@@ -328,56 +348,58 @@
                         <div class="flex-1">
                             <flux:heading size="md" class="text-red-900 dark:text-red-100 mb-1">
                                 @if ($application->recruitment_stage === \App\Enums\RecruitmentStage::HIRED)
-                                    <span class="text-emerald-700 dark:text-emerald-400">{{ __('Kandidat Telah Diterima') }}</span>
+                                    <span
+                                        class="text-emerald-700 dark:text-emerald-400">{{ __('Kandidat Telah Diterima') }}</span>
                                 @else
                                     {{ __('Kandidat Tidak Lolos') }}
                                 @endif
                             </flux:heading>
-                            
+
                             @if ($application->recruitment_stage === \App\Enums\RecruitmentStage::REJECTED)
                                 @php
                                     $rejectedStage = null;
                                     $rejectedNotes = null;
                                     $rejectedDate = $application->stage_updated_at;
-                                    
+
                                     // 1. Check if rejected due to MCU fit=unfit
                                     if ($application->mcu && $application->mcu->result === 'unfit') {
                                         $rejectedStage = __('Medical Check Up (MCU)');
                                         $rejectedNotes = $application->mcu->notes;
                                         $rejectedDate = $application->mcu->updated_at;
-                                    } 
+                                    }
                                     // 2. Check if rejected due to Psychotest result=failed
                                     elseif ($application->psychotest && $application->psychotest->result === 'failed') {
                                         $rejectedStage = __('Psychotest');
                                         $rejectedNotes = $application->psychotest->notes;
                                         $rejectedDate = $application->psychotest->updated_at;
-                                    } 
+                                    }
                                     // 3. Check Stage Logs for manual rejection
                                     else {
                                         $rejectionLog = $application->stageLogs->where('decision', 'rejected')->last();
                                         if ($rejectionLog) {
-                                            $rejectedStage = $rejectionLog->stage instanceof \App\Enums\RecruitmentStage 
-                                                ? $rejectionLog->stage->label() 
+                                            $rejectedStage = $rejectionLog->stage instanceof \App\Enums\RecruitmentStage
+                                                ? $rejectionLog->stage->label()
                                                 : \App\Enums\RecruitmentStage::tryFrom($rejectionLog->stage)?->label() ?? $rejectionLog->stage;
                                             $rejectedNotes = $rejectionLog->notes;
                                             $rejectedDate = $rejectionLog->created_at;
                                         }
                                     }
                                 @endphp
-                                
+
                                 <div class="mt-3 space-y-2 text-sm text-red-800 dark:text-red-200/80">
                                     @if($rejectedStage)
                                         <p><span class="font-semibold">{{ __('Gagal pada tahap:') }}</span> {{ $rejectedStage }}</p>
                                     @endif
-                                    
+
                                     @if($rejectedNotes)
                                         <div class="rounded-lg bg-red-100/50 dark:bg-red-900/30 p-3 italic">
                                             "{{ $rejectedNotes }}"
                                         </div>
                                     @endif
-                                    
+
                                     <p class="text-xs text-red-600 dark:text-red-400/80 mt-2">
-                                        {{ __('Diputuskan pada:') }} {{ $rejectedDate ? $rejectedDate->format('d M Y, H:i') : '—' }}
+                                        {{ __('Diputuskan pada:') }}
+                                        {{ $rejectedDate ? $rejectedDate->format('d M Y, H:i') : '—' }}
                                     </p>
                                 </div>
                             @elseif ($application->recruitment_stage === \App\Enums\RecruitmentStage::HIRED)
@@ -400,19 +422,25 @@
                         <flux:heading size="md" class="mb-4">{{ __('Riwayat Perubahan Status') }}</flux:heading>
                         <div class="flex flex-col gap-4">
                             @foreach ($application->stageLogs->sortByDesc('created_at') as $log)
-                                <div class="relative pl-4 border-l-2 {{ $log->decision === 'rejected' ? 'border-red-400' : 'border-blue-400' }}">
-                                    <div class="absolute -left-[5px] top-1.5 h-2 w-2 rounded-full {{ $log->decision === 'rejected' ? 'bg-red-500' : 'bg-blue-500' }}"></div>
+                                <div
+                                    class="relative pl-4 border-l-2 {{ $log->decision === 'rejected' ? 'border-red-400' : 'border-blue-400' }}">
+                                    <div
+                                        class="absolute -left-[5px] top-1.5 h-2 w-2 rounded-full {{ $log->decision === 'rejected' ? 'bg-red-500' : 'bg-blue-500' }}">
+                                    </div>
                                     <p class="text-sm font-semibold text-zinc-800 dark:text-zinc-200">
                                         {{ $log->stage instanceof \App\Enums\RecruitmentStage ? $log->stage->label() : (\App\Enums\RecruitmentStage::tryFrom($log->stage)?->label() ?? $log->stage) }}
-                                        <span class="font-normal text-xs ml-2 py-0.5 px-1.5 rounded-md {{ $log->decision === 'rejected' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' }}">
+                                        <span
+                                            class="font-normal text-xs ml-2 py-0.5 px-1.5 rounded-md {{ $log->decision === 'rejected' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400' }}">
                                             {{ ucfirst($log->decision) }}
                                         </span>
                                     </p>
                                     <p class="text-xs text-zinc-500 mt-1">
-                                        {{ $log->created_at->format('d M Y, H:i') }} • {{ __('Oleh:') }} {{ $log->decidedBy?->name ?? 'Sistem' }}
+                                        {{ $log->created_at->format('d M Y, H:i') }} • {{ __('Oleh:') }}
+                                        {{ $log->decidedBy?->name ?? 'Sistem' }}
                                     </p>
                                     @if($log->notes && $log->decision === 'rejected')
-                                        <div class="mt-2 text-xs italic text-zinc-600 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 p-2 rounded-md">
+                                        <div
+                                            class="mt-2 text-xs italic text-zinc-600 dark:text-zinc-400 bg-zinc-50 dark:bg-zinc-800/50 p-2 rounded-md">
                                             "{{ $log->notes }}"
                                         </div>
                                     @endif

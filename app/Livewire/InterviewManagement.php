@@ -7,9 +7,13 @@ namespace App\Livewire;
 use App\Enums\RecruitmentStage;
 use App\Enums\UserRole;
 use App\Models\Application;
+use App\Models\Department;
+use App\Models\ApplicationStageLog;
 use App\Models\Interview;
+use App\Models\Site;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
@@ -45,6 +49,11 @@ class InterviewManagement extends Component
     public $evaluation_file = null;
 
     public string $tab = 'hr';
+    public string $search = '';
+    public string $filterDepartment = '';
+    public string $filterSite = '';
+    public string $filterStatus = '';
+    public int $perPage = 10;
 
     public function mount(string $tab = 'hr'): void
     {
@@ -53,6 +62,31 @@ class InterviewManagement extends Component
         if (in_array($tab, ['hr', 'user'])) {
             $this->tab = $tab;
         }
+    }
+
+    public function updatingSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingFilterDepartment(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingFilterSite(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingFilterStatus(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingPerPage(): void
+    {
+        $this->resetPage();
     }
 
     #[Computed]
@@ -118,30 +152,31 @@ class InterviewManagement extends Component
         $this->uploadingInterviewId = null;
         $this->upload_file = null;
         
-        $this->dispatch('notify', ['message' => __('Evaluation file uploaded successfully.'), 'type' => 'success']);
-    }
+        $this->dispatch('notify', ['message' => __('Dokumen penilaian berhasil diunggah.'), 'type' => 'success']);    }
 
     public function exportCsv()
     {
-        $interviews = $this->getFilteredQuery()->get();
-        
-        $csvData = "Nama Kandidat,Posisi,Departemen,Pewawancara,Tanggal Interview,Status\n";
-        
-        foreach ($interviews as $interview) {
-            $name = '"' . str_replace('"', '""', $interview->application->candidate->name) . '"';
-            $jobTitle = '"' . str_replace('"', '""', $interview->application->job->title) . '"';
-            $dept = '"' . str_replace('"', '""', $interview->application->job->department?->name ?? '') . '"';
-            $interviewer = '"' . str_replace('"', '""', $interview->interviewer?->name ?? '—') . '"';
-            $date = $interview->scheduled_at ? $interview->scheduled_at->format('Y-m-d H:i') : '';
-            $status = $interview->status;
-            
-            $csvData .= "{$name},{$jobTitle},{$dept},{$interviewer},{$date},{$status}\n";
-        }
-        
         $filename = "export_interview_{$this->tab}_" . now()->format('Ymd_His') . ".csv";
-        
-        return response()->streamDownload(function () use ($csvData) {
-            echo $csvData;
+
+        return response()->streamDownload(function (): void {
+            $output = fopen('php://output', 'w');
+
+            fputcsv($output, ['Nama Kandidat', 'Posisi', 'Departemen', 'Pewawancara', 'Tanggal Interview', 'Status']);
+
+            $this->getFilteredQuery()->chunk(500, function ($interviews) use ($output): void {
+                foreach ($interviews as $interview) {
+                    fputcsv($output, [
+                        $interview->application->candidate->name,
+                        $interview->application->job->title,
+                        $interview->application->job->department?->name ?? '',
+                        $interview->interviewer?->name ?? '—',
+                        $interview->scheduled_at?->format('Y-m-d H:i') ?? '',
+                        $interview->status,
+                    ]);
+                }
+            });
+
+            fclose($output);
         }, $filename);
     }
 
@@ -268,16 +303,49 @@ class InterviewManagement extends Component
 
     public function render(): \Illuminate\View\View
     {
+        $interviewQuery = $this->getFilteredQuery();
+
+        if ($this->search !== '') {
+            $interviewQuery->where(function ($query): void {
+                $query->whereHas('application.candidate', function ($q): void {
+                    $q->where('name', 'like', '%' . $this->search . '%')
+                        ->orWhere('email', 'like', '%' . $this->search . '%');
+                })->orWhereHas('application.job', function ($q): void {
+                    $q->where('title', 'like', '%' . $this->search . '%');
+                });
+            });
+        }
+
+        if ($this->filterDepartment !== '') {
+            $interviewQuery->whereHas('application.job', fn ($q) => $q->where('department_id', (int) $this->filterDepartment));
+        }
+
+        if ($this->filterSite !== '') {
+            $interviewQuery->whereHas('application.job', fn ($q) => $q->where('site_id', (int) $this->filterSite));
+        }
+
+        if ($this->filterStatus !== '') {
+            $interviewQuery->where('status', $this->filterStatus);
+        }
+
+        $interviews = $interviewQuery->paginate($this->perPage);
+
+        $applicationIds = $interviews->getCollection()->pluck('application_id')->unique()->values();
+
+        $applications = Application::with(['candidate', 'job', 'interviews'])
+            ->whereIn('id', $applicationIds)
+            ->get();
+
         return view('livewire.interview-management', [
-            'interviews' => $this->getFilteredQuery()->paginate(10),
-            'applications' => Application::with(['candidate', 'job', 'interviews'])
-                ->whereIn('recruitment_stage', [RecruitmentStage::HR_INTERVIEW, RecruitmentStage::USER_INTERVIEW])
-                ->get(),
+            'interviews' => $interviews,
+            'applications' => $applications,
             'interviewers' => User::whereIn('role', [
                 UserRole::Admin,
                 UserRole::HR,
                 UserRole::Interviewer,
             ])->get(),
+            'departments' => Cache::remember('ref.departments', 300, fn () => Department::query()->orderBy('name')->get(['id', 'name'])),
+            'sites' => Cache::remember('ref.sites', 300, fn () => Site::query()->orderBy('name')->get(['id', 'name'])),
         ]);
     }
 
@@ -287,10 +355,12 @@ class InterviewManagement extends Component
 
         // Condition: If ANY interview is failed, move to REJECTED
         if ($interview->status === 'failed') {
-            $application->update([
-                'recruitment_stage' => RecruitmentStage::REJECTED,
-                'stage_updated_at' => now(),
-            ]);
+            $this->transitionApplicationStage(
+                $application,
+                RecruitmentStage::REJECTED,
+                'rejected',
+                'Interview ' . $interview->interview_type . ': Failed'
+            );
             return;
         }
 
@@ -301,10 +371,12 @@ class InterviewManagement extends Component
         // Condition 2: Move to OFFERING if User Interview is passed AND has form
         if ($userInterview && $userInterview->status === 'passed' && $userInterview->evaluation_path) {
             if ($application->recruitment_stage === RecruitmentStage::USER_INTERVIEW) {
-                $application->update([
-                    'recruitment_stage' => RecruitmentStage::OFFERING,
-                    'stage_updated_at' => now(),
-                ]);
+                $this->transitionApplicationStage(
+                    $application,
+                    RecruitmentStage::OFFERING,
+                    'passed',
+                    'Interview User: Passed'
+                );
             }
             return;
         }
@@ -314,13 +386,41 @@ class InterviewManagement extends Component
         if ($hrInterview && $hrInterview->status === 'passed' && $hrInterview->evaluation_path) {
             if ($userInterview) {
                 if ($application->recruitment_stage === RecruitmentStage::HR_INTERVIEW) {
-                    $application->update([
-                        'recruitment_stage' => RecruitmentStage::USER_INTERVIEW,
-                        'stage_updated_at' => now(),
-                    ]);
+                    $this->transitionApplicationStage(
+                        $application,
+                        RecruitmentStage::USER_INTERVIEW,
+                        'passed',
+                        'Interview HR: Passed'
+                    );
                 }
             }
         }
+    }
+
+    private function transitionApplicationStage(
+        Application $application,
+        RecruitmentStage $targetStage,
+        string $decision,
+        string $notes
+    ): void {
+        $currentStage = $application->recruitment_stage;
+
+        if ($currentStage === $targetStage) {
+            return;
+        }
+
+        $application->update([
+            'recruitment_stage' => $targetStage,
+            'stage_updated_at' => now(),
+        ]);
+
+        ApplicationStageLog::create([
+            'application_id' => $application->id,
+            'stage' => $currentStage->value,
+            'decision' => $decision,
+            'notes' => $notes,
+            'decided_by' => Auth::id() ?? $application->user_id,
+        ]);
     }
 
     private function resetForm(): void

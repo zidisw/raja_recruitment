@@ -12,17 +12,21 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
 #[Layout('layouts.app')]
 class MyApplications extends Component
 {
-    use WithPagination;
+    use WithPagination, WithFileUploads;
 
     public string $search = '';
 
     #[Url]
     public string $tab = 'on_progress';
+
+    public ?int $uploadingForApplicationId = null;
+    public $signed_ol_file = null;
 
     public function mount(): void
     {
@@ -51,6 +55,12 @@ class MyApplications extends Component
         $offering = $application->offeringLetter;
         if (!$offering) {
             $this->dispatch('notify', ['message' => __('Offering letter tidak ditemukan.'), 'type' => 'error']);
+            return;
+        }
+
+        // Check if signed OL has been uploaded
+        if (!$offering->signed_file_path) {
+            $this->dispatch('notify', ['message' => __('Harap unggah OL yang sudah ditandatangani sebelum menerima penawaran.'), 'type' => 'warning']);
             return;
         }
 
@@ -85,6 +95,35 @@ class MyApplications extends Component
         ]);
 
         $this->dispatch('notify', ['message' => __('Anda telah menolak penawaran pekerjaan ini.'), 'type' => 'info']);
+    }
+
+    public function uploadSignedOL(int $applicationId): void
+    {
+        $validated = $this->validate([
+            'signed_ol_file' => ['required', 'file', 'mimes:pdf', 'max:5120'],
+        ], [], [
+            'signed_ol_file' => __('Signed OL'),
+        ]);
+
+        $application = Application::where('user_id', '=', Auth::id())->findOrFail($applicationId);
+        $offering = $application->offeringLetter;
+
+        if (!$offering) {
+            $this->dispatch('notify', ['message' => __('Offering letter tidak ditemukan.'), 'type' => 'error']);
+            return;
+        }
+
+        if ($this->signed_ol_file) {
+            $signed_path = $this->signed_ol_file->store('offering-letters/signed', 'public');
+            $offering->update([
+                'signed_file_path' => $signed_path,
+                'signed_at' => now(),
+            ]);
+        }
+
+        $this->signed_ol_file = null;
+        $this->uploadingForApplicationId = null;
+        $this->dispatch('notify', ['message' => __('OL yang sudah ditandatangani berhasil diunggah.'), 'type' => 'success']);
     }
 
     public function render(): \Illuminate\View\View

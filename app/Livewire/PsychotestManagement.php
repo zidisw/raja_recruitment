@@ -7,8 +7,12 @@ namespace App\Livewire;
 use App\Enums\RecruitmentStage;
 use App\Enums\UserRole;
 use App\Models\Application;
+use App\Models\Department;
 use App\Models\Psychotest;
+use App\Models\Site;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -28,6 +32,11 @@ class PsychotestManagement extends Component
     public string $result = 'passed';
     public string $notes = '';
     public $psychotest_file;
+    public string $search = '';
+    public string $filterDepartment = '';
+    public string $filterSite = '';
+    public string $filterResult = '';
+    public int $perPage = 10;
 
     #[Computed]
     public function currentPsychotest(): ?Psychotest
@@ -58,6 +67,31 @@ class PsychotestManagement extends Component
         abort_unless(Auth::user()->canAccessRecruitment(), 403);
     }
 
+    public function updatingSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingFilterDepartment(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingFilterSite(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingFilterResult(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingPerPage(): void
+    {
+        $this->resetPage();
+    }
+
     public function openCreate(?int $appId = null): void
     {
         $this->reset(['editingId', 'application_id', 'test_date', 'notes', 'psychotest_file']);
@@ -72,7 +106,7 @@ class PsychotestManagement extends Component
     {
         $this->editingId = $psychotest->id;
         $this->application_id = $psychotest->application_id;
-        $this->test_date = $psychotest->test_date?->format('Y-m-d') ?? '';
+        $this->test_date = $psychotest->test_date ? Carbon::parse($psychotest->test_date)->format('Y-m-d') : '';
         $this->result = $psychotest->result;
         $this->notes = (string) $psychotest->notes;
         $this->psychotest_file = null;
@@ -140,11 +174,41 @@ class PsychotestManagement extends Component
 
     public function render(): \Illuminate\View\View
     {
+        $query = Application::with(['candidate', 'job.department', 'job.site', 'psychotest'])
+            ->whereIn('recruitment_stage', [RecruitmentStage::PSYCHOTEST, RecruitmentStage::MCU])
+            ->latest('updated_at');
+
+        if ($this->search !== '') {
+            $query->where(function ($q): void {
+                $q->whereHas('candidate', function ($candidate): void {
+                    $candidate->where('name', 'like', '%' . $this->search . '%')
+                        ->orWhere('email', 'like', '%' . $this->search . '%');
+                })->orWhereHas('job', function ($job): void {
+                    $job->where('title', 'like', '%' . $this->search . '%');
+                });
+            });
+        }
+
+        if ($this->filterDepartment !== '') {
+            $query->whereHas('job', fn ($q) => $q->where('department_id', (int) $this->filterDepartment));
+        }
+
+        if ($this->filterSite !== '') {
+            $query->whereHas('job', fn ($q) => $q->where('site_id', (int) $this->filterSite));
+        }
+
+        if ($this->filterResult !== '') {
+            if ($this->filterResult === 'none') {
+                $query->whereDoesntHave('psychotest');
+            } else {
+                $query->whereHas('psychotest', fn ($q) => $q->where('result', $this->filterResult));
+            }
+        }
+
         return view('livewire.psychotest-management', [
-            'applications_paginated' => Application::with(['candidate', 'job', 'psychotest'])
-                ->whereIn('recruitment_stage', [RecruitmentStage::PSYCHOTEST, RecruitmentStage::MCU])
-                ->latest('updated_at')
-                ->paginate(10),
+            'applications_paginated' => $query->paginate($this->perPage),
+            'departments' => Cache::remember('ref.departments', 300, fn () => Department::query()->orderBy('name')->get(['id', 'name'])),
+            'sites' => Cache::remember('ref.sites', 300, fn () => Site::query()->orderBy('name')->get(['id', 'name'])),
         ]);
     }
 }

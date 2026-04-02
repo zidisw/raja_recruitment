@@ -1,11 +1,14 @@
 <div class="flex flex-col gap-8">
     {{-- Modern Header --}}
-    <div class="relative overflow-hidden rounded-2xl border-l-4 border-brand-500 bg-linear-to-br from-brand-50 via-blue-50 to-emerald-50 px-6 py-8 text-zinc-900 shadow-xl dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 dark:text-white sm:px-8">
+    <div
+        class="relative overflow-hidden rounded-2xl border-l-4 border-brand-500 bg-linear-to-br from-brand-50 via-blue-50 to-emerald-50 px-6 py-8 text-zinc-900 shadow-xl dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 dark:text-white sm:px-8">
         <div class="absolute -right-8 -top-8 h-40 w-40 rounded-full bg-brand-500/10 blur-2xl"></div>
-        <div class="absolute -bottom-4 -left-4 h-32 w-32 rounded-full bg-brand-500/5 blur-2xl dark:bg-slate-500/10"></div>
+        <div class="absolute -bottom-4 -left-4 h-32 w-32 rounded-full bg-brand-500/5 blur-2xl dark:bg-slate-500/10">
+        </div>
         <div class="relative">
             <h1 class="text-2xl font-bold sm:text-3xl">{{ __('My Profile') }} 👤</h1>
-            <p class="mt-2 text-zinc-600 dark:text-slate-300">{{ __('Manage your account and personal information') }}</p>
+            <p class="mt-2 text-zinc-600 dark:text-slate-300">{{ __('Manage your account and personal information') }}
+            </p>
         </div>
     </div>
 
@@ -15,28 +18,37 @@
         <div class="me-10 w-full pb-4 md:w-[220px]">
             <flux:navlist aria-label="Profile Sections" class="sticky top-8">
                 <flux:navlist.group heading="Account">
-                    <flux:navlist.item icon="user" wire:click="$set('activeTab', 'account')" :current="$activeTab === 'account'">{{ __('Account Info') }}</flux:navlist.item>
-                    <flux:navlist.item icon="key" wire:click="$set('activeTab', 'password')" :current="$activeTab === 'password'">{{ __('Change Password') }}</flux:navlist.item>
+                    <flux:navlist.item icon="user" wire:click="$set('activeTab', 'account')"
+                        :current="$activeTab === 'account'">{{ __('Account Info') }}</flux:navlist.item>
+                    <flux:navlist.item icon="key" wire:click="$set('activeTab', 'password')"
+                        :current="$activeTab === 'password'">{{ __('Change Password') }}</flux:navlist.item>
                 </flux:navlist.group>
 
                 <flux:navlist.group heading="Profile Data" class="mt-4">
-                    <flux:navlist.item icon="identification" wire:click="$set('activeTab', 'personal')" :current="$activeTab === 'personal'">{{ __('Personal Info') }}</flux:navlist.item>
-                    <flux:navlist.item icon="document-text" wire:click="$set('activeTab', 'documents')" :current="$activeTab === 'documents'">{{ __('Documents') }}</flux:navlist.item>
-                    <flux:navlist.item icon="academic-cap" wire:click="$set('activeTab', 'education')" :current="$activeTab === 'education'">{{ __('Education') }}</flux:navlist.item>
-                    <flux:navlist.item icon="briefcase" wire:click="$set('activeTab', 'experience')" :current="$activeTab === 'experience'">{{ __('Experience') }}</flux:navlist.item>
-                    <flux:navlist.item icon="user-group" wire:click="$set('activeTab', 'organization')" :current="$activeTab === 'organization'">{{ __('Organizations') }}</flux:navlist.item>
+                    <flux:navlist.item icon="identification" wire:click="$set('activeTab', 'personal')"
+                        :current="$activeTab === 'personal'">{{ __('Personal Info') }}</flux:navlist.item>
+                    <flux:navlist.item icon="document-text" wire:click="$set('activeTab', 'documents')"
+                        :current="$activeTab === 'documents'">{{ __('Documents') }}</flux:navlist.item>
+                    <flux:navlist.item icon="academic-cap" wire:click="$set('activeTab', 'education')"
+                        :current="$activeTab === 'education'">{{ __('Education') }}</flux:navlist.item>
+                    <flux:navlist.item icon="briefcase" wire:click="$set('activeTab', 'experience')"
+                        :current="$activeTab === 'experience'">{{ __('Experience') }}</flux:navlist.item>
+                    <flux:navlist.item icon="user-group" wire:click="$set('activeTab', 'organization')"
+                        :current="$activeTab === 'organization'">{{ __('Organizations') }}</flux:navlist.item>
                 </flux:navlist.group>
             </flux:navlist>
         </div>
 
         {{-- Main Content Window --}}
         <div class="flex-1 w-full max-w-3xl">
-            
+
             {{-- Account Tab --}}
             @if ($activeTab === 'account')
-                <div class="theme-surface relative overflow-hidden rounded-2xl border border-zinc-200 bg-white/50 p-6 shadow-sm backdrop-blur-md dark:border-zinc-700/50 dark:bg-zinc-900/50 sm:p-8 animate-fade-in">
+                <div
+                    class="theme-surface relative overflow-hidden rounded-2xl border border-zinc-200 bg-white/50 p-6 shadow-sm backdrop-blur-md dark:border-zinc-700/50 dark:bg-zinc-900/50 sm:p-8 animate-fade-in">
                     <div class="mb-6 flex items-center gap-3">
-                        <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 dark:bg-blue-400/10 dark:text-blue-400">
+                        <div
+                            class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-500/10 text-blue-600 dark:bg-blue-400/10 dark:text-blue-400">
                             <flux:icon.user class="size-5" />
                         </div>
                         <div>
@@ -77,14 +89,17 @@
 
             {{-- Change Password --}}
             @if ($activeTab === 'password')
-                <div class="theme-surface relative overflow-hidden rounded-2xl border border-zinc-200 bg-white/50 p-6 shadow-sm backdrop-blur-md dark:border-zinc-700/50 dark:bg-zinc-900/50 sm:p-8 animate-fade-in">
+                <div
+                    class="theme-surface relative overflow-hidden rounded-2xl border border-zinc-200 bg-white/50 p-6 shadow-sm backdrop-blur-md dark:border-zinc-700/50 dark:bg-zinc-900/50 sm:p-8 animate-fade-in">
                     <div class="mb-6 flex items-center gap-3">
-                        <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-rose-500/10 text-rose-600 dark:bg-rose-400/10 dark:text-rose-400">
+                        <div
+                            class="flex h-10 w-10 items-center justify-center rounded-lg bg-rose-500/10 text-rose-600 dark:bg-rose-400/10 dark:text-rose-400">
                             <flux:icon.key class="size-5" />
                         </div>
                         <div>
                             <flux:heading size="lg">{{ __('Change Password') }}</flux:heading>
-                            <flux:text class="text-sm text-zinc-500">{{ __('Ensure your account is using a long, random password to stay secure') }}</flux:text>
+                            <flux:text class="text-sm text-zinc-500">
+                                {{ __('Ensure your account is using a long, random password to stay secure') }}</flux:text>
                         </div>
                     </div>
 
@@ -119,14 +134,17 @@
 
             {{-- Personal Data --}}
             @if ($activeTab === 'personal')
-                <div class="theme-surface relative overflow-hidden rounded-2xl border border-zinc-200 bg-white/50 p-6 shadow-sm backdrop-blur-md dark:border-zinc-700/50 dark:bg-zinc-900/50 sm:p-8 animate-fade-in">
+                <div
+                    class="theme-surface relative overflow-hidden rounded-2xl border border-zinc-200 bg-white/50 p-6 shadow-sm backdrop-blur-md dark:border-zinc-700/50 dark:bg-zinc-900/50 sm:p-8 animate-fade-in">
                     <div class="mb-6 flex items-center gap-3">
-                        <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-600 dark:bg-indigo-400/10 dark:text-indigo-400">
+                        <div
+                            class="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-500/10 text-indigo-600 dark:bg-indigo-400/10 dark:text-indigo-400">
                             <flux:icon.identification class="size-5" />
                         </div>
                         <div>
                             <flux:heading size="lg">{{ __('Personal Information') }}</flux:heading>
-                            <flux:text class="text-sm text-zinc-500">{{ __('Update your basic identity details') }}</flux:text>
+                            <flux:text class="text-sm text-zinc-500">{{ __('Update your basic identity details') }}
+                            </flux:text>
                         </div>
                     </div>
 
@@ -146,37 +164,28 @@
 
                             <flux:field>
                                 <flux:label>{{ __('Date of Birth') }} *</flux:label>
-                                <x-date-picker wire:model="date_of_birth" mode="date" placeholder="{{ __('Select date of birth...') }}" />
+                                <x-date-picker wire:model="date_of_birth" mode="date"
+                                    placeholder="{{ __('Select date of birth...') }}" />
                                 <flux:error name="date_of_birth" />
                             </flux:field>
 
                             <flux:field>
                                 <flux:label>{{ __('Gender') }} *</flux:label>
-                                <x-custom-select
-                                    wire:model="gender"
-                                    placeholder="{{ __('Select gender') }}"
-                                    :options="['' => __('Select gender'), 'male' => __('Male'), 'female' => __('Female')]"
-                                />
+                                <x-custom-select wire:model="gender" placeholder="{{ __('Select gender') }}" :options="['' => __('Select gender'), 'male' => __('Male'), 'female' => __('Female')]" />
                                 <flux:error name="gender" />
                             </flux:field>
 
                             <flux:field>
                                 <flux:label>{{ __('Religion') }} *</flux:label>
-                                <x-custom-select
-                                    wire:model="religion"
-                                    placeholder="{{ __('Select religion') }}"
-                                    :options="['' => __('Select religion'), 'Islam' => 'Islam', 'Kristen' => 'Kristen', 'Katolik' => 'Katolik', 'Hindu' => 'Hindu', 'Buddha' => 'Buddha', 'Konghucu' => 'Konghucu']"
-                                />
+                                <x-custom-select wire:model="religion" placeholder="{{ __('Select religion') }}"
+                                    :options="['' => __('Select religion'), 'Islam' => 'Islam', 'Kristen' => 'Kristen', 'Katolik' => 'Katolik', 'Hindu' => 'Hindu', 'Buddha' => 'Buddha', 'Konghucu' => 'Konghucu']" />
                                 <flux:error name="religion" />
                             </flux:field>
 
                             <flux:field>
                                 <flux:label>{{ __('Marital Status') }} *</flux:label>
-                                <x-custom-select
-                                    wire:model="marital_status"
-                                    placeholder="{{ __('Select status') }}"
-                                    :options="['' => __('Select status'), 'single' => __('Single'), 'married' => __('Married'), 'divorced' => __('Divorced'), 'widowed' => __('Widowed')]"
-                                />
+                                <x-custom-select wire:model="marital_status" placeholder="{{ __('Select status') }}"
+                                    :options="['' => __('Select status'), 'single' => __('Single'), 'married' => __('Married'), 'divorced' => __('Divorced'), 'widowed' => __('Widowed')]" />
                                 <flux:error name="marital_status" />
                             </flux:field>
 
@@ -187,7 +196,7 @@
                             </flux:field>
 
                             <flux:field class="sm:col-span-2">
-                                <flux:label>{{ __('ID Card Address') }} *</flux:label>
+                                <flux:label>{{ __('KTP Address') }} *</flux:label>
                                 <flux:textarea wire:model="address_ktp" rows="2" />
                                 <flux:error name="address_ktp" />
                             </flux:field>
@@ -199,8 +208,10 @@
                             </flux:field>
 
                             <flux:field class="sm:col-span-2">
-                                <flux:label>{{ __('LinkedIn URL') }}</flux:label>
-                                <flux:input wire:model="linkedin_url" type="url" placeholder="https://linkedin.com/in/..." />
+                                <flux:label>{{ __('LinkedIn URL') }} <span
+                                        class="text-zinc-400 font-normal text-xs">(optional)</span></flux:label>
+                                <flux:input wire:model="linkedin_url" type="url"
+                                    placeholder="https://linkedin.com/in/..." />
                                 <flux:error name="linkedin_url" />
                             </flux:field>
                         </div>
@@ -217,59 +228,77 @@
 
             {{-- Documents --}}
             @if ($activeTab === 'documents')
-                <div class="theme-surface relative overflow-hidden rounded-2xl border border-zinc-200 bg-white/50 p-6 shadow-sm backdrop-blur-md dark:border-zinc-700/50 dark:bg-zinc-900/50 sm:p-8 animate-fade-in">
+                <div
+                    class="theme-surface relative overflow-hidden rounded-2xl border border-zinc-200 bg-white/50 p-6 shadow-sm backdrop-blur-md dark:border-zinc-700/50 dark:bg-zinc-900/50 sm:p-8 animate-fade-in">
                     <div class="mb-6 flex items-center gap-3">
-                        <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-400">
+                        <div
+                            class="flex h-10 w-10 items-center justify-center rounded-lg bg-emerald-500/10 text-emerald-600 dark:bg-emerald-400/10 dark:text-emerald-400">
                             <flux:icon.document-text class="size-5" />
                         </div>
                         <div>
                             <flux:heading size="lg">{{ __('Documents') }}</flux:heading>
-                            <flux:text class="text-sm text-zinc-500">{{ __('Upload new files to replace existing documents.') }}</flux:text>
+                            <flux:text class="text-sm text-zinc-500">
+                                {{ __('Upload new files to replace existing documents.') }}</flux:text>
                         </div>
                     </div>
 
                     <form wire:submit="saveDocuments" class="flex flex-col gap-4">
                         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <flux:field>
-                                <flux:label>{{ __('Profile Photo') }}</flux:label>
+                                <flux:label>{{ __('Profile Photo') }} <span
+                                        class="text-zinc-400 font-normal text-xs">(optional)</span></flux:label>
                                 @if ($profile?->photo_path)
-                                    <p class="mb-1 text-xs text-zinc-400">{{ __('Current: ') }}<a href="{{ Storage::url($profile->photo_path) }}" target="_blank" class="text-blue-500 underline">{{ __('View') }}</a></p>
+                                    <p class="mb-1 text-xs text-zinc-400">{{ __('Current: ') }}<a
+                                            href="{{ Storage::url($profile->photo_path) }}" target="_blank"
+                                            class="text-blue-500 underline">{{ __('View') }}</a></p>
                                 @endif
                                 <flux:input wire:model="photo" type="file" accept="image/*" />
                                 <flux:error name="photo" />
                             </flux:field>
 
                             <flux:field>
-                                <flux:label>{{ __('ID Card Scan') }}</flux:label>
+                                <flux:label>{{ __('KTP Scan') }} <span
+                                        class="text-zinc-400 font-normal text-xs">(optional)</span></flux:label>
                                 @if ($profile?->ktp_path)
-                                    <p class="mb-1 text-xs text-zinc-400">{{ __('Current: ') }}<a href="{{ Storage::url($profile->ktp_path) }}" target="_blank" class="text-blue-500 underline">{{ __('View') }}</a></p>
+                                    <p class="mb-1 text-xs text-zinc-400">{{ __('Current: ') }}<a
+                                            href="{{ Storage::url($profile->ktp_path) }}" target="_blank"
+                                            class="text-blue-500 underline">{{ __('View') }}</a></p>
                                 @endif
                                 <flux:input wire:model="ktp_file" type="file" accept=".pdf,image/*" />
                                 <flux:error name="ktp_file" />
                             </flux:field>
 
                             <flux:field>
-                                <flux:label>{{ __('Portfolio') }}</flux:label>
+                                <flux:label>{{ __('Portfolio') }} <span
+                                        class="text-zinc-400 font-normal text-xs">(optional)</span></flux:label>
                                 @if ($profile?->portfolio_path)
-                                    <p class="mb-1 text-xs text-zinc-400">{{ __('Current: ') }}<a href="{{ Storage::url($profile->portfolio_path) }}" target="_blank" class="text-blue-500 underline">{{ __('View') }}</a></p>
+                                    <p class="mb-1 text-xs text-zinc-400">{{ __('Current: ') }}<a
+                                            href="{{ Storage::url($profile->portfolio_path) }}" target="_blank"
+                                            class="text-blue-500 underline">{{ __('View') }}</a></p>
                                 @endif
                                 <flux:input wire:model="portfolio" type="file" accept=".pdf" />
                                 <flux:error name="portfolio" />
                             </flux:field>
 
                             <flux:field>
-                                <flux:label>{{ __('Certificate') }}</flux:label>
+                                <flux:label>{{ __('Certificate') }} <span
+                                        class="text-zinc-400 font-normal text-xs">(optional)</span></flux:label>
                                 @if ($profile?->certificate_path)
-                                    <p class="mb-1 text-xs text-zinc-400">{{ __('Current: ') }}<a href="{{ Storage::url($profile->certificate_path) }}" target="_blank" class="text-blue-500 underline">{{ __('View') }}</a></p>
+                                    <p class="mb-1 text-xs text-zinc-400">{{ __('Current: ') }}<a
+                                            href="{{ Storage::url($profile->certificate_path) }}" target="_blank"
+                                            class="text-blue-500 underline">{{ __('View') }}</a></p>
                                 @endif
                                 <flux:input wire:model="certificate" type="file" accept=".pdf,image/*" />
                                 <flux:error name="certificate" />
                             </flux:field>
 
                             <flux:field class="sm:col-span-2">
-                                <flux:label>{{ __('Paklaring / Reference Letter') }}</flux:label>
+                                <flux:label>{{ __('Paklaring / Reference Letter') }} <span
+                                        class="text-zinc-400 font-normal text-xs">(optional)</span></flux:label>
                                 @if ($profile?->paklaring_path)
-                                    <p class="mb-1 text-xs text-zinc-400">{{ __('Current: ') }}<a href="{{ Storage::url($profile->paklaring_path) }}" target="_blank" class="text-blue-500 underline">{{ __('View') }}</a></p>
+                                    <p class="mb-1 text-xs text-zinc-400">{{ __('Current: ') }}<a
+                                            href="{{ Storage::url($profile->paklaring_path) }}" target="_blank"
+                                            class="text-blue-500 underline">{{ __('View') }}</a></p>
                                 @endif
                                 <flux:input wire:model="paklaring" type="file" accept=".pdf,image/*" />
                                 <flux:error name="paklaring" />
@@ -288,19 +317,23 @@
 
             {{-- Education --}}
             @if ($activeTab === 'education')
-                <div class="theme-surface relative overflow-hidden rounded-2xl border border-zinc-200 bg-white/50 p-6 shadow-sm backdrop-blur-md dark:border-zinc-700/50 dark:bg-zinc-900/50 sm:p-8 animate-fade-in">
+                <div
+                    class="theme-surface relative overflow-hidden rounded-2xl border border-zinc-200 bg-white/50 p-6 shadow-sm backdrop-blur-md dark:border-zinc-700/50 dark:bg-zinc-900/50 sm:p-8 animate-fade-in">
                     <form wire:submit="saveEducation" class="flex flex-col gap-4">
                         <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                             <div class="flex items-center gap-3">
-                                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-500/10 text-orange-600 dark:bg-orange-400/10 dark:text-orange-400">
+                                <div
+                                    class="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-500/10 text-orange-600 dark:bg-orange-400/10 dark:text-orange-400">
                                     <flux:icon.academic-cap class="size-5" />
                                 </div>
                                 <div>
                                     <flux:heading size="lg">{{ __('Education') }}</flux:heading>
-                                    <flux:text class="text-sm text-zinc-500">{{ __('Add your academic background') }}</flux:text>
+                                    <flux:text class="text-sm text-zinc-500">{{ __('Add your academic background') }}
+                                    </flux:text>
                                 </div>
                             </div>
-                            <flux:button type="button" wire:click="addEducation" size="sm" variant="ghost" icon="plus" class="self-start sm:self-center">
+                            <flux:button type="button" wire:click="addEducation" size="sm" variant="ghost" icon="plus"
+                                class="self-start sm:self-center">
                                 {{ __('Add') }}
                             </flux:button>
                         </div>
@@ -311,7 +344,9 @@
                                     <div class="mb-3 flex items-center justify-between">
                                         <flux:heading size="sm">{{ __('Education') }} #{{ $i + 1 }}</flux:heading>
                                         @if (count($educations) > 1)
-                                            <flux:button type="button" wire:click="removeEducation({{ $i }})" wire:target="removeEducation({{ $i }})" size="sm" variant="ghost" icon="trash" class="text-red-500" />
+                                            <flux:button type="button" wire:click="removeEducation({{ $i }})"
+                                                wire:target="removeEducation({{ $i }})" size="sm" variant="ghost" icon="trash"
+                                                class="text-red-500" />
                                         @endif
                                     </div>
                                     <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -334,7 +369,8 @@
                                         </flux:field>
                                         <flux:field>
                                             <flux:label>{{ __('GPA') }}</flux:label>
-                                            <flux:input wire:model="educations.{{ $i }}.gpa" type="number" step="0.01" min="0" max="4" placeholder="0.00" />
+                                            <flux:input wire:model="educations.{{ $i }}.gpa" type="number" step="0.01" min="0"
+                                                max="4" placeholder="0.00" />
                                             <flux:error name="educations.{{ $i }}.gpa" />
                                         </flux:field>
                                         <flux:field class="sm:col-span-2">
@@ -349,12 +385,14 @@
                                         </flux:field>
                                         <flux:field>
                                             <flux:label>{{ __('Start Year') }} *</flux:label>
-                                            <flux:input wire:model="educations.{{ $i }}.start_year" type="number" min="1970" max="{{ date('Y') }}" />
+                                            <flux:input wire:model="educations.{{ $i }}.start_year" type="number" min="1970"
+                                                max="{{ date('Y') }}" />
                                             <flux:error name="educations.{{ $i }}.start_year" />
                                         </flux:field>
                                         <flux:field>
                                             <flux:label>{{ __('End Year') }}</flux:label>
-                                            <flux:input wire:model="educations.{{ $i }}.end_year" type="number" min="1970" max="{{ date('Y') + 6 }}" />
+                                            <flux:input wire:model="educations.{{ $i }}.end_year" type="number" min="1970"
+                                                max="{{ date('Y') + 6 }}" />
                                             <flux:error name="educations.{{ $i }}.end_year" />
                                         </flux:field>
                                     </div>
@@ -374,29 +412,35 @@
 
             {{-- Work Experience --}}
             @if ($activeTab === 'experience')
-                <div class="theme-surface relative overflow-hidden rounded-2xl border border-zinc-200 bg-white/50 p-6 shadow-sm backdrop-blur-md dark:border-zinc-700/50 dark:bg-zinc-900/50 sm:p-8 animate-fade-in">
+                <div
+                    class="theme-surface relative overflow-hidden rounded-2xl border border-zinc-200 bg-white/50 p-6 shadow-sm backdrop-blur-md dark:border-zinc-700/50 dark:bg-zinc-900/50 sm:p-8 animate-fade-in">
                     <form wire:submit="saveExperience" class="flex flex-col gap-4">
                         <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                             <div class="flex items-center gap-3">
-                                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600 dark:bg-amber-400/10 dark:text-amber-400">
+                                <div
+                                    class="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-500/10 text-amber-600 dark:bg-amber-400/10 dark:text-amber-400">
                                     <flux:icon.briefcase class="size-5" />
                                 </div>
                                 <div>
                                     <flux:heading size="lg">{{ __('Work Experience') }}</flux:heading>
-                                    <flux:text class="text-sm text-zinc-500">{{ __('Detail your professional employment history') }}</flux:text>
+                                    <flux:text class="text-sm text-zinc-500">
+                                        {{ __('Detail your professional employment history') }}</flux:text>
                                 </div>
                             </div>
-                            <flux:button type="button" wire:click="addExperience" size="sm" variant="ghost" icon="plus" class="self-start sm:self-center">
+                            <flux:button type="button" wire:click="addExperience" size="sm" variant="ghost" icon="plus"
+                                class="self-start sm:self-center">
                                 {{ __('Add') }}
                             </flux:button>
                         </div>
-                        
+
                         <div class="flex flex-col gap-4">
                             @forelse ($experiences as $i => $exp)
                                 <div wire:key="exp-{{ $i }}" class="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700">
                                     <div class="mb-3 flex items-center justify-between">
                                         <flux:heading size="sm">{{ __('Experience') }} #{{ $i + 1 }}</flux:heading>
-                                        <flux:button type="button" wire:click="removeExperience({{ $i }})" wire:target="removeExperience({{ $i }})" size="sm" variant="ghost" icon="trash" class="text-red-500" />
+                                        <flux:button type="button" wire:click="removeExperience({{ $i }})"
+                                            wire:target="removeExperience({{ $i }})" size="sm" variant="ghost" icon="trash"
+                                            class="text-red-500" />
                                     </div>
                                     <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                         <flux:field class="sm:col-span-2">
@@ -411,16 +455,19 @@
                                         </flux:field>
                                         <flux:field>
                                             <flux:label>{{ __('Start Date') }} *</flux:label>
-                                            <x-date-picker wire:model="experiences.{{ $i }}.start_date" mode="date" placeholder="{{ __('Start date') }}" />
+                                            <x-date-picker wire:model="experiences.{{ $i }}.start_date" mode="date"
+                                                placeholder="{{ __('Start date') }}" />
                                             <flux:error name="experiences.{{ $i }}.start_date" />
                                         </flux:field>
                                         <flux:field>
                                             <flux:label>{{ __('End Date') }}</flux:label>
-                                            <x-date-picker wire:model="experiences.{{ $i }}.end_date" mode="date" placeholder="{{ __('End date') }}" :disabled="$exp['is_current'] ?? false" />
+                                            <x-date-picker wire:model="experiences.{{ $i }}.end_date" mode="date"
+                                                placeholder="{{ __('End date') }}" :disabled="$exp['is_current'] ?? false" />
                                             <flux:error name="experiences.{{ $i }}.end_date" />
                                         </flux:field>
                                         <flux:field class="sm:col-span-2">
-                                            <flux:checkbox wire:model="experiences.{{ $i }}.is_current" label="{{ __('Currently working here') }}" />
+                                            <flux:checkbox wire:model="experiences.{{ $i }}.is_current"
+                                                label="{{ __('Currently working here') }}" />
                                         </flux:field>
                                         <flux:field>
                                             <flux:label>{{ __('Last Salary') }}</flux:label>
@@ -435,9 +482,11 @@
                                     </div>
                                 </div>
                             @empty
-                                <div class="flex flex-col items-center justify-center rounded-xl border border-dashed border-zinc-200 bg-zinc-50/50 py-8 px-4 text-center dark:border-zinc-700 dark:bg-zinc-800/50">
+                                <div
+                                    class="flex flex-col items-center justify-center rounded-xl border border-dashed border-zinc-200 bg-zinc-50/50 py-8 px-4 text-center dark:border-zinc-700 dark:bg-zinc-800/50">
                                     <flux:icon.briefcase class="mb-2 size-8 text-zinc-300 dark:text-zinc-600" />
-                                    <p class="text-sm font-medium text-zinc-500 dark:text-zinc-400">{{ __('No work experience added yet.') }}</p>
+                                    <p class="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                                        {{ __('No work experience added yet.') }}</p>
                                 </div>
                             @endforelse
                         </div>
@@ -454,29 +503,35 @@
 
             {{-- Organizations --}}
             @if ($activeTab === 'organization')
-                <div class="theme-surface relative overflow-hidden rounded-2xl border border-zinc-200 bg-white/50 p-6 shadow-sm backdrop-blur-md dark:border-zinc-700/50 dark:bg-zinc-900/50 sm:p-8 animate-fade-in">
+                <div
+                    class="theme-surface relative overflow-hidden rounded-2xl border border-zinc-200 bg-white/50 p-6 shadow-sm backdrop-blur-md dark:border-zinc-700/50 dark:bg-zinc-900/50 sm:p-8 animate-fade-in">
                     <form wire:submit="saveOrganization" class="flex flex-col gap-4">
                         <div class="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                             <div class="flex items-center gap-3">
-                                <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-500/10 text-purple-600 dark:bg-purple-400/10 dark:text-purple-400">
+                                <div
+                                    class="flex h-10 w-10 items-center justify-center rounded-lg bg-purple-500/10 text-purple-600 dark:bg-purple-400/10 dark:text-purple-400">
                                     <flux:icon.user-group class="size-5" />
                                 </div>
                                 <div>
                                     <flux:heading size="lg">{{ __('Organizational Experience') }}</flux:heading>
-                                    <flux:text class="text-sm text-zinc-500">{{ __('List your leadership and association roles') }}</flux:text>
+                                    <flux:text class="text-sm text-zinc-500">
+                                        {{ __('List your leadership and association roles') }}</flux:text>
                                 </div>
                             </div>
-                            <flux:button type="button" wire:click="addOrganization" size="sm" variant="ghost" icon="plus" class="self-start sm:self-center">
+                            <flux:button type="button" wire:click="addOrganization" size="sm" variant="ghost" icon="plus"
+                                class="self-start sm:self-center">
                                 {{ __('Add') }}
                             </flux:button>
                         </div>
-                        
+
                         <div class="flex flex-col gap-4">
                             @forelse ($organizations as $i => $org)
                                 <div wire:key="org-{{ $i }}" class="rounded-xl border border-zinc-200 p-4 dark:border-zinc-700">
                                     <div class="mb-3 flex items-center justify-between">
                                         <flux:heading size="sm">{{ __('Organization') }} #{{ $i + 1 }}</flux:heading>
-                                        <flux:button type="button" wire:click="removeOrganization({{ $i }})" wire:target="removeOrganization({{ $i }})" size="sm" variant="ghost" icon="trash" class="text-red-500" />
+                                        <flux:button type="button" wire:click="removeOrganization({{ $i }})"
+                                            wire:target="removeOrganization({{ $i }})" size="sm" variant="ghost" icon="trash"
+                                            class="text-red-500" />
                                     </div>
                                     <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
                                         <flux:field class="sm:col-span-2">
@@ -491,23 +546,28 @@
                                         </flux:field>
                                         <flux:field>
                                             <flux:label>{{ __('Start Date') }} *</flux:label>
-                                            <x-date-picker wire:model="organizations.{{ $i }}.start_date" mode="date" placeholder="{{ __('Start date') }}" />
+                                            <x-date-picker wire:model="organizations.{{ $i }}.start_date" mode="date"
+                                                placeholder="{{ __('Start date') }}" />
                                             <flux:error name="organizations.{{ $i }}.start_date" />
                                         </flux:field>
                                         <flux:field>
                                             <flux:label>{{ __('End Date') }}</flux:label>
-                                            <x-date-picker wire:model="organizations.{{ $i }}.end_date" mode="date" placeholder="{{ __('End date') }}" :disabled="$org['is_current'] ?? false" />
+                                            <x-date-picker wire:model="organizations.{{ $i }}.end_date" mode="date"
+                                                placeholder="{{ __('End date') }}" :disabled="$org['is_current'] ?? false" />
                                             <flux:error name="organizations.{{ $i }}.end_date" />
                                         </flux:field>
                                         <flux:field class="sm:col-span-2">
-                                            <flux:checkbox wire:model="organizations.{{ $i }}.is_current" label="{{ __('Currently active') }}" />
+                                            <flux:checkbox wire:model="organizations.{{ $i }}.is_current"
+                                                label="{{ __('Currently active') }}" />
                                         </flux:field>
                                     </div>
                                 </div>
                             @empty
-                                <div class="flex flex-col items-center justify-center rounded-xl border border-dashed border-zinc-200 bg-zinc-50/50 py-8 px-4 text-center dark:border-zinc-700 dark:bg-zinc-800/50">
+                                <div
+                                    class="flex flex-col items-center justify-center rounded-xl border border-dashed border-zinc-200 bg-zinc-50/50 py-8 px-4 text-center dark:border-zinc-700 dark:bg-zinc-800/50">
                                     <flux:icon.user-group class="mb-2 size-8 text-zinc-300 dark:text-zinc-600" />
-                                    <p class="text-sm font-medium text-zinc-500 dark:text-zinc-400">{{ __('No organizational experience added yet.') }}</p>
+                                    <p class="text-sm font-medium text-zinc-500 dark:text-zinc-400">
+                                        {{ __('No organizational experience added yet.') }}</p>
                                 </div>
                             @endforelse
                         </div>

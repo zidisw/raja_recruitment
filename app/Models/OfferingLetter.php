@@ -15,12 +15,15 @@ class OfferingLetter extends Model
         'file_path',
         'status',
         'candidate_notes',
+        'signed_file_path',
+        'signed_at',
     ];
 
     protected function casts(): array
     {
         return [
             'offer_date' => 'date',
+            'signed_at' => 'datetime',
         ];
     }
 

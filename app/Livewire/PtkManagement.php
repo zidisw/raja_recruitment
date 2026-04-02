@@ -19,6 +19,7 @@ class PtkManagement extends Component
     use WithPagination, WithFileUploads;
 
     public string $search = '';
+    public string $filterStatus = '';
     public int $perPage = 10;
     public bool $showModal = false;
     public ?int $editingId = null;
@@ -154,6 +155,10 @@ class PtkManagement extends Component
             $query->whereAny(['nomor_ptk', 'posisi', 'department'], 'like', '%' . $this->search . '%');
         }
 
+        if ($this->filterStatus !== '') {
+            $query->where('status', $this->filterStatus);
+        }
+
         return view('livewire.ptk-management', [
             'ptkItems' => $query->paginate($this->perPage),
         ]);
@@ -172,5 +177,20 @@ class PtkManagement extends Component
         $this->existingAttachmentPath = null;
         $this->jumlah_kebutuhan = 1;
         $this->status = 'draft';
+    }
+
+    public function updatingSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingFilterStatus(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingPerPage(): void
+    {
+        $this->resetPage();
     }
 }

@@ -1,4 +1,4 @@
-<div class="flex flex-col gap-8">
+<div class="flex flex-col gap-6">
 
     {{-- Header --}}
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -14,13 +14,23 @@
 
     <flux:separator variant="subtle" />
 
-    {{-- Search --}}
-    <div class="flex items-center gap-3">
-        <flux:input wire:model.live.debounce.300ms="search"
-            placeholder="{{ __('Cari nomor PTK, posisi, atau departemen...') }}" class="flex-1"
-            icon="magnifying-glass" />
-        <div class="w-24">
-            <x-custom-select wire:model.live="perPage" :options="['10' => '10', '30' => '30', '50' => '50']" />
+    {{-- Filters --}}
+    <div class="flex flex-col gap-3">
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
+            <flux:field class="flex-1">
+                <flux:input wire:model.live.debounce.300ms="search"
+                    placeholder="{{ __('Search PTK number, position, or department...') }}" icon="magnifying-glass" />
+            </flux:field>
+            <div class="min-w-40">
+                <x-custom-select wire:model.live="filterStatus" placeholder="{{ __('All Statuses') }}"
+                    :options="['' => __('All Statuses'), 'draft' => 'Draft', 'approved' => 'Approved', 'closed' => 'Closed']" />
+            </div>
+        </div>
+        <div class="flex items-center justify-end gap-2">
+            <span class="text-sm text-zinc-500">{{ __('Per page:') }}</span>
+            <div class="w-20">
+                <x-custom-select wire:model.live="perPage" :options="['10' => '10', '30' => '30', '50' => '50', '100' => '100']" />
+            </div>
         </div>
     </div>
 

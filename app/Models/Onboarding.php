@@ -13,12 +13,20 @@ class Onboarding extends Model
         'application_id',
         'joining_date',
         'onboarding_status',
+        'travel_ticket_number',
+        'travel_ticket_notes',
+        'travel_ticket_sent_at',
+        'onsite_date',
+        'onsite_location',
+        'onsite_notes',
     ];
 
     protected function casts(): array
     {
         return [
             'joining_date' => 'date',
+            'travel_ticket_sent_at' => 'datetime',
+            'onsite_date' => 'date',
         ];
     }
 

@@ -1,4 +1,4 @@
-<div class="flex flex-col gap-8">
+<div class="flex flex-col gap-6">
     <div class="flex items-center justify-between gap-4">
         <div>
             <flux:heading size="xl" level="1">{{ $tab === 'hr' ? __('Interview HR') : __('Interview User') }}</flux:heading>
@@ -14,6 +14,41 @@
             <flux:callout.heading>{{ session('success') }}</flux:callout.heading>
         </flux:callout>
     @endif
+
+    <div class="glass-card-static p-4!">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
+            <flux:field>
+                <flux:label>{{ __('Search') }}</flux:label>
+                <flux:input wire:model.live.debounce.300ms="search" placeholder="{{ __('Candidate / email / position...') }}" />
+            </flux:field>
+
+            <flux:field>
+                <flux:label>{{ __('Department') }}</flux:label>
+                <x-custom-select wire:model.live="filterDepartment" :options="['' => __('All departments')] + $departments->pluck('name', 'id')->toArray()" />
+            </flux:field>
+
+            <flux:field>
+                <flux:label>{{ __('Site') }}</flux:label>
+                <x-custom-select wire:model.live="filterSite" :options="['' => __('All sites')] + $sites->pluck('name', 'id')->toArray()" />
+            </flux:field>
+
+            <flux:field>
+                <flux:label>{{ __('Status') }}</flux:label>
+                <x-custom-select wire:model.live="filterStatus" :options="[
+                    '' => __('All status'),
+                    'scheduled' => __('Scheduled'),
+                    'completed' => __('Completed'),
+                    'passed' => __('Passed'),
+                    'failed' => __('Failed'),
+                ]" />
+            </flux:field>
+
+            <flux:field>
+                <flux:label>{{ __('Rows') }}</flux:label>
+                <x-custom-select wire:model.live="perPage" :options="[10 => '10', 20 => '20', 50 => '50', 100 => '100']" />
+            </flux:field>
+        </div>
+    </div>
 
     <div class="glass-card-static overflow-hidden p-0!">
         <table class="w-full text-sm modern-table">
@@ -127,7 +162,7 @@
                                                 {{ __('Jadwalkan Int. User') }}
                                             </flux:button>
                                         @else
-                                            <div class="text-xs text-orange-500 w-24 leading-tight font-medium" title="{{ __('Unggah dokumen pada kolom Evaluation') }}">{{ __('Menunggu file penilaian') }}</div>
+                                            <div class="text-xs text-orange-500 w-24 leading-tight font-medium" title="{{ __('Unggah dokumen pada kolom Penilaian') }}">{{ __('Menunggu file penilaian') }}</div>
                                         @endif
                                     @endif
                                 @endif
@@ -187,7 +222,7 @@
                     @if($editingId)
                     <flux:field>
                         <flux:label>{{ __('Status') }}</flux:label>
-                        <x-custom-select wire:model="status" :options="['scheduled' => 'scheduled', 'completed' => 'completed', 'passed' => 'passed', 'failed' => 'failed']" />
+                        <x-custom-select wire:model="status" :options="['scheduled' => 'Scheduled', 'completed' => 'Completed', 'passed' => 'Passed', 'failed' => 'Failed']" />
                         <flux:error name="status" />
                     </flux:field>
                     @endif
@@ -210,7 +245,12 @@
 
                 @if($editingId)
                 <flux:field>
-                    <flux:label>{{ __('Evaluation File (PDF/DOCX)') }}</flux:label>
+                    <flux:label>{{ __('Dokumen Penilaian (PDF/DOCX)') }}</flux:label>
+                    @if($editingId && ($editedInterview = $interviews->firstWhere('id', $editingId)) && $editedInterview->evaluation_path)
+                        <a href="{{ Storage::url($editedInterview->evaluation_path) }}" target="_blank" class="mb-2 inline-flex items-center gap-1 text-sm text-brand-500 hover:underline">
+                            <flux:icon.document-text class="size-4" /> {{ __('Lihat Dokumen Saat Ini') }}
+                        </a>
+                    @endif
                     <input type="file" wire:model="evaluation_file" class="block w-full text-sm text-zinc-600 dark:text-zinc-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-zinc-100 file:text-zinc-700 hover:file:bg-zinc-200 dark:file:bg-zinc-800 dark:file:text-zinc-300 dark:hover:file:bg-zinc-700 focus:outline-none cursor-pointer" />
                     <flux:error name="evaluation_file" />
                 </flux:field>

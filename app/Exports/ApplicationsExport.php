@@ -109,7 +109,7 @@ class ApplicationsExport implements FromQuery, WithHeadings, WithMapping
         $latestEdu = $row->candidate->education->sortByDesc('end_year')->first();
 
         $docs = collect([
-            $profile?->ktp_path ? 'ID Card' : null,
+            $profile?->ktp_path ? 'KTP' : null,
             $profile?->portfolio_path ? 'Portfolio' : null,
             $profile?->certificate_path ? 'Certificate' : null,
             $profile?->paklaring_path ? 'Paklaring' : null,

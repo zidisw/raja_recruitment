@@ -11,6 +11,7 @@ use App\Models\Department;
 use App\Models\Job;
 use App\Models\Site;
 use App\Notifications\ApplicationReceived;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Layout;
@@ -132,11 +133,27 @@ class JobPortal extends Component
             return;
         }
 
-        $application = Application::create([
-            'user_id' => $user->id,
-            'job_id' => $this->confirmingJobId,
-            'recruitment_stage' => RecruitmentStage::APPLIED,
-        ]);
+        try {
+            $application = Application::firstOrCreate(
+                [
+                    'user_id' => $user->id,
+                    'job_id' => $this->confirmingJobId,
+                ],
+                [
+                    'recruitment_stage' => RecruitmentStage::APPLIED,
+                ]
+            );
+        } catch (QueryException) {
+            $this->dispatch('notify', ['message' => __('You have already applied for this position.'), 'type' => 'error']);
+            $this->showConfirmModal = false;
+            return;
+        }
+
+        if (! $application->wasRecentlyCreated) {
+            $this->dispatch('notify', ['message' => __('You have already applied for this position.'), 'type' => 'error']);
+            $this->showConfirmModal = false;
+            return;
+        }
 
         try {
             $user->notify(new ApplicationReceived($application->load('job')));

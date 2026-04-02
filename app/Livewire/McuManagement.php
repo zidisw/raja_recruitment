@@ -7,8 +7,12 @@ namespace App\Livewire;
 use App\Enums\RecruitmentStage;
 use App\Enums\UserRole;
 use App\Models\Application;
+use App\Models\Department;
 use App\Models\Mcu;
+use App\Models\Site;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -28,6 +32,11 @@ class McuManagement extends Component
     public string $result = 'fit';
     public string $notes = '';
     public $mcu_file;
+    public string $search = '';
+    public string $filterDepartment = '';
+    public string $filterSite = '';
+    public string $filterResult = '';
+    public int $perPage = 10;
 
     #[Computed]
     public function currentMcu(): ?Mcu
@@ -58,6 +67,31 @@ class McuManagement extends Component
         abort_unless(Auth::user()->canAccessRecruitment(), 403);
     }
 
+    public function updatingSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingFilterDepartment(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingFilterSite(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingFilterResult(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingPerPage(): void
+    {
+        $this->resetPage();
+    }
+
     public function openCreate(?int $appId = null): void
     {
         $this->reset(['editingId', 'application_id', 'mcu_date', 'notes', 'mcu_file']);
@@ -72,7 +106,7 @@ class McuManagement extends Component
     {
         $this->editingId = $mcu->id;
         $this->application_id = $mcu->application_id;
-        $this->mcu_date = $mcu->mcu_date?->format('Y-m-d') ?? '';
+        $this->mcu_date = $mcu->mcu_date ? Carbon::parse($mcu->mcu_date)->format('Y-m-d') : '';
         $this->result = $mcu->result;
         $this->notes = (string) $mcu->notes;
         $this->mcu_file = null;
@@ -84,11 +118,10 @@ class McuManagement extends Component
         $validated = $this->validate([
             'application_id' => ['required', 'exists:applications,id'],
             'mcu_date' => ['required', 'date'],
-            'result' => ['required', 'in:fit,unfit'],
-            'notes' => ['nullable', 'string', 'max:2000'],
+            'result' => ['required', 'in:fit,fit_with_notes,unfit'],
+            'notes' => ['nullable', 'string', 'max:2000', 'required_if:result,fit_with_notes'],
             'mcu_file' => [$this->editingId ? 'nullable' : 'required', 'file', 'mimes:pdf', 'max:5120'],
         ]);
-
         $data = [
             'application_id' => $validated['application_id'],
             'mcu_date' => $validated['mcu_date'],
@@ -105,7 +138,7 @@ class McuManagement extends Component
         $application = $mcu->application;
         $oldStage = $application->recruitment_stage->value;
 
-        if ($validated['result'] === 'fit') {
+        if (in_array($validated['result'], ['fit', 'fit_with_notes'], true)) {
             $application->update([
                 'recruitment_stage' => RecruitmentStage::ONBOARDING,
                 'stage_updated_at' => now(),
@@ -114,7 +147,9 @@ class McuManagement extends Component
                 'application_id' => $application->id,
                 'stage' => $oldStage,
                 'decision' => 'passed',
-                'notes' => 'Hasil MCU: Fit',
+                'notes' => $validated['result'] === 'fit_with_notes'
+                    ? 'Hasil MCU: Fit With Notes. ' . ($validated['notes'] ?? '')
+                    : 'Hasil MCU: Fit to Work',
                 'decided_by' => Auth::id(),
             ]);
         } else {
@@ -137,11 +172,41 @@ class McuManagement extends Component
 
     public function render(): \Illuminate\View\View
     {
+        $query = Application::with(['candidate', 'job.department', 'job.site', 'mcu'])
+            ->whereIn('recruitment_stage', [RecruitmentStage::MCU, RecruitmentStage::ONBOARDING])
+            ->latest('updated_at');
+
+        if ($this->search !== '') {
+            $query->where(function ($q): void {
+                $q->whereHas('candidate', function ($candidate): void {
+                    $candidate->where('name', 'like', '%' . $this->search . '%')
+                        ->orWhere('email', 'like', '%' . $this->search . '%');
+                })->orWhereHas('job', function ($job): void {
+                    $job->where('title', 'like', '%' . $this->search . '%');
+                });
+            });
+        }
+
+        if ($this->filterDepartment !== '') {
+            $query->whereHas('job', fn ($q) => $q->where('department_id', (int) $this->filterDepartment));
+        }
+
+        if ($this->filterSite !== '') {
+            $query->whereHas('job', fn ($q) => $q->where('site_id', (int) $this->filterSite));
+        }
+
+        if ($this->filterResult !== '') {
+            if ($this->filterResult === 'none') {
+                $query->whereDoesntHave('mcu');
+            } else {
+                $query->whereHas('mcu', fn ($q) => $q->where('result', $this->filterResult));
+            }
+        }
+
         return view('livewire.mcu-management', [
-            'applications_paginated' => Application::with(['candidate', 'job', 'mcu'])
-                ->whereIn('recruitment_stage', [RecruitmentStage::MCU, RecruitmentStage::ONBOARDING])
-                ->latest('updated_at')
-                ->paginate(10),
+            'applications_paginated' => $query->paginate($this->perPage),
+            'departments' => Cache::remember('ref.departments', 300, fn () => Department::query()->orderBy('name')->get(['id', 'name'])),
+            'sites' => Cache::remember('ref.sites', 300, fn () => Site::query()->orderBy('name')->get(['id', 'name'])),
         ]);
     }
 }

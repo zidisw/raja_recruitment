@@ -11,6 +11,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 class ProcessBulkCandidateEmails implements ShouldQueue
@@ -39,13 +40,17 @@ class ProcessBulkCandidateEmails implements ShouldQueue
                     try {
                         Mail::to($app->candidate->email)
                             ->send(new BulkCustomEmail(
-                                subject: $this->subject,
+                                customSubject: $this->subject,
                                 body: $this->body,
                                 candidateName: $app->candidate->name,
                                 jobTitle: $this->jobTitle,
                             ));
                     } catch (\Throwable $e) {
-                        // Continue processing remaining emails
+                        Log::warning('Bulk candidate email failed for application.', [
+                            'application_id' => $app->id,
+                            'candidate_email' => $app->candidate->email ?? null,
+                            'message' => $e->getMessage(),
+                        ]);
                     }
                 }
             });

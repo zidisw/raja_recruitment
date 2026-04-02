@@ -1,4 +1,4 @@
-<div class="flex flex-col gap-8">
+<div class="flex flex-col gap-6">
     {{-- Header --}}
     <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
@@ -243,8 +243,7 @@
                                 ? $application->stageLogs->where('decision', 'passed')->last()?->stage?->label()
                                 : null;
                         @endphp
-                        <tr wire:key="{{ $application->id }}"
-                            class="cursor-pointer">
+                        <tr wire:key="{{ $application->id }}" class="cursor-pointer">
                             <td class="px-6 py-4">
                                 <button wire:click="toggleExpand({{ $application->id }})" type="button"
                                     class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-zinc-400 transition-all duration-200 hover:bg-zinc-100 hover:text-zinc-600 active:scale-95 dark:hover:bg-zinc-700/70 dark:hover:text-zinc-300"
@@ -272,7 +271,8 @@
                                 {{ $application->created_at->format('d M Y') }}
                             </td>
                             <td class="px-6 py-4 text-center">
-                                <flux:badge color="{{ $color }}" size="sm">{{ $application->recruitment_stage->label() }}</flux:badge>
+                                <flux:badge color="{{ $color }}" size="sm">{{ $application->recruitment_stage->label() }}
+                                </flux:badge>
                                 @if ($lastPassedStage)
                                     <p class="mt-1 text-xs text-zinc-400">{{ __('Last:') }} {{ $lastPassedStage }}</p>
                                 @endif
@@ -381,7 +381,7 @@
                                                 class="text-xs font-medium uppercase tracking-wide text-zinc-400">{{ __('Documents') }}</span>
                                             <div class="mt-1 flex flex-wrap gap-1.5">
                                                 @if ($p?->ktp_path)
-                                                    <flux:badge variant="outline" size="sm" icon="identification">{{ __('ID Card') }}
+                                                    <flux:badge variant="outline" size="sm" icon="identification">{{ __('KTP') }}
                                                     </flux:badge>
                                                 @endif
                                                 @if ($p?->portfolio_path)

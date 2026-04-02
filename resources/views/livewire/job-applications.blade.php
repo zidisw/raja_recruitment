@@ -1,4 +1,4 @@
-<div class="flex flex-col gap-8">
+<div class="flex flex-col gap-6">
     <div>
         <flux:heading size="xl" level="1">{{ __('Applications') }}</flux:heading>
         <flux:subheading size="lg">{{ __('Select a job to view its applicants') }}</flux:subheading>

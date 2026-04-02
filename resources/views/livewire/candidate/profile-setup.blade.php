@@ -8,7 +8,8 @@
         <div class="relative">
             <h1 class="text-2xl font-bold sm:text-3xl">{{ __('Complete Your Profile') }} ✨</h1>
             <p class="mt-2 text-zinc-600 dark:text-slate-300">
-                {{ __('Fill in your data to start applying for job openings') }}</p>
+                {{ __('Fill in your data to start applying for job openings') }}
+            </p>
         </div>
     </div>
 
@@ -26,7 +27,7 @@
                     <div class="flex flex-col items-center gap-1.5">
                         <div
                             class="flex h-9 w-9 items-center justify-center rounded-full text-sm font-bold transition-all
-                                {{ $step > $num ? 'bg-brand-500 text-white shadow-md shadow-brand-500/20' : ($step === $num ? 'bg-brand-500 text-white ring-4 ring-brand-500/20 shadow-md shadow-brand-500/20' : 'bg-zinc-200 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400') }}">
+                                    {{ $step > $num ? 'bg-brand-500 text-white shadow-md shadow-brand-500/20' : ($step === $num ? 'bg-brand-500 text-white ring-4 ring-brand-500/20 shadow-md shadow-brand-500/20' : 'bg-zinc-200 text-zinc-500 dark:bg-zinc-700 dark:text-zinc-400') }}">
                             @if ($step > $num)
                                 <flux:icon.check class="size-4" />
                             @else
@@ -35,7 +36,7 @@
                         </div>
                         <span
                             class="hidden text-xs font-medium sm:block
-                                {{ $step === $num ? 'text-brand-600 dark:text-brand-400' : ($step > $num ? 'text-brand-500' : 'text-zinc-400 dark:text-zinc-500') }}">
+                                    {{ $step === $num ? 'text-brand-600 dark:text-brand-400' : ($step > $num ? 'text-brand-500' : 'text-zinc-400 dark:text-zinc-500') }}">
                             {{ $label }}
                         </span>
                     </div>
@@ -94,9 +95,8 @@
                 </flux:field>
 
                 <flux:field class="sm:col-span-2">
-                    <flux:label>{{ __('ID Card Address') }} *</flux:label>
-                    <flux:textarea wire:model="address_ktp" rows="2"
-                        placeholder="Full address as on your national ID card" />
+                    <flux:label>{{ __('KTP Address') }} *</flux:label>
+                    <flux:textarea wire:model="address_ktp" rows="2" placeholder="Full address as on your national KTP" />
                     <flux:error name="address_ktp" />
                 </flux:field>
 
@@ -107,7 +107,8 @@
                 </flux:field>
 
                 <flux:field class="sm:col-span-2">
-                    <flux:label>LinkedIn URL</flux:label>
+                    <flux:label>{{ __('LinkedIn URL') }} <span class="text-zinc-400 font-normal text-xs">(optional)</span>
+                    </flux:label>
                     <flux:input wire:model="linkedin_url" type="url" placeholder="https://linkedin.com/in/yourprofile" />
                     <flux:error name="linkedin_url" />
                 </flux:field>
@@ -116,10 +117,10 @@
                     <flux:label>{{ __('Profile Photo') }} * <span class="text-zinc-400 font-normal text-xs">(max 2MB)</span>
                     </flux:label>
                     <input type="file" wire:model="photo" accept="image/*" class="block w-full text-sm text-zinc-500 dark:text-zinc-400
-                                file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0
-                                file:text-sm file:font-medium file:bg-zinc-100 file:text-zinc-700
-                                dark:file:bg-zinc-800 dark:file:text-zinc-300
-                                hover:file:bg-zinc-200 dark:hover:file:bg-zinc-700" />
+                                    file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0
+                                    file:text-sm file:font-medium file:bg-zinc-100 file:text-zinc-700
+                                    dark:file:bg-zinc-800 dark:file:text-zinc-300
+                                    hover:file:bg-zinc-200 dark:hover:file:bg-zinc-700" />
                     @if ($photo)
                         <img src="{{ $photo->temporaryUrl() }}" class="mt-2 h-20 w-20 rounded-full object-cover" />
                     @endif
@@ -127,13 +128,13 @@
                 </flux:field>
 
                 <flux:field>
-                    <flux:label>{{ __('ID Card Scan') }} * <span class="text-zinc-400 font-normal text-xs">(PDF/image, max
+                    <flux:label>{{ __('KTP Scan') }} * <span class="text-zinc-400 font-normal text-xs">(PDF/image, max
                             2MB)</span></flux:label>
                     <input type="file" wire:model="ktp_file" accept=".pdf,.jpg,.jpeg,.png" class="block w-full text-sm text-zinc-500 dark:text-zinc-400
-                                file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0
-                                file:text-sm file:font-medium file:bg-zinc-100 file:text-zinc-700
-                                dark:file:bg-zinc-800 dark:file:text-zinc-300
-                                hover:file:bg-zinc-200 dark:hover:file:bg-zinc-700" />
+                                    file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0
+                                    file:text-sm file:font-medium file:bg-zinc-100 file:text-zinc-700
+                                    dark:file:bg-zinc-800 dark:file:text-zinc-300
+                                    hover:file:bg-zinc-200 dark:hover:file:bg-zinc-700" />
                     <flux:error name="ktp_file" />
                 </flux:field>
             </div>
@@ -162,8 +163,8 @@
                     <div class="mb-4 flex items-center justify-between">
                         <flux:heading size="sm">{{ __('Education') }} #{{ $i + 1 }}</flux:heading>
                         @if (count($educations) > 1)
-                            <flux:button wire:click="removeEducation({{ $i }})" wire:target="removeEducation({{ $i }})" variant="ghost" icon="trash" size="sm"
-                                class="text-red-500 hover:text-red-600" />
+                            <flux:button wire:click="removeEducation({{ $i }})" wire:target="removeEducation({{ $i }})"
+                                variant="ghost" icon="trash" size="sm" class="text-red-500 hover:text-red-600" />
                         @endif
                     </div>
 
@@ -257,8 +258,8 @@
                 <div wire:key="exp-{{ $i }}" class="rounded-xl border border-zinc-200 p-5 dark:border-zinc-700">
                     <div class="mb-4 flex items-center justify-between">
                         <flux:heading size="sm">{{ __('Experience') }} #{{ $i + 1 }}</flux:heading>
-                        <flux:button wire:click="removeExperience({{ $i }})" wire:target="removeExperience({{ $i }})" variant="ghost" icon="trash" size="sm"
-                            class="text-red-500 hover:text-red-600" />
+                        <flux:button wire:click="removeExperience({{ $i }})" wire:target="removeExperience({{ $i }})"
+                            variant="ghost" icon="trash" size="sm" class="text-red-500 hover:text-red-600" />
                     </div>
 
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -338,8 +339,8 @@
                 <div wire:key="org-{{ $i }}" class="rounded-xl border border-zinc-200 p-5 dark:border-zinc-700">
                     <div class="mb-4 flex items-center justify-between">
                         <flux:heading size="sm">{{ __('Organization') }} #{{ $i + 1 }}</flux:heading>
-                        <flux:button wire:click="removeOrganization({{ $i }})" wire:target="removeOrganization({{ $i }})" variant="ghost" icon="trash" size="sm"
-                            class="text-red-500 hover:text-red-600" />
+                        <flux:button wire:click="removeOrganization({{ $i }})" wire:target="removeOrganization({{ $i }})"
+                            variant="ghost" icon="trash" size="sm" class="text-red-500 hover:text-red-600" />
                     </div>
 
                     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -386,40 +387,43 @@
             <div>
                 <flux:heading size="lg">{{ __('Supporting Documents') }}</flux:heading>
                 <flux:text class="text-zinc-500 text-sm mt-1">
-                    {{ __('All documents are optional but strengthen your application') }}</flux:text>
+                    {{ __('All documents are optional but strengthen your application') }}
+                </flux:text>
             </div>
 
             <div class="grid grid-cols-1 gap-6">
                 <flux:field>
-                    <flux:label>{{ __('Portfolio') }} <span class="text-zinc-400 font-normal text-xs">(PDF, max 5MB)</span>
+                    <flux:label>{{ __('Portfolio') }} <span class="text-zinc-400 font-normal text-xs">(optional, PDF, max
+                            5MB)</span>
                     </flux:label>
                     <input type="file" wire:model="portfolio" accept=".pdf" class="block w-full text-sm text-zinc-500 dark:text-zinc-400
-                                file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0
-                                file:text-sm file:font-medium file:bg-zinc-100 file:text-zinc-700
-                                dark:file:bg-zinc-800 dark:file:text-zinc-300
-                                hover:file:bg-zinc-200 dark:hover:file:bg-zinc-700" />
+                                    file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0
+                                    file:text-sm file:font-medium file:bg-zinc-100 file:text-zinc-700
+                                    dark:file:bg-zinc-800 dark:file:text-zinc-300
+                                    hover:file:bg-zinc-200 dark:hover:file:bg-zinc-700" />
                     <flux:error name="portfolio" />
                 </flux:field>
 
                 <flux:field>
-                    <flux:label>{{ __('Certificate') }} <span class="text-zinc-400 font-normal text-xs">(PDF/image, max
+                    <flux:label>{{ __('Certificate') }} <span class="text-zinc-400 font-normal text-xs">(optional,
+                            PDF/image, max
                             5MB)</span></flux:label>
                     <input type="file" wire:model="certificate" accept=".pdf,.jpg,.jpeg,.png" class="block w-full text-sm text-zinc-500 dark:text-zinc-400
-                                file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0
-                                file:text-sm file:font-medium file:bg-zinc-100 file:text-zinc-700
-                                dark:file:bg-zinc-800 dark:file:text-zinc-300
-                                hover:file:bg-zinc-200 dark:hover:file:bg-zinc-700" />
+                                    file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0
+                                    file:text-sm file:font-medium file:bg-zinc-100 file:text-zinc-700
+                                    dark:file:bg-zinc-800 dark:file:text-zinc-300
+                                    hover:file:bg-zinc-200 dark:hover:file:bg-zinc-700" />
                     <flux:error name="certificate" />
                 </flux:field>
 
                 <flux:field>
                     <flux:label>{{ __('Paklaring / Reference Letter') }} <span
-                            class="text-zinc-400 font-normal text-xs">(PDF/image, max 5MB)</span></flux:label>
+                            class="text-zinc-400 font-normal text-xs">(optional, PDF/image, max 5MB)</span></flux:label>
                     <input type="file" wire:model="paklaring" accept=".pdf,.jpg,.jpeg,.png" class="block w-full text-sm text-zinc-500 dark:text-zinc-400
-                                file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0
-                                file:text-sm file:font-medium file:bg-zinc-100 file:text-zinc-700
-                                dark:file:bg-zinc-800 dark:file:text-zinc-300
-                                hover:file:bg-zinc-200 dark:hover:file:bg-zinc-700" />
+                                    file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0
+                                    file:text-sm file:font-medium file:bg-zinc-100 file:text-zinc-700
+                                    dark:file:bg-zinc-800 dark:file:text-zinc-300
+                                    hover:file:bg-zinc-200 dark:hover:file:bg-zinc-700" />
                     <flux:error name="paklaring" />
                 </flux:field>
             </div>

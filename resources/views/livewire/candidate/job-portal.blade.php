@@ -230,7 +230,7 @@
                     @foreach ($stages as $i => $stage)
                         @php
                             $log = $logMap->get($stage->value);
-                            $isPassed = $log && $log->decision === 'passed';
+                            $isPassed = ($log && $log->decision === 'passed') || (!$log && !$isRejected && $currentIndex !== false && $i < $currentIndex);
                             $isRejectedHere = $log && $log->decision === 'rejected';
                             $isCurrent = !$log && $currentIndex === $i;
                             $isUpcoming = !$log && $currentIndex !== false && $i > $currentIndex && !$isRejected;

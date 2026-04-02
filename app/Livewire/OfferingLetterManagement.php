@@ -8,8 +8,13 @@ use App\Enums\OfferingStatus;
 use App\Enums\RecruitmentStage;
 use App\Enums\UserRole;
 use App\Models\Application;
+use App\Models\Department;
+use App\Models\ApplicationStageLog;
 use App\Models\OfferingLetter;
+use App\Models\Site;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -30,6 +35,11 @@ class OfferingLetterManagement extends Component
     public string $offer_date = '';
     public $offer_file; // For uploading new file
     public string $status = 'waiting_response';
+    public string $search = '';
+    public string $filterDepartment = '';
+    public string $filterSite = '';
+    public string $filterStatus = '';
+    public int $perPage = 10;
 
     #[Computed]
     public function currentOfferingLetter(): ?OfferingLetter
@@ -43,6 +53,31 @@ class OfferingLetterManagement extends Component
     public function mount(): void
     {
         abort_unless(Auth::user()->canAccessRecruitment(), 403);
+    }
+
+    public function updatingSearch(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingFilterDepartment(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingFilterSite(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingFilterStatus(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatingPerPage(): void
+    {
+        $this->resetPage();
     }
 
     public function toggleExpand(int $applicationId): void
@@ -63,7 +98,7 @@ class OfferingLetterManagement extends Component
     {
         $this->editingId = $offering->id;
         $this->application_id = $offering->application_id;
-        $this->offer_date = $offering->offer_date?->format('Y-m-d') ?? '';
+        $this->offer_date = $offering->offer_date ? Carbon::parse($offering->offer_date)->format('Y-m-d') : '';
         $this->status = $offering->status;
         $this->showModal = true;
     }
@@ -95,23 +130,30 @@ class OfferingLetterManagement extends Component
         );
 
         $application = $offering->application;
+        $oldStage = $application->recruitment_stage;
 
         // Sync Application Stage based on Offering Status
         if ($validated['status'] === OfferingStatus::ACCEPTED->value) {
-            $application->update([
-                'recruitment_stage' => RecruitmentStage::PSYCHOTEST,
-                'stage_updated_at' => now(),
-            ]);
+            $targetStage = RecruitmentStage::PSYCHOTEST;
         } elseif ($validated['status'] === OfferingStatus::REJECTED->value) {
-            $application->update([
-                'recruitment_stage' => RecruitmentStage::REJECTED,
-                'stage_updated_at' => now(),
-            ]);
+            $targetStage = RecruitmentStage::REJECTED;
         } else {
             // waiting_response
+            $targetStage = RecruitmentStage::OFFERING;
+        }
+
+        if ($oldStage !== $targetStage) {
             $application->update([
-                'recruitment_stage' => RecruitmentStage::OFFERING,
+                'recruitment_stage' => $targetStage,
                 'stage_updated_at' => now(),
+            ]);
+
+            ApplicationStageLog::create([
+                'application_id' => $application->id,
+                'stage' => $oldStage->value,
+                'decision' => $targetStage === RecruitmentStage::REJECTED ? 'rejected' : 'passed',
+                'notes' => 'Offering status: ' . str_replace('_', ' ', $validated['status']),
+                'decided_by' => Auth::id() ?? $application->user_id,
             ]);
         }
 
@@ -122,16 +164,49 @@ class OfferingLetterManagement extends Component
 
     public function render(): \Illuminate\View\View
     {
+        $query = Application::with(['candidate', 'job.department', 'job.site', 'offeringLetter'])
+            ->where(function ($q): void {
+                $q->whereIn('recruitment_stage', [RecruitmentStage::OFFERING, RecruitmentStage::PSYCHOTEST])
+                    ->orWhereHas('offeringLetter');
+            })
+            ->latest('updated_at');
+
+        if ($this->search !== '') {
+            $query->where(function ($q): void {
+                $q->whereHas('candidate', function ($candidate): void {
+                    $candidate->where('name', 'like', '%' . $this->search . '%')
+                        ->orWhere('email', 'like', '%' . $this->search . '%');
+                })->orWhereHas('job', function ($job): void {
+                    $job->where('title', 'like', '%' . $this->search . '%');
+                });
+            });
+        }
+
+        if ($this->filterDepartment !== '') {
+            $query->whereHas('job', fn ($q) => $q->where('department_id', (int) $this->filterDepartment));
+        }
+
+        if ($this->filterSite !== '') {
+            $query->whereHas('job', fn ($q) => $q->where('site_id', (int) $this->filterSite));
+        }
+
+        if ($this->filterStatus !== '') {
+            if ($this->filterStatus === 'none') {
+                $query->whereDoesntHave('offeringLetter');
+            } else {
+                $query->whereHas('offeringLetter', fn ($q) => $q->where('status', $this->filterStatus));
+            }
+        }
+
         return view('livewire.offering-letter-management', [
-            'applications_paginated' => Application::with(['candidate', 'job', 'offeringLetter'])
-                ->whereIn('recruitment_stage', [RecruitmentStage::OFFERING, RecruitmentStage::PSYCHOTEST])
-                ->latest('updated_at')
-                ->paginate(10),
+            'applications_paginated' => $query->paginate($this->perPage),
             'applications' => Application::with(['candidate', 'job'])
                 ->whereIn('recruitment_stage', [RecruitmentStage::OFFERING, RecruitmentStage::PSYCHOTEST])
                 ->orWhereHas('offeringLetter')
                 ->get(),
             'statuses' => OfferingStatus::cases(),
+            'departments' => Cache::remember('ref.departments', 300, fn () => Department::query()->orderBy('name')->get(['id', 'name'])),
+            'sites' => Cache::remember('ref.sites', 300, fn () => Site::query()->orderBy('name')->get(['id', 'name'])),
         ]);
     }
 

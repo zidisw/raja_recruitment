@@ -34,6 +34,8 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        $this->configureDefaults();
+
         $this->loadSmtpFromDatabase();
 
         VerifyEmail::createUrlUsing(function (object $notifiable) {
@@ -51,14 +53,21 @@ class AppServiceProvider extends ServiceProvider
             $hrCount = 0;
             $userCount = 0;
             if (\Illuminate\Support\Facades\Auth::check() && \Illuminate\Support\Facades\Auth::user()->canAccessRecruitment()) {
-                $hrCount = \App\Models\Interview::where('interview_type', 'HR Interview')
-                    ->whereHas('application', function ($q) {
-                        $q->where('recruitment_stage', '!=', \App\Enums\RecruitmentStage::REJECTED);
-                    })->count();
-                $userCount = \App\Models\Interview::where('interview_type', 'User Interview')
-                    ->whereHas('application', function ($q) {
-                        $q->where('recruitment_stage', '!=', \App\Enums\RecruitmentStage::REJECTED);
-                    })->count();
+                $counts = \Illuminate\Support\Facades\Cache::remember('sidebar.interview-counts', now()->addMinutes(1), function () {
+                    return [
+                        'hr' => \App\Models\Interview::where('interview_type', 'HR Interview')
+                            ->whereHas('application', function ($q) {
+                                $q->where('recruitment_stage', '!=', \App\Enums\RecruitmentStage::REJECTED);
+                            })->count(),
+                        'user' => \App\Models\Interview::where('interview_type', 'User Interview')
+                            ->whereHas('application', function ($q) {
+                                $q->where('recruitment_stage', '!=', \App\Enums\RecruitmentStage::REJECTED);
+                            })->count(),
+                    ];
+                });
+
+                $hrCount = (int) ($counts['hr'] ?? 0);
+                $userCount = (int) ($counts['user'] ?? 0);
             }
             $view->with(compact('hrCount', 'userCount'));
         });

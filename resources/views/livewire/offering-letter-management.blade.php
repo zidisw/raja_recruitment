@@ -1,4 +1,4 @@
-<div class="flex flex-col gap-8">
+<div class="flex flex-col gap-6">
     <div class="flex items-center justify-between gap-4">
         <div>
             <flux:heading size="xl" level="1">{{ __('Offering Letter') }}</flux:heading>
@@ -11,6 +11,42 @@
             <flux:callout.heading>{{ session('success') }}</flux:callout.heading>
         </flux:callout>
     @endif
+
+    <div class="glass-card-static p-4!">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-3">
+            <flux:field>
+                <flux:label>{{ __('Search') }}</flux:label>
+                <flux:input wire:model.live.debounce.300ms="search"
+                    placeholder="{{ __('Candidate / email / position...') }}" />
+            </flux:field>
+
+            <flux:field>
+                <flux:label>{{ __('Department') }}</flux:label>
+                <x-custom-select wire:model.live="filterDepartment" :options="['' => __('All departments')] + $departments->pluck('name', 'id')->toArray()" />
+            </flux:field>
+
+            <flux:field>
+                <flux:label>{{ __('Site') }}</flux:label>
+                <x-custom-select wire:model.live="filterSite" :options="['' => __('All sites')] + $sites->pluck('name', 'id')->toArray()" />
+            </flux:field>
+
+            <flux:field>
+                <flux:label>{{ __('Offer Status') }}</flux:label>
+                <x-custom-select wire:model.live="filterStatus" :options="[
+        '' => __('All status'),
+        'none' => __('No offering yet'),
+        'waiting_response' => __('Waiting Response'),
+        'accepted' => __('Accepted'),
+        'rejected' => __('Rejected'),
+    ]" />
+            </flux:field>
+
+            <flux:field>
+                <flux:label>{{ __('Rows') }}</flux:label>
+                <x-custom-select wire:model.live="perPage" :options="[10 => '10', 20 => '20', 50 => '50', 100 => '100']" />
+            </flux:field>
+        </div>
+    </div>
 
     <div class="glass-card-static overflow-hidden p-0!">
         <table class="w-full text-sm modern-table">
@@ -42,7 +78,8 @@
                         </td>
                         <td class="px-6 py-4 font-semibold">{{ $app->candidate->name }}</td>
                         <td class="px-6 py-4">{{ $app->job->title }}</td>
-                        <td class="px-6 py-4 text-center">{{ $app->offeringLetter?->offer_date?->format('d M Y') ?? '—' }}</td>
+                        <td class="px-6 py-4 text-center">{{ $app->offeringLetter?->offer_date?->format('d M Y') ?? '—' }}
+                        </td>
                         <td class="px-6 py-4 text-center">
                             @if($app->offeringLetter)
                                 @php
@@ -53,11 +90,13 @@
                                     ];
                                     $currentColor = $statusColors[$app->offeringLetter->status] ?? $statusColors['waiting_response'];
                                 @endphp
-                                <div class="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-md border shadow-sm {{ $currentColor }}">
+                                <div
+                                    class="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-md border shadow-sm {{ $currentColor }}">
                                     {{ \App\Enums\OfferingStatus::from($app->offeringLetter->status)->label() }}
                                 </div>
                             @else
-                                <span class="text-zinc-400 text-xs font-semibold px-2 py-1 bg-zinc-100 dark:bg-zinc-800 rounded-md">{{ __('Waiting') }}</span>
+                                <span
+                                    class="text-zinc-400 text-xs font-semibold px-2 py-1 bg-zinc-100 dark:bg-zinc-800 rounded-md">{{ __('Waiting') }}</span>
                             @endif
                         </td>
                         <td class="px-6 py-4 text-center">
@@ -65,15 +104,18 @@
                                 @if($app->offeringLetter)
                                     @if($app->offeringLetter->file_path)
                                         <a href="{{ Storage::url($app->offeringLetter->file_path) }}" target="_blank"
-                                            class="p-2 text-zinc-400 hover:text-brand-500 transition-colors" title="{{ __('Lihat File OL') }}">
+                                            class="p-2 text-zinc-400 hover:text-brand-500 transition-colors"
+                                            title="{{ __('Lihat File OL') }}">
                                             <flux:icon.document-text class="size-5" />
                                         </a>
                                     @endif
 
-                                    <flux:button size="sm" variant="ghost" wire:click="openEdit({{ $app->offeringLetter->id }})" wire:target="openEdit({{ $app->offeringLetter->id }})"
-                                        icon="pencil" title="{{ __('Edit Offering') }}" />
+                                    <flux:button size="sm" variant="ghost" wire:click="openEdit({{ $app->offeringLetter->id }})"
+                                        wire:target="openEdit({{ $app->offeringLetter->id }})" icon="pencil"
+                                        title="{{ __('Edit Offering') }}" />
                                 @else
-                                    <flux:button size="sm" variant="primary" wire:click="openCreate({{ $app->id }})" wire:target="openCreate({{ $app->id }})">
+                                    <flux:button size="sm" variant="primary" wire:click="openCreate({{ $app->id }})"
+                                        wire:target="openCreate({{ $app->id }})">
                                         {{ __('Create Offer') }}
                                     </flux:button>
                                 @endif
@@ -81,8 +123,8 @@
                         </td>
                     </tr>
                     @if ($expandedRow === $app->id)
-                        <tr wire:key="offering-candidate-{{ $app->id }}-expanded"
-                            wire:transition.opacity.duration.200ms class="bg-zinc-50/50 dark:bg-zinc-800/30">
+                        <tr wire:key="offering-candidate-{{ $app->id }}-expanded" wire:transition.opacity.duration.200ms
+                            class="bg-zinc-50/50 dark:bg-zinc-800/30">
                             <td colspan="6" class="px-6 py-4">
                                 <x-candidate-expanded-row :application="$app" />
                             </td>
@@ -90,7 +132,8 @@
                     @endif
                 @empty
                     <tr>
-                        <td colspan="6" class="px-6 py-8 text-center text-zinc-400">{{ __('No candidates in offering stage yet.') }}
+                        <td colspan="6" class="px-6 py-8 text-center text-zinc-400">
+                            {{ __('No candidates in offering stage yet.') }}
                         </td>
                     </tr>
                 @endforelse
@@ -122,12 +165,14 @@
 
                 <flux:field>
                     <flux:label>{{ __('File Offering (PDF)') }}</flux:label>
-                    <input type="file" wire:model="offer_file" class="block w-full text-sm text-zinc-600 dark:text-zinc-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-zinc-100 file:text-zinc-700 hover:file:bg-zinc-200 dark:file:bg-zinc-800 dark:file:text-zinc-300 dark:hover:file:bg-zinc-700 focus:outline-none cursor-pointer" />
+                    <input type="file" wire:model="offer_file"
+                        class="block w-full text-sm text-zinc-600 dark:text-zinc-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-zinc-100 file:text-zinc-700 hover:file:bg-zinc-200 dark:file:bg-zinc-800 dark:file:text-zinc-300 dark:hover:file:bg-zinc-700 focus:outline-none cursor-pointer" />
                     <flux:error name="offer_file" />
                     @if($editingId && $app_offering = $this->currentOfferingLetter)
                         @if($app_offering->file_path)
                             <div class="mt-2 text-xs">
-                                <a href="{{ Storage::url($app_offering->file_path) }}" target="_blank" class="text-brand-500 hover:underline inline-flex items-center gap-1">
+                                <a href="{{ Storage::url($app_offering->file_path) }}" target="_blank"
+                                    class="text-brand-500 hover:underline inline-flex items-center gap-1">
                                     <flux:icon.document-text class="size-3" />
                                     {{ __('Lihat file saat ini') }}
                                 </a>

@@ -12,6 +12,7 @@ use App\Models\Site;
 use App\Models\Interview;
 use App\Models\User;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Layout;
@@ -42,6 +43,7 @@ class CandidateManagement extends Component
     public array $selectedIds = [];
     
     public bool $selectAll = false;
+    public bool $selectionMode = false;
 
     // Interview Scheduling fields
     public bool $showScheduleModal = false;
@@ -117,9 +119,19 @@ class CandidateManagement extends Component
             'application_id' => $application->id,
             'stage' => $oldStage,
             'decision' => 'passed',
-            'notes' => 'Lolos ke tahap HR Interview (Administrasi)',
+            'notes' => 'Lolos administrasi',
             'decided_by' => Auth::id(),
         ]);
+
+        if ($oldStage !== RecruitmentStage::ADMINISTRASI->value) {
+            \App\Models\ApplicationStageLog::create([
+                'application_id' => $application->id,
+                'stage' => RecruitmentStage::ADMINISTRASI->value,
+                'decision' => 'passed',
+                'notes' => 'Lolos ke tahap HR Interview',
+                'decided_by' => Auth::id(),
+            ]);
+        }
 
         $this->dispatch('notify', ['message' => __('Candidate passed administrative screening.'), 'type' => 'success']);
     }
@@ -148,6 +160,29 @@ class CandidateManagement extends Component
         ]);
 
         $this->dispatch('notify', ['message' => __('Candidate rejected.'), 'type' => 'success']);
+    }
+
+    public function deleteApplication(int $applicationId): void
+    {
+        if (! Auth::user()?->isSuperAdmin()) {
+            abort(403, 'Hanya superadmin yang dapat menghapus data kandidat dari riwayat.');
+        }
+
+        $application = Application::with(['stageLogs', 'interviews', 'offeringLetter', 'psychotest', 'mcu', 'onboarding'])
+            ->findOrFail($applicationId);
+
+        DB::transaction(function () use ($application): void {
+            $application->stageLogs()->delete();
+            $application->interviews()->delete();
+            $application->offeringLetter()?->delete();
+            $application->psychotest()?->delete();
+            $application->mcu()?->delete();
+            $application->onboarding()?->delete();
+            $application->delete();
+        });
+
+        $this->resetSelection();
+        $this->dispatch('notify', ['message' => __('Riwayat kandidat berhasil dihapus.'), 'type' => 'success']);
     }
 
     public function updateProgressStage(int $applicationId, string $stage): void
@@ -195,12 +230,22 @@ class CandidateManagement extends Component
     {
         $this->resetPage();
         $this->resetSelection();
+        $this->selectionMode = false;
     }
 
     public function resetSelection(): void
     {
         $this->selectAll = false;
         $this->selectedIds = [];
+    }
+
+    public function toggleSelectionMode(): void
+    {
+        $this->selectionMode = ! $this->selectionMode;
+
+        if (! $this->selectionMode) {
+            $this->resetSelection();
+        }
     }
 
     public function bulkPassAdministrative(): void
@@ -225,10 +270,21 @@ class CandidateManagement extends Component
                 'application_id' => $app->id,
                 'stage' => $app->recruitment_stage->value,
                 'decision' => 'passed',
-                'notes' => 'Lolos masal ke tahap HR Interview',
+                'notes' => 'Lolos administrasi (massal)',
                 'decided_by' => $adminId,
                 'created_at' => $now,
             ];
+
+            if ($app->recruitment_stage->value !== RecruitmentStage::ADMINISTRASI->value) {
+                $logs[] = [
+                    'application_id' => $app->id,
+                    'stage' => RecruitmentStage::ADMINISTRASI->value,
+                    'decision' => 'passed',
+                    'notes' => 'Lolos masal ke tahap HR Interview',
+                    'decided_by' => $adminId,
+                    'created_at' => $now,
+                ];
+            }
         }
         \App\Models\ApplicationStageLog::insert($logs);
 
@@ -270,27 +326,29 @@ class CandidateManagement extends Component
 
     public function exportCsv()
     {
-        $applications = $this->getFilteredQuery()->get();
-        
-        $csvData = "Nama Kandidat,Email,Posisi,Departemen,Site,Tanggal Lamar,Stage,Status Lolos Administrasi\n";
-        
-        foreach ($applications as $app) {
-            $name = '"' . str_replace('"', '""', $app->candidate->name) . '"';
-            $email = '"' . str_replace('"', '""', $app->candidate->email) . '"';
-            $jobTitle = '"' . str_replace('"', '""', $app->job->title) . '"';
-            $dept = '"' . str_replace('"', '""', $app->job->department?->name ?? '') . '"';
-            $site = '"' . str_replace('"', '""', $app->job->site?->name ?? '') . '"';
-            $appliedDate = $app->created_at->format('Y-m-d');
-            $stage = $app->recruitment_stage->name;
-            $passedAdmin = $app->stage_updated_at ? $app->stage_updated_at->format('Y-m-d') : '';
-            
-            $csvData .= "{$name},{$email},{$jobTitle},{$dept},{$site},{$appliedDate},{$stage},{$passedAdmin}\n";
-        }
-        
         $filename = "export_kandidat_{$this->tab}_" . now()->format('Ymd_His') . ".csv";
-        
-        return response()->streamDownload(function () use ($csvData) {
-            echo $csvData;
+
+        return response()->streamDownload(function (): void {
+            $output = fopen('php://output', 'w');
+
+            fputcsv($output, ['Nama Kandidat', 'Email', 'Posisi', 'Departemen', 'Site', 'Tanggal Lamar', 'Stage', 'Status Lolos Administrasi']);
+
+            $this->getFilteredQuery()->chunk(500, function ($applications) use ($output): void {
+                foreach ($applications as $app) {
+                    fputcsv($output, [
+                        $app->candidate->name,
+                        $app->candidate->email,
+                        $app->job->title,
+                        $app->job->department?->name ?? '',
+                        $app->job->site?->name ?? '',
+                        $app->created_at->format('Y-m-d'),
+                        $app->recruitment_stage->name,
+                        $app->stage_updated_at?->format('Y-m-d') ?? '',
+                    ]);
+                }
+            });
+
+            fclose($output);
         }, $filename);
     }
 
@@ -365,6 +423,7 @@ class CandidateManagement extends Component
         if ($this->tab === 'administrasi') {
             $query->whereIn('recruitment_stage', [
                 RecruitmentStage::APPLIED,
+                RecruitmentStage::ADMINISTRASI,
             ]);
         }
 
@@ -374,10 +433,7 @@ class CandidateManagement extends Component
                 RecruitmentStage::APPLIED,
                 RecruitmentStage::HIRED,
                 RecruitmentStage::REJECTED,
-            ])
-            ->whereDoesntHave('interviews', function ($q) {
-                $q->where('interview_type', 'HR Interview');
-            });
+            ]);
         }
         
         return $query;
@@ -393,6 +449,7 @@ class CandidateManagement extends Component
             'sites' => Cache::remember('ref.sites', 300, fn () => Site::query()->orderBy('name')->get(['id', 'name'])),
             'interviewers' => Cache::remember('ref.interviewers', 300, fn () => User::whereIn('role', [UserRole::Admin, UserRole::HR, UserRole::Interviewer])->get()),
             'progressStages' => [
+                RecruitmentStage::ADMINISTRASI,
                 RecruitmentStage::HR_INTERVIEW,
                 RecruitmentStage::USER_INTERVIEW,
                 RecruitmentStage::OFFERING,
