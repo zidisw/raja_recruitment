@@ -48,87 +48,95 @@
     </div>
 
     <div class="glass-card-static overflow-hidden p-0!">
-        <table class="w-full text-sm modern-table">
-            <thead>
-                <tr>
-                    <th class="w-12 text-center!">{{ __('No.') }}</th>
-                    <th class="w-12"></th>
-                    <th>{{ __('Candidate') }}</th>
-                    <th>{{ __('Position') }}</th>
-                    <th class="text-center!">{{ __('Test Date') }}</th>
-                    <th class="text-center!">{{ __('Result') }}</th>
-                    <th class="text-center!">{{ __('Document') }}</th>
-                    <th>{{ __('Notes') }}</th>
-                    <th class="text-center!">{{ __('Action') }}</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
-                @forelse ($applications_paginated as $app)
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm modern-table">
+                <thead>
                     <tr>
-                        <td class="px-4 py-3 text-center text-zinc-500 font-medium">
-                            {{ ($applications_paginated->currentPage() - 1) * $applications_paginated->perPage() + $loop->iteration }}
-                        </td>
-                        <td class="px-4 py-3">
-                            @php $isExpanded = $expandedRow === $app->id; @endphp
-                            <button wire:click="toggleExpand({{ $app->id }})" type="button"
-                                class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-zinc-400 transition-all duration-200 hover:bg-zinc-100 dark:hover:bg-zinc-700/70 hover:text-zinc-600 dark:hover:text-zinc-300 active:scale-95"
-                                aria-label="{{ $isExpanded ? __('Collapse details') : __('Expand details') }}">
-                                <flux:icon.chevron-right
-                                    class="size-4 transition-transform duration-300 ease-out {{ $isExpanded ? 'rotate-90' : '' }}" />
-                            </button>
-                        </td>
-                        <td class="px-6 py-4 font-semibold">{{ $app->candidate->name }}</td>
-                        <td class="px-6 py-4">{{ $app->job->title }}</td>
-                        <td class="px-6 py-4 text-center">{{ $app->psychotest?->test_date?->format('d M Y') ?? '—' }}</td>
-                        <td class="px-6 py-4 text-center">
-                            @if($app->psychotest)
-                                <flux:badge size="sm" variant="outline">{{ ucfirst($app->psychotest->result) }}</flux:badge>
-                            @else
-                                <span
-                                    class="text-zinc-400 text-xs font-semibold px-2 py-1 bg-zinc-100 dark:bg-zinc-800 rounded-md">{{ __('Waiting') }}</span>
-                            @endif
-                        </td>
-                        <td class="px-6 py-4 text-center">
-                            @if($app->psychotest?->file_path)
-                                <a href="{{ Storage::url($app->psychotest->file_path) }}" target="_blank"
-                                    class="inline-flex items-center justify-center text-zinc-400 hover:text-brand-500"
-                                    title="{{ __('View document') }}">
-                                    <flux:icon.document-text class="size-5" />
-                                </a>
-                            @else
-                                <span class="text-zinc-300 dark:text-zinc-600">—</span>
-                            @endif
-                        </td>
-                        <td class="px-6 py-4">{{ $app->psychotest?->notes ?: '—' }}</td>
-                        <td class="px-6 py-4 text-center">
-                            @if($app->psychotest)
-                                <div class="flex items-center justify-center gap-2">
-                                    <flux:button size="sm" variant="ghost" wire:click="openEdit({{ $app->psychotest->id }})"
-                                        wire:target="openEdit({{ $app->psychotest->id }})" icon="pencil" />
-                                </div>
-                            @else
-                                <flux:button size="sm" variant="ghost" wire:click="openCreate({{ $app->id }})"
-                                    wire:target="openCreate({{ $app->id }})" icon="plus" />
-                            @endif
-                        </td>
+                        <th class="w-12 text-center!">{{ __('No.') }}</th>
+                        <th class="w-12"></th>
+                        <th>{{ __('Candidate') }}</th>
+                        <th>{{ __('Position') }}</th>
+                        <th class="text-center!">{{ __('Test Date') }}</th>
+                        <th class="text-center!">{{ __('Result') }}</th>
+                        <th class="text-center!">{{ __('Document') }}</th>
+                        <th>{{ __('Notes') }}</th>
+                        <th class="text-center! whitespace-nowrap w-px">{{ __('Action') }}</th>
                     </tr>
-                    @if ($expandedRow === $app->id)
-                        <tr wire:key="psychotest-candidate-{{ $app->id }}-expanded" wire:transition.opacity.duration.200ms
-                            class="bg-zinc-50/50 dark:bg-zinc-800/30">
-                            <td colspan="9" class="px-6 py-4">
-                                <x-candidate-expanded-row :application="$app" />
+                </thead>
+                <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
+                    @forelse ($applications_paginated as $app)
+                        <tr>
+                            <td class="px-4 py-3 text-center text-zinc-500 font-medium">
+                                {{ ($applications_paginated->currentPage() - 1) * $applications_paginated->perPage() + $loop->iteration }}
+                            </td>
+                            <td class="px-4 py-3">
+                                @php $isExpanded = $expandedRow === $app->id; @endphp
+                                <button wire:click="toggleExpand({{ $app->id }})" type="button"
+                                    class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-zinc-400 transition-all duration-200 hover:bg-zinc-100 dark:hover:bg-zinc-700/70 hover:text-zinc-600 dark:hover:text-zinc-300 active:scale-95"
+                                    aria-label="{{ $isExpanded ? __('Collapse details') : __('Expand details') }}">
+                                    <flux:icon.chevron-right
+                                        class="size-4 transition-transform duration-300 ease-out {{ $isExpanded ? 'rotate-90' : '' }}" />
+                                </button>
+                            </td>
+                            <td class="px-6 py-4 font-semibold">{{ $app->candidate->name }}</td>
+                            <td class="px-6 py-4">{{ $app->job->title }}</td>
+                            <td class="px-6 py-4 text-center">{{ $app->psychotest?->test_date?->format('d M Y') ?? '—' }}
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                @if($app->psychotest)
+                                    <flux:badge size="sm" variant="outline">{{ ucfirst($app->psychotest->result) }}</flux:badge>
+                                @else
+                                    <span
+                                        class="text-zinc-400 text-xs font-semibold px-2 py-1 bg-zinc-100 dark:bg-zinc-800 rounded-md">{{ __('Waiting') }}</span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                @if($app->psychotest?->file_path)
+                                    <a href="{{ Storage::url($app->psychotest->file_path) }}" target="_blank"
+                                        class="inline-flex items-center justify-center text-zinc-400 hover:text-brand-500"
+                                        title="{{ __('View document') }}">
+                                        <flux:icon.document-text class="size-5" />
+                                    </a>
+                                @else
+                                    <span class="text-zinc-300 dark:text-zinc-600">—</span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4">{{ $app->psychotest?->notes ?: '—' }}</td>
+                            <td class="px-6 py-4 text-center whitespace-nowrap w-px">
+                                @if($app->psychotest)
+                                    <div class="inline-flex flex-nowrap items-center justify-center gap-2 whitespace-nowrap">
+                                        <flux:button size="sm" variant="ghost" wire:click="openEdit({{ $app->psychotest->id }})"
+                                            wire:target="openEdit({{ $app->psychotest->id }})" icon="pencil"
+                                            class="app-action-btn">
+                                            {{ __('Edit') }}
+                                        </flux:button>
+                                    </div>
+                                @else
+                                    <flux:button size="sm" variant="ghost" wire:click="openCreate({{ $app->id }})"
+                                        wire:target="openCreate({{ $app->id }})" icon="plus" class="app-action-btn">
+                                        {{ __('Tambah') }}
+                                    </flux:button>
+                                @endif
                             </td>
                         </tr>
-                    @endif
-                @empty
-                    <tr>
-                        <td colspan="9" class="px-6 py-8 text-center text-zinc-400">
-                            {{ __('No candidates in Psychotest stage yet.') }}
-                        </td>
-                    </tr>
-                @endforelse
-            </tbody>
-        </table>
+                        @if ($expandedRow === $app->id)
+                            <tr wire:key="psychotest-candidate-{{ $app->id }}-expanded" wire:transition.opacity.duration.200ms
+                                class="bg-zinc-50/50 dark:bg-zinc-800/30">
+                                <td colspan="9" class="px-6 py-4">
+                                    <x-candidate-expanded-row :application="$app" />
+                                </td>
+                            </tr>
+                        @endif
+                    @empty
+                        <tr>
+                            <td colspan="9" class="px-6 py-8 text-center text-zinc-400">
+                                {{ __('No candidates in Psychotest stage yet.') }}
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
     <div>{{ $applications_paginated->links() }}</div>
 

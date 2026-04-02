@@ -28,89 +28,93 @@
         </div>
     @else
         <div class="glass-card-static overflow-hidden p-0">
-            <table class="w-full text-sm modern-table">
-                <thead>
-                    <tr>
-                        <th class="w-12 text-center!">{{ __('No.') }}</th>
-                        <th>{{ __('Article') }}</th>
-                        <th class="hidden md:table-cell">{{ __('Category') }}</th>
-                        <th class="hidden lg:table-cell">{{ __('Author') }}</th>
-                        <th class="text-center!">{{ __('Status') }}</th>
-                        <th class="text-center! hidden lg:table-cell">{{ __('Published At') }}</th>
-                        <th class="text-center!">{{ __('Actions') }}</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
-                    @foreach ($articles as $article)
-                        <tr wire:key="{{ $article->id }}" class="cursor-pointer">
-                            <td class="px-4 py-4 text-center text-zinc-500 font-medium">
-                                {{ $articles->firstItem() + $loop->index }}
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="flex items-center gap-3">
-                                    @if ($article->featuredImage)
-                                        <div class="w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-zinc-100 dark:bg-zinc-800">
-                                            <img src="{{ Storage::url($article->featuredImage->path) }}" alt="{{ $article->title }}"
-                                                class="w-full h-full object-cover">
-                                        </div>
-                                    @else
-                                        <div
-                                            class="w-10 h-10 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0">
-                                            <flux:icon.newspaper class="w-5 h-5 text-zinc-400" />
-                                        </div>
-                                    @endif
-                                    <div>
-                                        <p class="font-semibold text-zinc-900 dark:text-white line-clamp-1">
-                                            {{ $article->title }}
-                                        </p>
-                                        <p class="text-xs text-zinc-400 mt-0.5">/articles/{{ $article->slug }}</p>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 hidden md:table-cell">
-                                @if ($article->category)
-                                    <span
-                                        class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300">
-                                        {{ $article->category }}
-                                    </span>
-                                @else
-                                    <span class="text-zinc-400">—</span>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4 text-zinc-500 dark:text-zinc-400 hidden lg:table-cell">
-                                {{ $article->author?->name ?? '—' }}
-                            </td>
-                            <td class="px-6 py-4 text-center">
-                                @if ($article->is_published && $article->published_at <= now())
-                                    <flux:badge color="green" size="sm">{{ __('Published') }}</flux:badge>
-                                @elseif ($article->is_published)
-                                    <flux:badge color="blue" size="sm">{{ __('Scheduled') }}</flux:badge>
-                                @else
-                                    <flux:badge color="zinc" size="sm">{{ __('Draft') }}</flux:badge>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4 text-center text-zinc-500 dark:text-zinc-400 hidden lg:table-cell text-sm">
-                                {{ $article->published_at?->format('d M Y, H:i') ?? '—' }}
-                            </td>
-                            <td class="px-6 py-4 text-center">
-                                <div class="flex items-center justify-center gap-2">
-                                    <flux:button wire:click="openEdit({{ $article->id }})" wire:target="openEdit({{ $article->id }})" size="sm" variant="ghost"
-                                        icon="pencil" />
-                                    <flux:button
-                                        @click="$dispatch('confirm-action', {
-                                            title: 'Hapus Artikel?',
-                                            description: 'Artikel ini akan dihapus secara permanen. Aksi ini tidak dapat dibatalkan.',
-                                            variant: 'danger',
-                                            method: 'delete',
-                                            args: [{{ $article->id }}]
-                                        })"
-                                        size="sm" variant="ghost" icon="trash" class="app-action-btn-danger" />
-                                </div>
-                            </td>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm modern-table">
+                    <thead>
+                        <tr>
+                            <th class="w-12 text-center!">{{ __('No.') }}</th>
+                            <th>{{ __('Article') }}</th>
+                            <th class="hidden md:table-cell">{{ __('Category') }}</th>
+                            <th class="hidden lg:table-cell">{{ __('Author') }}</th>
+                            <th class="text-center!">{{ __('Status') }}</th>
+                            <th class="text-center! hidden lg:table-cell">{{ __('Published At') }}</th>
+                            <th class="text-center! whitespace-nowrap w-px">{{ __('Actions') }}</th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
+                        @foreach ($articles as $article)
+                            <tr wire:key="{{ $article->id }}" class="cursor-pointer">
+                                <td class="px-4 py-4 text-center text-zinc-500 font-medium">
+                                    {{ $articles->firstItem() + $loop->index }}
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        @if ($article->featuredImage)
+                                            <div class="w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-zinc-100 dark:bg-zinc-800">
+                                                <img src="{{ Storage::url($article->featuredImage->path) }}"
+                                                    alt="{{ $article->title }}" class="w-full h-full object-cover">
+                                            </div>
+                                        @else
+                                            <div
+                                                class="w-10 h-10 rounded-lg bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center shrink-0">
+                                                <flux:icon.newspaper class="w-5 h-5 text-zinc-400" />
+                                            </div>
+                                        @endif
+                                        <div>
+                                            <p class="font-semibold text-zinc-900 dark:text-white line-clamp-1">
+                                                {{ $article->title }}
+                                            </p>
+                                            <p class="text-xs text-zinc-400 mt-0.5">/articles/{{ $article->slug }}</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 hidden md:table-cell">
+                                    @if ($article->category)
+                                        <span
+                                            class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-300">
+                                            {{ $article->category }}
+                                        </span>
+                                    @else
+                                        <span class="text-zinc-400">—</span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 text-zinc-500 dark:text-zinc-400 hidden lg:table-cell">
+                                    {{ $article->author?->name ?? '—' }}
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    @if ($article->is_published && $article->published_at <= now())
+                                        <flux:badge color="green" size="sm">{{ __('Published') }}</flux:badge>
+                                    @elseif ($article->is_published)
+                                        <flux:badge color="blue" size="sm">{{ __('Scheduled') }}</flux:badge>
+                                    @else
+                                        <flux:badge color="zinc" size="sm">{{ __('Draft') }}</flux:badge>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 text-center text-zinc-500 dark:text-zinc-400 hidden lg:table-cell text-sm">
+                                    {{ $article->published_at?->format('d M Y, H:i') ?? '—' }}
+                                </td>
+                                <td class="px-6 py-4 text-center whitespace-nowrap w-px">
+                                    <div class="inline-flex flex-nowrap items-center justify-center gap-2 whitespace-nowrap">
+                                        <flux:button wire:click="openEdit({{ $article->id }})"
+                                            wire:target="openEdit({{ $article->id }})" size="sm" variant="ghost" icon="pencil"
+                                            class="app-action-btn">{{ __('Edit') }}</flux:button>
+                                        <flux:button @click="$dispatch('confirm-action', {
+                                                                    title: 'Hapus Artikel?',
+                                                                    description: 'Artikel ini akan dihapus secara permanen. Aksi ini tidak dapat dibatalkan.',
+                                                                    variant: 'danger',
+                                                                    method: 'delete',
+                                                                    args: [{{ $article->id }}]
+                                                                })" size="sm" variant="ghost" icon="trash"
+                                            class="app-action-btn-danger">
+                                            {{ __('Hapus') }}
+                                        </flux:button>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         @if ($articles->hasPages())

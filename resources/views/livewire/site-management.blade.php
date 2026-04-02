@@ -29,54 +29,59 @@
         </div>
     @else
         <div class="glass-card-static overflow-hidden p-0!">
-            <table class="w-full text-sm modern-table">
-                <thead>
-                    <tr>
-                        <th class="w-12 text-center!">{{ __('No.') }}</th>
-                        <th>{{ __('Site Name') }}</th>
-                        <th class="hidden sm:table-cell">{{ __('Location') }}</th>
-                        <th class="hidden md:table-cell">{{ __('Description') }}</th>
-                        <th class="text-center!">{{ __('Jobs') }}</th>
-                        <th class="text-center!">{{ __('Actions') }}</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
-                    @foreach ($sites as $site)
-                        <tr wire:key="{{ $site->id }}" class="cursor-pointer">
-                            <td class="px-4 py-3 text-center text-zinc-500 font-medium whitespace-nowrap">
-                                {{ $loop->iteration }}
-                            </td>
-                            <td class="px-6 py-4 font-semibold text-zinc-900 dark:text-white">
-                                {{ $site->name }}
-                            </td>
-                            <td class="px-6 py-4 text-zinc-500 dark:text-zinc-400 hidden sm:table-cell">
-                                {{ $site->location ?: '—' }}
-                            </td>
-                            <td class="px-6 py-4 text-zinc-500 dark:text-zinc-400 hidden md:table-cell max-w-xs truncate">
-                                {{ $site->description ?: '—' }}
-                            </td>
-                            <td class="px-6 py-4 text-center">
-                                <flux:badge variant="outline">{{ $site->jobs_count }}</flux:badge>
-                            </td>
-                            <td class="px-6 py-4 text-center">
-                                <div class="flex items-center justify-center gap-2">
-                                    <flux:button wire:click="openEdit({{ $site->id }})" wire:target="openEdit({{ $site->id }})" size="sm" variant="ghost"
-                                        icon="pencil" />
-                                    <flux:button
-                                        @click="$dispatch('confirm-action', {
-                                            title: 'Hapus Site?',
-                                            description: 'Job yang terhubung dengan site ini akan di-unlink. Aksi ini tidak dapat dibatalkan.',
-                                            variant: 'danger',
-                                            method: 'delete',
-                                            args: [{{ $site->id }}]
-                                        })"
-                                        size="sm" variant="ghost" icon="trash" class="app-action-btn-danger" />
-                                </div>
-                            </td>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm modern-table">
+                    <thead>
+                        <tr>
+                            <th class="w-12 text-center!">{{ __('No.') }}</th>
+                            <th>{{ __('Site Name') }}</th>
+                            <th class="hidden sm:table-cell">{{ __('Location') }}</th>
+                            <th class="hidden md:table-cell">{{ __('Description') }}</th>
+                            <th class="text-center!">{{ __('Jobs') }}</th>
+                            <th class="text-center! whitespace-nowrap w-px">{{ __('Actions') }}</th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
+                        @foreach ($sites as $site)
+                            <tr wire:key="{{ $site->id }}" class="cursor-pointer">
+                                <td class="px-4 py-3 text-center text-zinc-500 font-medium whitespace-nowrap">
+                                    {{ $loop->iteration }}
+                                </td>
+                                <td class="px-6 py-4 font-semibold text-zinc-900 dark:text-white">
+                                    {{ $site->name }}
+                                </td>
+                                <td class="px-6 py-4 text-zinc-500 dark:text-zinc-400 hidden sm:table-cell">
+                                    {{ $site->location ?: '—' }}
+                                </td>
+                                <td class="px-6 py-4 text-zinc-500 dark:text-zinc-400 hidden md:table-cell max-w-xs truncate">
+                                    {{ $site->description ?: '—' }}
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    <flux:badge variant="outline">{{ $site->jobs_count }}</flux:badge>
+                                </td>
+                                <td class="px-6 py-4 text-center whitespace-nowrap w-px">
+                                    <div class="inline-flex flex-nowrap items-center justify-center gap-2 whitespace-nowrap">
+                                        <flux:button wire:click="openEdit({{ $site->id }})"
+                                            wire:target="openEdit({{ $site->id }})" size="sm" variant="ghost" icon="pencil"
+                                            class="app-action-btn">{{ __('Edit') }}
+                                        </flux:button>
+                                        <flux:button @click="$dispatch('confirm-action', {
+                                                                    title: 'Hapus Site?',
+                                                                    description: 'Job yang terhubung dengan site ini akan di-unlink. Aksi ini tidak dapat dibatalkan.',
+                                                                    variant: 'danger',
+                                                                    method: 'delete',
+                                                                    args: [{{ $site->id }}]
+                                                                })" size="sm" variant="ghost" icon="trash"
+                                            class="app-action-btn-danger">
+                                            {{ __('Hapus') }}
+                                        </flux:button>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
     @endif
 

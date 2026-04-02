@@ -7,7 +7,12 @@ namespace App\Livewire;
 use App\Enums\RecruitmentStage;
 use App\Enums\UserRole;
 use App\Models\Application;
+use App\Models\ApplicationStageLog;
 use App\Models\Department;
+use App\Models\Mcu;
+use App\Models\OfferingLetter;
+use App\Models\Onboarding;
+use App\Models\Psychotest;
 use App\Models\Site;
 use App\Models\Interview;
 use App\Models\User;
@@ -15,6 +20,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -44,6 +50,9 @@ class CandidateManagement extends Component
     
     public bool $selectAll = false;
     public bool $selectionMode = false;
+
+    public bool $showBulkStageModal = false;
+    public string $bulkStage = '';
 
     // Interview Scheduling fields
     public bool $showScheduleModal = false;
@@ -248,6 +257,83 @@ class CandidateManagement extends Component
         }
     }
 
+    public function openBulkStageModal(): void
+    {
+        if (empty($this->selectedIds)) {
+            $this->dispatch('notify', ['message' => __('Pilih minimal 1 kandidat terlebih dahulu.'), 'type' => 'error']);
+
+            return;
+        }
+
+        $this->bulkStage = '';
+        $this->showBulkStageModal = true;
+    }
+
+    private function bulkStageAllowedValues(): array
+    {
+        if ($this->tab === 'on-progress') {
+            return [
+                RecruitmentStage::ADMINISTRASI->value,
+                RecruitmentStage::HR_INTERVIEW->value,
+                RecruitmentStage::USER_INTERVIEW->value,
+                RecruitmentStage::OFFERING->value,
+                RecruitmentStage::PSYCHOTEST->value,
+                RecruitmentStage::MCU->value,
+                RecruitmentStage::ONBOARDING->value,
+                RecruitmentStage::HIRED->value,
+                RecruitmentStage::REJECTED->value,
+            ];
+        }
+
+        return array_map(static fn (RecruitmentStage $s) => $s->value, RecruitmentStage::cases());
+    }
+
+    public function bulkUpdateStage(): void
+    {
+        if (empty($this->selectedIds)) {
+            return;
+        }
+
+        $this->validate([
+            'bulkStage' => ['required', Rule::in($this->bulkStageAllowedValues())],
+        ]);
+
+        $applications = Application::whereIn('id', $this->selectedIds)->get(['id', 'recruitment_stage']);
+
+        if (! Auth::user()->isSuperAdmin() && $applications->contains(fn (Application $a) => $a->recruitment_stage->isTerminal())) {
+            $this->dispatch('notify', ['message' => __('Sebagian kandidat terpilih sudah berada di status terminal (Rejected/Hired). Hanya superadmin yang dapat mengubahnya.'), 'type' => 'error']);
+
+            return;
+        }
+
+        $nextStage = RecruitmentStage::from($this->bulkStage);
+
+        Application::whereIn('id', $this->selectedIds)->update([
+            'recruitment_stage' => $nextStage,
+            'stage_updated_at' => now(),
+        ]);
+
+        $logs = [];
+        $now = now();
+        $adminId = Auth::id();
+        foreach ($applications as $app) {
+            $logs[] = [
+                'application_id' => $app->id,
+                'stage' => $app->recruitment_stage->value,
+                'decision' => $nextStage === RecruitmentStage::REJECTED ? 'rejected' : 'passed',
+                'notes' => 'Status diubah secara massal via bulk action',
+                'decided_by' => $adminId,
+                'created_at' => $now,
+            ];
+        }
+        ApplicationStageLog::insert($logs);
+
+        $this->showBulkStageModal = false;
+        $this->bulkStage = '';
+        $this->dispatch('notify', ['message' => __('Tahapan berhasil diperbarui untuk :count kandidat.', ['count' => $applications->count()]), 'type' => 'success']);
+        $this->resetSelection();
+    }
+
     public function bulkPassAdministrative(): void
     {
         if (empty($this->selectedIds)) {
@@ -300,6 +386,12 @@ class CandidateManagement extends Component
 
         $applications = Application::whereIn('id', $this->selectedIds)->get(['id', 'recruitment_stage']);
 
+        if (! Auth::user()->isSuperAdmin() && $applications->contains(fn (Application $a) => $a->recruitment_stage->isTerminal())) {
+            $this->dispatch('notify', ['message' => __('Sebagian kandidat terpilih sudah berada di status terminal (Rejected/Hired). Hanya superadmin yang dapat mengubahnya.'), 'type' => 'error']);
+
+            return;
+        }
+
         Application::whereIn('id', $this->selectedIds)->update([
             'recruitment_stage' => RecruitmentStage::REJECTED,
             'stage_updated_at' => now(),
@@ -322,6 +414,33 @@ class CandidateManagement extends Component
 
         $this->dispatch('notify', ['message' => __('Kandidat yang dipilih berhasil ditolak.'), 'type' => 'success']);
         $this->resetSelection();
+    }
+
+    public function bulkDeleteApplications(): void
+    {
+        if (! Auth::user()?->isSuperAdmin()) {
+            abort(403, 'Hanya superadmin yang dapat menghapus data kandidat dari riwayat.');
+        }
+
+        if (empty($this->selectedIds)) {
+            return;
+        }
+
+        $ids = $this->selectedIds;
+
+        DB::transaction(function () use ($ids): void {
+            ApplicationStageLog::whereIn('application_id', $ids)->delete();
+            Interview::whereIn('application_id', $ids)->delete();
+            OfferingLetter::whereIn('application_id', $ids)->delete();
+            Psychotest::whereIn('application_id', $ids)->delete();
+            Mcu::whereIn('application_id', $ids)->delete();
+            Onboarding::whereIn('application_id', $ids)->delete();
+            Application::whereIn('id', $ids)->delete();
+        });
+
+        $deletedCount = count($ids);
+        $this->resetSelection();
+        $this->dispatch('notify', ['message' => __('Riwayat kandidat berhasil dihapus: :count.', ['count' => $deletedCount]), 'type' => 'success']);
     }
 
     public function exportCsv()

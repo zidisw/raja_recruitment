@@ -22,8 +22,7 @@
                     placeholder="{{ __('Search PTK number, position, or department...') }}" icon="magnifying-glass" />
             </flux:field>
             <div class="min-w-40">
-                <x-custom-select wire:model.live="filterStatus" placeholder="{{ __('All Statuses') }}"
-                    :options="['' => __('All Statuses'), 'draft' => 'Draft', 'approved' => 'Approved', 'closed' => 'Closed']" />
+                <x-custom-select wire:model.live="filterStatus" placeholder="{{ __('All Statuses') }}" :options="['' => __('All Statuses'), 'draft' => 'Draft', 'approved' => 'Approved', 'closed' => 'Closed']" />
             </div>
         </div>
         <div class="flex items-center justify-end gap-2">
@@ -36,116 +35,111 @@
 
     {{-- Table --}}
     <div class="glass-card-static overflow-hidden p-0!">
-        <table class="w-full table-fixed text-sm modern-table">
-            <colgroup>
-                <col class="w-[5%]">
-                <col class="w-[15%]">
-                <col class="w-[18%]">
-                <col class="w-[15%]">
-                <col class="w-[15%]">
-                <col class="w-[12%]">
-                <col class="w-[12%]">
-                <col class="w-[8%]">
-            </colgroup>
-            <thead>
-                <tr>
-                    <th class="text-center!">{{ __('No.') }}</th>
-                    <th class="text-left!">{{ __('Nomor PTK') }}</th>
-                    <th class="text-left!">{{ __('Posisi') }}</th>
-                    <th class="hidden text-center! md:table-cell">{{ __('Dibuat Pada') }}</th>
-                    <th class="hidden text-center! lg:table-cell">{{ __('Dibuat Oleh') }}</th>
-                    <th class="text-center!">{{ __('Lampiran') }}</th>
-                    <th class="text-center!">{{ __('Status') }}</th>
-                    <th class="text-center!">{{ __('Aksi') }}</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
-                @forelse ($ptkItems as $item)
-                    <tr wire:key="{{ $item->id }}" class="cursor-pointer">
-                        <td class="px-4 py-4 text-center text-zinc-500 font-medium">
-                            {{ ($ptkItems->currentPage() - 1) * $ptkItems->perPage() + $loop->iteration }}
-                        </td>
-                        <td class="px-6 py-4 align-middle text-left">
-                            <p class="font-semibold text-zinc-900 dark:text-white">{{ $item->nomor_ptk }}</p>
-                            @if ($item->department)
-                                <p class="text-xs text-zinc-400 mt-0.5">{{ $item->department }}</p>
-                            @endif
-                        </td>
-                        <td class="px-6 py-4 align-middle text-left text-zinc-700 dark:text-zinc-300">{{ $item->posisi }}
-                        </td>
-                        <td class="hidden px-6 py-4 align-middle text-center md:table-cell">
-                            <p class="text-xs text-zinc-600 dark:text-zinc-300">
-                                {{ $item->created_at->format('d M Y') }}
-                            </p>
-                            <p class="text-xs text-zinc-400">{{ $item->created_at->format('H:i') }}</p>
-                        </td>
-                        <td class="hidden px-6 py-4 align-middle text-center lg:table-cell">
-                            @if ($item->createdBy)
-                                <span
-                                    class="text-xs font-medium text-zinc-700 dark:text-zinc-300">{{ $item->createdBy->name }}</span>
-                            @else
-                                <span class="text-zinc-300 dark:text-zinc-600">—</span>
-                            @endif
-                        </td>
-                        <td class="px-6 py-4 align-middle text-center">
-                            @if ($item->attachment_path)
-                                <div class="flex justify-center">
-                                    <a href="{{ Storage::url($item->attachment_path) }}" target="_blank"
-                                        class="inline-flex items-center gap-1 text-xs text-brand-500 hover:text-brand-600 dark:hover:text-brand-400 font-medium">
-                                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                        </svg>
-                                        Lihat
-                                    </a>
-                                </div>
-                            @else
-                                <span class="text-zinc-300 dark:text-zinc-600 text-xs">—</span>
-                            @endif
-                        </td>
-                        <td class="px-6 py-4 align-middle text-center">
-                            @php
-                                $statusColor = match ($item->status) {
-                                    'approved' => 'text-green-700 bg-green-50 dark:text-green-400 dark:bg-green-500/10',
-                                    'closed' => 'text-red-700 bg-red-50 dark:text-red-400 dark:bg-red-500/10',
-                                    default => 'text-zinc-600 bg-zinc-100 dark:text-zinc-400 dark:bg-zinc-800',
-                                };
-                            @endphp
-                            <span
-                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold {{ $statusColor }}">
-                                {{ strtoupper($item->status) }}
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 align-middle text-center">
-                            <div class="flex justify-center gap-2">
-                                <flux:button wire:click="openEdit({{ $item->id }})" wire:target="openEdit({{ $item->id }})" size="sm" variant="ghost" icon="pencil"
-                                    class="app-action-btn" />
-                                <flux:button
-                                    @click="$dispatch('confirm-action', {
-                                        title: 'Hapus PTK?',
-                                        description: 'PTK ini beserta lampirannya akan dihapus. Aksi ini tidak dapat dibatalkan.',
-                                        variant: 'danger',
-                                        method: 'delete',
-                                        args: [{{ $item->id }}]
-                                    })"
-                                    size="sm" variant="ghost" icon="trash" class="app-action-btn-danger" />
-                            </div>
-                        </td>
-                    </tr>
-                @empty
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm modern-table">
+                <thead>
                     <tr>
-                        <td colspan="8" class="px-6 py-14 text-center">
-                            <div class="flex flex-col items-center gap-3 text-zinc-400">
-                                <flux:icon.clipboard-document-list class="w-10 h-10 text-zinc-300 dark:text-zinc-600" />
-                                <p class="text-sm">{{ __('Belum ada data PTK.') }}</p>
-                            </div>
-                        </td>
+                        <th class="text-center!">{{ __('No.') }}</th>
+                        <th class="text-left!">{{ __('Nomor PTK') }}</th>
+                        <th class="text-left!">{{ __('Posisi') }}</th>
+                        <th class="hidden text-center! md:table-cell">{{ __('Dibuat Pada') }}</th>
+                        <th class="hidden text-center! lg:table-cell">{{ __('Dibuat Oleh') }}</th>
+                        <th class="text-center!">{{ __('Lampiran') }}</th>
+                        <th class="text-center!">{{ __('Status') }}</th>
+                        <th class="text-center! whitespace-nowrap w-px">{{ __('Aksi') }}</th>
                     </tr>
-                @endforelse
-            </tbody>
-        </table>
+                </thead>
+                <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
+                    @forelse ($ptkItems as $item)
+                        <tr wire:key="{{ $item->id }}" class="cursor-pointer">
+                            <td class="px-4 py-4 text-center text-zinc-500 font-medium">
+                                {{ ($ptkItems->currentPage() - 1) * $ptkItems->perPage() + $loop->iteration }}
+                            </td>
+                            <td class="px-6 py-4 align-middle text-left">
+                                <p class="font-semibold text-zinc-900 dark:text-white">{{ $item->nomor_ptk }}</p>
+                                @if ($item->department)
+                                    <p class="text-xs text-zinc-400 mt-0.5">{{ $item->department }}</p>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 align-middle text-left text-zinc-700 dark:text-zinc-300">
+                                {{ $item->posisi }}
+                            </td>
+                            <td class="hidden px-6 py-4 align-middle text-center md:table-cell">
+                                <p class="text-xs text-zinc-600 dark:text-zinc-300">
+                                    {{ $item->created_at->format('d M Y') }}
+                                </p>
+                                <p class="text-xs text-zinc-400">{{ $item->created_at->format('H:i') }}</p>
+                            </td>
+                            <td class="hidden px-6 py-4 align-middle text-center lg:table-cell">
+                                @if ($item->createdBy)
+                                    <span
+                                        class="text-xs font-medium text-zinc-700 dark:text-zinc-300">{{ $item->createdBy->name }}</span>
+                                @else
+                                    <span class="text-zinc-300 dark:text-zinc-600">—</span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 align-middle text-center">
+                                @if ($item->attachment_path)
+                                    <div class="flex justify-center">
+                                        <a href="{{ Storage::url($item->attachment_path) }}" target="_blank"
+                                            class="inline-flex items-center gap-1 text-xs text-brand-500 hover:text-brand-600 dark:hover:text-brand-400 font-medium">
+                                            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                            </svg>
+                                            Lihat
+                                        </a>
+                                    </div>
+                                @else
+                                    <span class="text-zinc-300 dark:text-zinc-600 text-xs">—</span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 align-middle text-center">
+                                @php
+                                    $statusColor = match ($item->status) {
+                                        'approved' => 'text-green-700 bg-green-50 dark:text-green-400 dark:bg-green-500/10',
+                                        'closed' => 'text-red-700 bg-red-50 dark:text-red-400 dark:bg-red-500/10',
+                                        default => 'text-zinc-600 bg-zinc-100 dark:text-zinc-400 dark:bg-zinc-800',
+                                    };
+                                @endphp
+                                <span
+                                    class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold {{ $statusColor }}">
+                                    {{ strtoupper($item->status) }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 align-middle text-center whitespace-nowrap w-px">
+                                <div class="inline-flex flex-nowrap justify-center gap-2 whitespace-nowrap">
+                                    <flux:button wire:click="openEdit({{ $item->id }})"
+                                        wire:target="openEdit({{ $item->id }})" size="sm" variant="ghost" icon="pencil"
+                                        class="app-action-btn">{{ __('Edit') }}
+                                    </flux:button>
+                                    <flux:button @click="$dispatch('confirm-action', {
+                                                    title: 'Hapus PTK?',
+                                                    description: 'PTK ini beserta lampirannya akan dihapus. Aksi ini tidak dapat dibatalkan.',
+                                                    variant: 'danger',
+                                                    method: 'delete',
+                                                    args: [{{ $item->id }}]
+                                                })" size="sm" variant="ghost" icon="trash" class="app-action-btn-danger">
+                                        {{ __('Hapus') }}
+                                    </flux:button>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="8" class="px-6 py-14 text-center">
+                                <div class="flex flex-col items-center gap-3 text-zinc-400">
+                                    <flux:icon.clipboard-document-list class="w-10 h-10 text-zinc-300 dark:text-zinc-600" />
+                                    <p class="text-sm">{{ __('Belum ada data PTK.') }}</p>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <div>{{ $ptkItems->links() }}</div>
@@ -283,13 +277,13 @@
                         @endif
 
                         <input type="file" wire:model="attachment" accept=".jpg,.jpeg,.png,.pdf" class="block w-full text-sm text-zinc-500 dark:text-zinc-400
-                                               file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0
-                                               file:text-sm file:font-semibold
-                                               file:bg-zinc-100 file:text-zinc-700
-                                               hover:file:bg-zinc-200
-                                               dark:file:bg-zinc-700 dark:file:text-zinc-300
-                                               dark:hover:file:bg-zinc-600
-                                               cursor-pointer mt-1">
+                                                           file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0
+                                                           file:text-sm file:font-semibold
+                                                           file:bg-zinc-100 file:text-zinc-700
+                                                           hover:file:bg-zinc-200
+                                                           dark:file:bg-zinc-700 dark:file:text-zinc-300
+                                                           dark:hover:file:bg-zinc-600
+                                                           cursor-pointer mt-1">
 
                         <div wire:loading wire:target="attachment"
                             class="flex items-center gap-1.5 text-xs text-zinc-400 mt-2">

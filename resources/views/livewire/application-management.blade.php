@@ -211,211 +211,218 @@
         </div>
     @else
         <div class="glass-card-static overflow-hidden p-0!">
-            <table class="w-full text-sm modern-table">
-                <thead>
-                    <tr>
-                        <th></th>
-                        <th class="w-14 text-center!">{{ __('No.') }}</th>
-                        <th>{{ __('Candidate') }}</th>
-                        <th class="hidden md:table-cell">{{ __('Contact') }}</th>
-                        <th class="text-center! hidden sm:table-cell">{{ __('Applied') }}</th>
-                        <th class="text-center!">{{ __('Status') }}</th>
-                        <th class="text-center!">{{ __('Actions') }}</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-zinc-100 bg-white dark:divide-zinc-800 dark:bg-zinc-900">
-                    @foreach ($applications as $application)
-                        @php
-                            $stageColors = [
-                                'APPLIED' => 'zinc',
-                                'HR_INTERVIEW' => 'yellow',
-                                'USER_INTERVIEW' => 'orange',
-                                'PSYCHOTEST' => 'purple',
-                                'OFFERING' => 'cyan',
-                                'MCU' => 'indigo',
-                                'ONBOARDING' => 'lime',
-                                'HIRED' => 'green',
-                                'REJECTED' => 'red',
-                            ];
-                            $color = $stageColors[$application->recruitment_stage->value] ?? 'zinc';
-                            $isExpanded = $expandedRow === $application->id;
-                            $lastPassedStage = $application->recruitment_stage === \App\Enums\RecruitmentStage::REJECTED
-                                ? $application->stageLogs->where('decision', 'passed')->last()?->stage?->label()
-                                : null;
-                        @endphp
-                        <tr wire:key="{{ $application->id }}" class="cursor-pointer">
-                            <td class="px-6 py-4">
-                                <button wire:click="toggleExpand({{ $application->id }})" type="button"
-                                    class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-zinc-400 transition-all duration-200 hover:bg-zinc-100 hover:text-zinc-600 active:scale-95 dark:hover:bg-zinc-700/70 dark:hover:text-zinc-300"
-                                    aria-label="{{ $isExpanded ? __('Collapse details') : __('Expand details') }}">
-                                    <flux:icon.chevron-right
-                                        class="size-4 transition-transform duration-300 ease-out {{ $isExpanded ? 'rotate-90' : '' }}" />
-                                </button>
-                            </td>
-                            <td class="px-3 py-4 text-center text-xs font-semibold text-zinc-500 dark:text-zinc-400">
-                                {{ ($applications->firstItem() ?? 0) + $loop->index }}
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="font-semibold text-zinc-900 dark:text-white">{{ $application->candidate->name }}
-                                </div>
-                                <div class="text-xs text-zinc-400">{{ $application->candidate->email }}</div>
-                            </td>
-                            <td class="hidden px-6 py-4 text-zinc-500 dark:text-zinc-400 md:table-cell">
-                                @if ($application->candidate->profile?->whatsapp)
-                                    <div class="text-sm">{{ $application->candidate->profile->whatsapp }}</div>
-                                @else
-                                    <span class="text-zinc-400">—</span>
-                                @endif
-                            </td>
-                            <td class="hidden px-6 py-4 text-center text-zinc-500 dark:text-zinc-400 sm:table-cell">
-                                {{ $application->created_at->format('d M Y') }}
-                            </td>
-                            <td class="px-6 py-4 text-center">
-                                <flux:badge color="{{ $color }}" size="sm">{{ $application->recruitment_stage->label() }}
-                                </flux:badge>
-                                @if ($lastPassedStage)
-                                    <p class="mt-1 text-xs text-zinc-400">{{ __('Last:') }} {{ $lastPassedStage }}</p>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4 text-center">
-                                <flux:button href="{{ route('applications.review', [$job, $application]) }}" wire:navigate
-                                    size="sm" variant="ghost" icon="eye">
-                                    {{ __('Review') }}
-                                </flux:button>
-                            </td>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm modern-table">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th class="w-14 text-center!">{{ __('No.') }}</th>
+                            <th>{{ __('Candidate') }}</th>
+                            <th class="hidden md:table-cell">{{ __('Contact') }}</th>
+                            <th class="text-center! hidden sm:table-cell">{{ __('Applied') }}</th>
+                            <th class="text-center!">{{ __('Status') }}</th>
+                            <th class="text-center! whitespace-nowrap w-px">{{ __('Actions') }}</th>
                         </tr>
+                    </thead>
+                    <tbody class="divide-y divide-zinc-100 bg-white dark:divide-zinc-800 dark:bg-zinc-900">
+                        @foreach ($applications as $application)
+                            @php
+                                $stageColors = [
+                                    'APPLIED' => 'zinc',
+                                    'HR_INTERVIEW' => 'yellow',
+                                    'USER_INTERVIEW' => 'orange',
+                                    'PSYCHOTEST' => 'purple',
+                                    'OFFERING' => 'cyan',
+                                    'MCU' => 'indigo',
+                                    'ONBOARDING' => 'lime',
+                                    'HIRED' => 'green',
+                                    'REJECTED' => 'red',
+                                ];
+                                $color = $stageColors[$application->recruitment_stage->value] ?? 'zinc';
+                                $isExpanded = $expandedRow === $application->id;
+                                $lastPassedStage = $application->recruitment_stage === \App\Enums\RecruitmentStage::REJECTED
+                                    ? $application->stageLogs->where('decision', 'passed')->last()?->stage?->label()
+                                    : null;
+                            @endphp
+                            <tr wire:key="{{ $application->id }}" class="cursor-pointer">
+                                <td class="px-6 py-4">
+                                    <button wire:click="toggleExpand({{ $application->id }})" type="button"
+                                        class="inline-flex h-9 w-9 items-center justify-center rounded-lg text-zinc-400 transition-all duration-200 hover:bg-zinc-100 hover:text-zinc-600 active:scale-95 dark:hover:bg-zinc-700/70 dark:hover:text-zinc-300"
+                                        aria-label="{{ $isExpanded ? __('Collapse details') : __('Expand details') }}">
+                                        <flux:icon.chevron-right
+                                            class="size-4 transition-transform duration-300 ease-out {{ $isExpanded ? 'rotate-90' : '' }}" />
+                                    </button>
+                                </td>
+                                <td class="px-3 py-4 text-center text-xs font-semibold text-zinc-500 dark:text-zinc-400">
+                                    {{ ($applications->firstItem() ?? 0) + $loop->index }}
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="font-semibold text-zinc-900 dark:text-white">{{ $application->candidate->name }}
+                                    </div>
+                                    <div class="text-xs text-zinc-400">{{ $application->candidate->email }}</div>
+                                </td>
+                                <td class="hidden px-6 py-4 text-zinc-500 dark:text-zinc-400 md:table-cell">
+                                    @if ($application->candidate->profile?->whatsapp)
+                                        <div class="text-sm">{{ $application->candidate->profile->whatsapp }}</div>
+                                    @else
+                                        <span class="text-zinc-400">—</span>
+                                    @endif
+                                </td>
+                                <td class="hidden px-6 py-4 text-center text-zinc-500 dark:text-zinc-400 sm:table-cell">
+                                    {{ $application->created_at->format('d M Y') }}
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    <flux:badge color="{{ $color }}" size="sm">{{ $application->recruitment_stage->label() }}
+                                    </flux:badge>
+                                    @if ($lastPassedStage)
+                                        <p class="mt-1 text-xs text-zinc-400">{{ __('Last:') }} {{ $lastPassedStage }}</p>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 text-center whitespace-nowrap w-px">
+                                    <flux:button href="{{ route('applications.review', [$job, $application]) }}" wire:navigate
+                                        size="sm" variant="ghost" icon="eye">
+                                        {{ __('Review') }}
+                                    </flux:button>
+                                </td>
+                            </tr>
 
-                        {{-- Expandable Row --}}
-                        @if ($isExpanded && $expandedData?->id === $application->id)
-                            @php $p = $expandedData->candidate->profile; @endphp
-                            <tr wire:key="{{ $application->id }}-expanded" wire:transition.opacity.duration.200ms
-                                class="bg-zinc-50/50 dark:bg-zinc-800/30">
-                                <td colspan="7" class="px-6 py-4">
-                                    <div x-data="{ show: false }" x-init="requestAnimationFrame(() => show = true)" x-show="show"
-                                        x-transition:enter="transition ease-out duration-220"
-                                        x-transition:enter-start="opacity-0 -translate-y-1"
-                                        x-transition:enter-end="opacity-100 translate-y-0"
-                                        class="grid grid-cols-2 gap-x-8 gap-y-3 text-sm sm:grid-cols-3 lg:grid-cols-4">
-                                        {{-- Gender --}}
-                                        <div>
-                                            <span
-                                                class="text-xs font-medium uppercase tracking-wide text-zinc-400">{{ __('Gender') }}</span>
-                                            <p class="mt-0.5 capitalize text-zinc-700 dark:text-zinc-300">{{ $p?->gender ?? '—' }}
-                                            </p>
-                                        </div>
-                                        {{-- Date of Birth + Age --}}
-                                        <div>
-                                            <span
-                                                class="text-xs font-medium uppercase tracking-wide text-zinc-400">{{ __('Date of Birth') }}</span>
-                                            <p class="mt-0.5 text-zinc-700 dark:text-zinc-300">
-                                                @if ($p?->date_of_birth)
-                                                    {{ $p->date_of_birth->format('d/m/y') }}
-                                                    <span class="text-zinc-400">({{ $p->date_of_birth->age }}
-                                                        {{ __('y.o.') }})</span>
-                                                @else
-                                                    —
-                                                @endif
-                                            </p>
-                                        </div>
-                                        {{-- Religion --}}
-                                        <div>
-                                            <span
-                                                class="text-xs font-medium uppercase tracking-wide text-zinc-400">{{ __('Religion') }}</span>
-                                            <p class="mt-0.5 text-zinc-700 dark:text-zinc-300">{{ $p?->religion ?? '—' }}</p>
-                                        </div>
-                                        {{-- Marital Status --}}
-                                        <div>
-                                            <span
-                                                class="text-xs font-medium uppercase tracking-wide text-zinc-400">{{ __('Marital Status') }}</span>
-                                            <p class="mt-0.5 capitalize text-zinc-700 dark:text-zinc-300">
-                                                {{ $p?->marital_status ?? '—' }}
-                                            </p>
-                                        </div>
-                                        {{-- NIK --}}
-                                        <div>
-                                            <span
-                                                class="text-xs font-medium uppercase tracking-wide text-zinc-400">{{ __('NIK') }}</span>
-                                            <p class="mt-0.5 text-zinc-700 dark:text-zinc-300">{{ $p?->nik ?? '—' }}</p>
-                                        </div>
-                                        {{-- Education --}}
-                                        <div>
-                                            <span
-                                                class="text-xs font-medium uppercase tracking-wide text-zinc-400">{{ __('Education') }}</span>
-                                            @php
-                                                $latestEdu = $expandedData->candidate->education
-                                                    ->sortByDesc('end_year')->first();
-                                            @endphp
-                                            <p class="mt-0.5 text-zinc-700 dark:text-zinc-300">
-                                                {{ $latestEdu ? $latestEdu->degree . ' — ' . $latestEdu->institution_name : '—' }}
-                                            </p>
-                                        </div>
-                                        {{-- Work Experience --}}
-                                        <div>
-                                            <span
-                                                class="text-xs font-medium uppercase tracking-wide text-zinc-400">{{ __('Work Exp.') }}</span>
-                                            <p class="mt-0.5 text-zinc-700 dark:text-zinc-300">
-                                                @if ($expandedData->candidate->experiences->isNotEmpty())
-                                                    <span class="text-green-600 dark:text-green-400">✓
-                                                        {{ $expandedData->candidate->experiences->count() }} {{ __('job(s)') }}</span>
-                                                @else
-                                                    <span class="text-zinc-400">{{ __('None') }}</span>
-                                                @endif
-                                            </p>
-                                        </div>
-                                        {{-- Organization --}}
-                                        <div>
-                                            <span
-                                                class="text-xs font-medium uppercase tracking-wide text-zinc-400">{{ __('Organization') }}</span>
-                                            <p class="mt-0.5 text-zinc-700 dark:text-zinc-300">
-                                                @if ($expandedData->candidate->organizations->isNotEmpty())
-                                                    <span class="text-green-600 dark:text-green-400">✓
-                                                        {{ $expandedData->candidate->organizations->count() }} {{ __('org(s)') }}</span>
-                                                @else
-                                                    <span class="text-zinc-400">{{ __('None') }}</span>
-                                                @endif
-                                            </p>
-                                        </div>
-                                        {{-- Documents --}}
-                                        <div class="col-span-2 sm:col-span-3 lg:col-span-4">
-                                            <span
-                                                class="text-xs font-medium uppercase tracking-wide text-zinc-400">{{ __('Documents') }}</span>
-                                            <div class="mt-1 flex flex-wrap gap-1.5">
-                                                @if ($p?->ktp_path)
-                                                    <flux:badge variant="outline" size="sm" icon="identification">{{ __('KTP') }}
-                                                    </flux:badge>
-                                                @endif
-                                                @if ($p?->portfolio_path)
-                                                    <flux:badge variant="outline" size="sm" icon="document">{{ __('Portfolio') }}
-                                                    </flux:badge>
-                                                @endif
-                                                @if ($p?->certificate_path)
-                                                    <flux:badge variant="outline" size="sm" icon="academic-cap">{{ __('Certificate') }}
-                                                    </flux:badge>
-                                                @endif
-                                                @if ($p?->paklaring_path)
-                                                    <flux:badge variant="outline" size="sm" icon="document-text">{{ __('Paklaring') }}
-                                                    </flux:badge>
-                                                @endif
-                                                @if (!$p?->ktp_path && !$p?->portfolio_path && !$p?->certificate_path && !$p?->paklaring_path)
-                                                    <span class="text-xs text-zinc-400">{{ __('No documents uploaded') }}</span>
-                                                @endif
+                            {{-- Expandable Row --}}
+                            @if ($isExpanded && $expandedData?->id === $application->id)
+                                @php $p = $expandedData->candidate->profile; @endphp
+                                <tr wire:key="{{ $application->id }}-expanded" wire:transition.opacity.duration.200ms
+                                    class="bg-zinc-50/50 dark:bg-zinc-800/30">
+                                    <td colspan="7" class="px-6 py-4">
+                                        <div x-data="{ show: false }" x-init="requestAnimationFrame(() => show = true)"
+                                            x-show="show" x-transition:enter="transition ease-out duration-220"
+                                            x-transition:enter-start="opacity-0 -translate-y-1"
+                                            x-transition:enter-end="opacity-100 translate-y-0"
+                                            class="grid grid-cols-2 gap-x-8 gap-y-3 text-sm sm:grid-cols-3 lg:grid-cols-4">
+                                            {{-- Gender --}}
+                                            <div>
+                                                <span
+                                                    class="text-xs font-medium uppercase tracking-wide text-zinc-400">{{ __('Gender') }}</span>
+                                                <p class="mt-0.5 capitalize text-zinc-700 dark:text-zinc-300">
+                                                    {{ $p?->gender ?? '—' }}
+                                                </p>
+                                            </div>
+                                            {{-- Date of Birth + Age --}}
+                                            <div>
+                                                <span
+                                                    class="text-xs font-medium uppercase tracking-wide text-zinc-400">{{ __('Date of Birth') }}</span>
+                                                <p class="mt-0.5 text-zinc-700 dark:text-zinc-300">
+                                                    @if ($p?->date_of_birth)
+                                                        {{ $p->date_of_birth->format('d/m/y') }}
+                                                        <span class="text-zinc-400">({{ $p->date_of_birth->age }}
+                                                            {{ __('y.o.') }})</span>
+                                                    @else
+                                                        —
+                                                    @endif
+                                                </p>
+                                            </div>
+                                            {{-- Religion --}}
+                                            <div>
+                                                <span
+                                                    class="text-xs font-medium uppercase tracking-wide text-zinc-400">{{ __('Religion') }}</span>
+                                                <p class="mt-0.5 text-zinc-700 dark:text-zinc-300">{{ $p?->religion ?? '—' }}</p>
+                                            </div>
+                                            {{-- Marital Status --}}
+                                            <div>
+                                                <span
+                                                    class="text-xs font-medium uppercase tracking-wide text-zinc-400">{{ __('Marital Status') }}</span>
+                                                <p class="mt-0.5 capitalize text-zinc-700 dark:text-zinc-300">
+                                                    {{ $p?->marital_status ?? '—' }}
+                                                </p>
+                                            </div>
+                                            {{-- NIK --}}
+                                            <div>
+                                                <span
+                                                    class="text-xs font-medium uppercase tracking-wide text-zinc-400">{{ __('NIK') }}</span>
+                                                <p class="mt-0.5 text-zinc-700 dark:text-zinc-300">{{ $p?->nik ?? '—' }}</p>
+                                            </div>
+                                            {{-- Education --}}
+                                            <div>
+                                                <span
+                                                    class="text-xs font-medium uppercase tracking-wide text-zinc-400">{{ __('Education') }}</span>
+                                                @php
+                                                    $latestEdu = $expandedData->candidate->education
+                                                        ->sortByDesc('end_year')->first();
+                                                @endphp
+                                                <p class="mt-0.5 text-zinc-700 dark:text-zinc-300">
+                                                    {{ $latestEdu ? $latestEdu->degree . ' — ' . $latestEdu->institution_name : '—' }}
+                                                </p>
+                                            </div>
+                                            {{-- Work Experience --}}
+                                            <div>
+                                                <span
+                                                    class="text-xs font-medium uppercase tracking-wide text-zinc-400">{{ __('Work Exp.') }}</span>
+                                                <p class="mt-0.5 text-zinc-700 dark:text-zinc-300">
+                                                    @if ($expandedData->candidate->experiences->isNotEmpty())
+                                                        <span class="text-green-600 dark:text-green-400">✓
+                                                            {{ $expandedData->candidate->experiences->count() }}
+                                                            {{ __('job(s)') }}</span>
+                                                    @else
+                                                        <span class="text-zinc-400">{{ __('None') }}</span>
+                                                    @endif
+                                                </p>
+                                            </div>
+                                            {{-- Organization --}}
+                                            <div>
+                                                <span
+                                                    class="text-xs font-medium uppercase tracking-wide text-zinc-400">{{ __('Organization') }}</span>
+                                                <p class="mt-0.5 text-zinc-700 dark:text-zinc-300">
+                                                    @if ($expandedData->candidate->organizations->isNotEmpty())
+                                                        <span class="text-green-600 dark:text-green-400">✓
+                                                            {{ $expandedData->candidate->organizations->count() }}
+                                                            {{ __('org(s)') }}</span>
+                                                    @else
+                                                        <span class="text-zinc-400">{{ __('None') }}</span>
+                                                    @endif
+                                                </p>
+                                            </div>
+                                            {{-- Documents --}}
+                                            <div class="col-span-2 sm:col-span-3 lg:col-span-4">
+                                                <span
+                                                    class="text-xs font-medium uppercase tracking-wide text-zinc-400">{{ __('Documents') }}</span>
+                                                <div class="mt-1 flex flex-wrap gap-1.5">
+                                                    @if ($p?->ktp_path)
+                                                        <flux:badge variant="outline" size="sm" icon="identification">{{ __('KTP') }}
+                                                        </flux:badge>
+                                                    @endif
+                                                    @if ($p?->portfolio_path)
+                                                        <flux:badge variant="outline" size="sm" icon="document">{{ __('Portfolio') }}
+                                                        </flux:badge>
+                                                    @endif
+                                                    @if ($p?->certificate_path)
+                                                        <flux:badge variant="outline" size="sm" icon="academic-cap">
+                                                            {{ __('Certificate') }}
+                                                        </flux:badge>
+                                                    @endif
+                                                    @if ($p?->paklaring_path)
+                                                        <flux:badge variant="outline" size="sm" icon="document-text">
+                                                            {{ __('Paklaring') }}
+                                                        </flux:badge>
+                                                    @endif
+                                                    @if (!$p?->ktp_path && !$p?->portfolio_path && !$p?->certificate_path && !$p?->paklaring_path)
+                                                        <span class="text-xs text-zinc-400">{{ __('No documents uploaded') }}</span>
+                                                    @endif
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </td>
-                            </tr>
-                        @elseif ($isExpanded)
-                            <tr wire:key="{{ $application->id }}-loading" wire:transition.opacity.duration.150ms
-                                class="bg-zinc-50/50 dark:bg-zinc-800/30">
-                                <td colspan="7" class="px-6 py-4 text-sm text-zinc-400">
-                                    <span wire:loading
-                                        wire:target="toggleExpand({{ $application->id }})">{{ __('Loading...') }}</span>
-                                </td>
-                            </tr>
-                        @endif
-                    @endforeach
-                </tbody>
-            </table>
+                                    </td>
+                                </tr>
+                            @elseif ($isExpanded)
+                                <tr wire:key="{{ $application->id }}-loading" wire:transition.opacity.duration.150ms
+                                    class="bg-zinc-50/50 dark:bg-zinc-800/30">
+                                    <td colspan="7" class="px-6 py-4 text-sm text-zinc-400">
+                                        <span wire:loading
+                                            wire:target="toggleExpand({{ $application->id }})">{{ __('Loading...') }}</span>
+                                    </td>
+                                </tr>
+                            @endif
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <div>{{ $applications->links() }}</div>

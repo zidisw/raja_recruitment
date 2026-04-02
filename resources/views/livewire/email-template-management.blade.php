@@ -22,62 +22,68 @@
 
     {{-- Template Grid --}}
     <div class="glass-card-static overflow-hidden p-0!">
-        <table class="w-full text-sm modern-table">
-            <thead>
-                <tr>
-                    <th class="w-12 text-center!">{{ __('No.') }}</th>
-                    <th>{{ __('Stage') }}</th>
-                    <th class="text-center!">{{ __('Staff Template') }}</th>
-                    <th class="text-center!">{{ __('Non-Staff Template') }}</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-zinc-100 bg-white dark:divide-zinc-800 dark:bg-zinc-900">
-                @foreach ($stages as $stage)
-                    @php
-                        $staffTemplate = $templates[$stage->value . '_staff'] ?? null;
-                        $nonStaffTemplate = $templates[$stage->value . '_non_staff'] ?? null;
-                    @endphp
-                    <tr wire:key="{{ $stage->value }}" class="cursor-pointer">
-                        <td class="px-4 py-4 text-center text-zinc-500 font-medium">
-                            {{ $loop->iteration }}
-                        </td>
-                        <td class="px-6 py-4 font-medium">{{ $stage->label() }}</td>
-                        <td class="px-6 py-4 text-center">
-                            @if ($staffTemplate)
-                                <div class="flex flex-col items-center gap-1">
-                                    <flux:badge color="green" size="sm">{{ __('Set') }}</flux:badge>
-                                    <flux:button wire:click="openEdit({{ $stage->value }}, 'staff')" wire:target="openEdit({{ $stage->value }}, 'staff')" size="sm" variant="ghost"
-                                        icon="pencil">
-                                        {{ __('Edit') }}
-                                    </flux:button>
-                                </div>
-                            @else
-                                <flux:button wire:click="openEdit({{ $stage->value }}, 'staff')" wire:target="openEdit({{ $stage->value }}, 'staff')" size="sm" variant="ghost"
-                                    icon="plus">
-                                    {{ __('Create') }}
-                                </flux:button>
-                            @endif
-                        </td>
-                        <td class="px-6 py-4 text-center">
-                            @if ($nonStaffTemplate)
-                                <div class="flex flex-col items-center gap-1">
-                                    <flux:badge color="green" size="sm">{{ __('Set') }}</flux:badge>
-                                    <flux:button wire:click="openEdit({{ $stage->value }}, 'non_staff')" wire:target="openEdit({{ $stage->value }}, 'non_staff')" size="sm"
-                                        variant="ghost" icon="pencil">
-                                        {{ __('Edit') }}
-                                    </flux:button>
-                                </div>
-                            @else
-                                <flux:button wire:click="openEdit({{ $stage->value }}, 'non_staff')" wire:target="openEdit({{ $stage->value }}, 'non_staff')" size="sm" variant="ghost"
-                                    icon="plus">
-                                    {{ __('Create') }}
-                                </flux:button>
-                            @endif
-                        </td>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm modern-table">
+                <thead>
+                    <tr>
+                        <th class="w-12 text-center!">{{ __('No.') }}</th>
+                        <th>{{ __('Stage') }}</th>
+                        <th class="text-center!">{{ __('Staff Template') }}</th>
+                        <th class="text-center!">{{ __('Non-Staff Template') }}</th>
                     </tr>
-                @endforeach
-            </tbody>
-        </table>
+                </thead>
+                <tbody class="divide-y divide-zinc-100 bg-white dark:divide-zinc-800 dark:bg-zinc-900">
+                    @foreach ($stages as $stage)
+                        @php
+                            $staffTemplate = $templates[$stage->value . '_staff'] ?? null;
+                            $nonStaffTemplate = $templates[$stage->value . '_non_staff'] ?? null;
+                        @endphp
+                        <tr wire:key="{{ $stage->value }}" class="cursor-pointer">
+                            <td class="px-4 py-4 text-center text-zinc-500 font-medium">
+                                {{ $loop->iteration }}
+                            </td>
+                            <td class="px-6 py-4 font-medium">{{ $stage->label() }}</td>
+                            <td class="px-6 py-4 text-center">
+                                @if ($staffTemplate)
+                                    <div class="flex flex-col items-center gap-1">
+                                        <flux:badge color="green" size="sm">{{ __('Set') }}</flux:badge>
+                                        <flux:button wire:click="openEdit({{ $stage->value }}, 'staff')"
+                                            wire:target="openEdit({{ $stage->value }}, 'staff')" size="sm" variant="ghost"
+                                            icon="pencil">
+                                            {{ __('Edit') }}
+                                        </flux:button>
+                                    </div>
+                                @else
+                                    <flux:button wire:click="openEdit({{ $stage->value }}, 'staff')"
+                                        wire:target="openEdit({{ $stage->value }}, 'staff')" size="sm" variant="ghost"
+                                        icon="plus">
+                                        {{ __('Create') }}
+                                    </flux:button>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                @if ($nonStaffTemplate)
+                                    <div class="flex flex-col items-center gap-1">
+                                        <flux:badge color="green" size="sm">{{ __('Set') }}</flux:badge>
+                                        <flux:button wire:click="openEdit({{ $stage->value }}, 'non_staff')"
+                                            wire:target="openEdit({{ $stage->value }}, 'non_staff')" size="sm" variant="ghost"
+                                            icon="pencil">
+                                            {{ __('Edit') }}
+                                        </flux:button>
+                                    </div>
+                                @else
+                                    <flux:button wire:click="openEdit({{ $stage->value }}, 'non_staff')"
+                                        wire:target="openEdit({{ $stage->value }}, 'non_staff')" size="sm" variant="ghost"
+                                        icon="plus">
+                                        {{ __('Create') }}
+                                    </flux:button>
+                                @endif
+                            </td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
     </div>
 
     {{-- Edit Modal --}}

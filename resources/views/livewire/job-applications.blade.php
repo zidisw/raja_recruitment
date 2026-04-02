@@ -38,46 +38,48 @@
         </div>
     @else
         <div class="glass-card-static overflow-hidden p-0!">
-            <table class="w-full text-sm modern-table">
-                <thead>
-                    <tr>
-                        <th class="w-12 text-center!">{{ __('No.') }}</th>
-                        <th>{{ __('Job Title') }}</th>
-                        <th class="hidden md:table-cell">{{ __('Department') }}</th>
-                        <th class="hidden lg:table-cell">{{ __('Site') }}</th>
-                        <th class="text-center!">{{ __('Applicants') }}</th>
-                        <th class="text-center!">{{ __('Actions') }}</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-zinc-100 bg-white dark:divide-zinc-800 dark:bg-zinc-900">
-                    @foreach ($jobs as $job)
-                        <tr wire:key="{{ $job->id }}" class="cursor-pointer">
-                            <td class="px-4 py-4 text-center text-zinc-500 font-medium">
-                                {{ ($jobs->currentPage() - 1) * $jobs->perPage() + $loop->iteration }}
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="font-semibold text-zinc-900 dark:text-white">{{ $job->title }}</div>
-                                <div class="text-xs text-zinc-400">{{ $job->is_active ? __('Active') : __('Closed') }}</div>
-                            </td>
-                            <td class="hidden px-6 py-4 text-zinc-500 dark:text-zinc-400 md:table-cell">
-                                {{ $job->department?->name ?? '—' }}
-                            </td>
-                            <td class="hidden px-6 py-4 text-zinc-500 dark:text-zinc-400 lg:table-cell">
-                                {{ $job->site?->name ?? '—' }}
-                            </td>
-                            <td class="px-6 py-4 text-center">
-                                <flux:badge variant="outline">{{ $job->applications_count }}</flux:badge>
-                            </td>
-                            <td class="px-6 py-4 text-center">
-                                <flux:button href="{{ route('applications.job', $job) }}" wire:navigate size="sm"
-                                    variant="ghost" icon="users">
-                                    {{ __('View Applicants') }}
-                                </flux:button>
-                            </td>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm modern-table">
+                    <thead>
+                        <tr>
+                            <th class="w-12 text-center!">{{ __('No.') }}</th>
+                            <th>{{ __('Job Title') }}</th>
+                            <th class="hidden md:table-cell">{{ __('Department') }}</th>
+                            <th class="hidden lg:table-cell">{{ __('Site') }}</th>
+                            <th class="text-center!">{{ __('Applicants') }}</th>
+                            <th class="text-center! whitespace-nowrap w-px">{{ __('Actions') }}</th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody class="divide-y divide-zinc-100 bg-white dark:divide-zinc-800 dark:bg-zinc-900">
+                        @foreach ($jobs as $job)
+                            <tr wire:key="{{ $job->id }}" class="cursor-pointer">
+                                <td class="px-4 py-4 text-center text-zinc-500 font-medium">
+                                    {{ ($jobs->currentPage() - 1) * $jobs->perPage() + $loop->iteration }}
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="font-semibold text-zinc-900 dark:text-white">{{ $job->title }}</div>
+                                    <div class="text-xs text-zinc-400">{{ $job->is_active ? __('Active') : __('Closed') }}</div>
+                                </td>
+                                <td class="hidden px-6 py-4 text-zinc-500 dark:text-zinc-400 md:table-cell">
+                                    {{ $job->department?->name ?? '—' }}
+                                </td>
+                                <td class="hidden px-6 py-4 text-zinc-500 dark:text-zinc-400 lg:table-cell">
+                                    {{ $job->site?->name ?? '—' }}
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    <flux:badge variant="outline">{{ $job->applications_count }}</flux:badge>
+                                </td>
+                                <td class="px-6 py-4 text-center whitespace-nowrap w-px">
+                                    <flux:button href="{{ route('applications.job', $job) }}" wire:navigate size="sm"
+                                        variant="ghost" icon="users">
+                                        {{ __('View Applicants') }}
+                                    </flux:button>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <div>{{ $jobs->links() }}</div>

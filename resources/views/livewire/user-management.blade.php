@@ -35,63 +35,67 @@
         </div>
     @else
         <div class="glass-card-static overflow-hidden p-0">
-            <table class="w-full text-sm modern-table">
-                <thead>
-                    <tr>
-                        <th class="w-12 text-center!">{{ __('No.') }}</th>
-                        <th>{{ __('Name') }}</th>
-                        <th class="hidden md:table-cell">{{ __('Email') }}</th>
-                        <th class="text-center!">{{ __('Role') }}</th>
-                        <th class="hidden lg:table-cell">{{ __('Department') }}</th>
-                        <th class="text-center! hidden sm:table-cell">{{ __('Verified') }}</th>
-                        <th class="text-center!">{{ __('Actions') }}</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
-                    @foreach ($users as $user)
-                        <tr wire:key="{{ $user->id }}" class="cursor-pointer">
-                            <td class="px-4 py-3 text-center text-zinc-500 font-medium whitespace-nowrap">
-                                {{ ($users->currentPage() - 1) * $users->perPage() + $loop->iteration }}
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="flex items-center gap-3">
-                                    <flux:avatar :name="$user->name" :initials="$user->initials()" size="sm" />
-                                    <span class="font-semibold text-zinc-900 dark:text-white">{{ $user->name }}</span>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 text-zinc-500 dark:text-zinc-400 hidden md:table-cell">
-                                {{ $user->email }}
-                            </td>
-                            <td class="px-6 py-4 text-center">
-                                @php
-                                    $normalizedRole = $user->role->normalized()->value;
-                                    $roleColors = [
-                                        'user' => 'zinc',
-                                        'admin' => 'blue',
-                                        'super_admin' => 'purple',
-                                    ];
-                                @endphp
-                                <flux:badge color="{{ $roleColors[$normalizedRole] ?? 'zinc' }}" size="sm">
-                                    {{ $user->role->label() }}
-                                </flux:badge>
-                            </td>
-                            <td class="px-6 py-4 text-zinc-500 dark:text-zinc-400 hidden lg:table-cell">
-                                {{ $user->department?->name ?? '—' }}
-                            </td>
-                            <td class="px-6 py-4 text-center hidden sm:table-cell">
-                                @if ($user->email_verified_at)
-                                    <flux:icon.check-circle class="w-5 h-5 text-green-500 inline-block" />
-                                @else
-                                    <flux:icon.x-circle class="w-5 h-5 text-zinc-400 inline-block" />
-                                @endif
-                            </td>
-                            <td class="px-6 py-4 text-center">
-                                <flux:button wire:click="openEdit({{ $user->id }})" wire:target="openEdit({{ $user->id }})" size="sm" variant="ghost" icon="pencil" />
-                            </td>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm modern-table">
+                    <thead>
+                        <tr>
+                            <th class="w-12 text-center!">{{ __('No.') }}</th>
+                            <th>{{ __('Name') }}</th>
+                            <th class="hidden md:table-cell">{{ __('Email') }}</th>
+                            <th class="text-center!">{{ __('Role') }}</th>
+                            <th class="hidden lg:table-cell">{{ __('Department') }}</th>
+                            <th class="text-center! hidden sm:table-cell">{{ __('Verified') }}</th>
+                            <th class="text-center! whitespace-nowrap w-px">{{ __('Actions') }}</th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
+                        @foreach ($users as $user)
+                            <tr wire:key="{{ $user->id }}" class="cursor-pointer">
+                                <td class="px-4 py-3 text-center text-zinc-500 font-medium whitespace-nowrap">
+                                    {{ ($users->currentPage() - 1) * $users->perPage() + $loop->iteration }}
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <flux:avatar :name="$user->name" :initials="$user->initials()" size="sm" />
+                                        <span class="font-semibold text-zinc-900 dark:text-white">{{ $user->name }}</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-zinc-500 dark:text-zinc-400 hidden md:table-cell">
+                                    {{ $user->email }}
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    @php
+                                        $normalizedRole = $user->role->normalized()->value;
+                                        $roleColors = [
+                                            'user' => 'zinc',
+                                            'admin' => 'blue',
+                                            'super_admin' => 'purple',
+                                        ];
+                                    @endphp
+                                    <flux:badge color="{{ $roleColors[$normalizedRole] ?? 'zinc' }}" size="sm">
+                                        {{ $user->role->label() }}
+                                    </flux:badge>
+                                </td>
+                                <td class="px-6 py-4 text-zinc-500 dark:text-zinc-400 hidden lg:table-cell">
+                                    {{ $user->department?->name ?? '—' }}
+                                </td>
+                                <td class="px-6 py-4 text-center hidden sm:table-cell">
+                                    @if ($user->email_verified_at)
+                                        <flux:icon.check-circle class="w-5 h-5 text-green-500 inline-block" />
+                                    @else
+                                        <flux:icon.x-circle class="w-5 h-5 text-zinc-400 inline-block" />
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 text-center whitespace-nowrap w-px">
+                                    <flux:button wire:click="openEdit({{ $user->id }})" wire:target="openEdit({{ $user->id }})"
+                                        size="sm" variant="ghost" icon="pencil" class="app-action-btn">{{ __('Edit') }}
+                                    </flux:button>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         @if ($users->hasPages())

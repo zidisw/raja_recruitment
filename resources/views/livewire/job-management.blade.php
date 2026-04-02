@@ -65,79 +65,87 @@
         </div>
     @else
         <div class="glass-card-static overflow-hidden p-0!">
-            <table class="w-full text-sm modern-table">
-                <thead>
-                    <tr>
-                        <th class="w-12 text-center!">{{ __('No.') }}</th>
-                        <th>{{ __('Title') }}</th>
-                        <th class="hidden lg:table-cell">{{ __('Department') }}</th>
-                        <th class="hidden lg:table-cell">{{ __('Site') }}</th>
-                        <th class="hidden xl:table-cell">{{ __('PTK') }}</th>
-                        <th class="text-center! hidden md:table-cell">{{ __('Level') }}</th>
-                        <th class="text-center! hidden md:table-cell">{{ __('Applicants') }}</th>
-                        <th class="text-center!">{{ __('Status') }}</th>
-                        <th class="text-center!">{{ __('Actions') }}</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
-                    @foreach ($jobs as $job)
-                        <tr wire:key="{{ $job->id }}" class="cursor-pointer">
-                            <td class="px-4 py-3 text-center text-zinc-500 font-medium whitespace-nowrap">
-                                {{ ($jobs->currentPage() - 1) * $jobs->perPage() + $loop->iteration }}
-                            </td>
-                            <td class="px-6 py-4">
-                                <p class="font-semibold text-zinc-900 dark:text-white">{{ $job->title }}</p>
-                                @if ($job->closed_at)
-                                    <p class="text-xs text-zinc-400 mt-0.5">
-                                        {{ __('Closes') }}: {{ $job->closed_at->format('d M Y') }}
-                                    </p>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4 text-zinc-500 dark:text-zinc-400 hidden lg:table-cell">
-                                {{ $job->department?->name ?? '—' }}
-                            </td>
-                            <td class="px-6 py-4 text-zinc-500 dark:text-zinc-400 hidden lg:table-cell">
-                                {{ $job->site?->name ?? '—' }}
-                            </td>
-                            <td class="px-6 py-4 text-zinc-500 dark:text-zinc-400 hidden xl:table-cell">
-                                {{ $job->ptk?->nomor_ptk ?? '—' }}
-                            </td>
-                            <td class="px-6 py-4 text-center hidden md:table-cell">
-                                <flux:badge variant="outline" size="sm">
-                                    {{ $job->level === \App\Enums\JobLevel::Staff ? 'Staff' : 'Non-Staff' }}
-                                </flux:badge>
-                            </td>
-                            <td class="px-6 py-4 text-center hidden md:table-cell">
-                                <flux:badge variant="outline">{{ $job->applications_count }}</flux:badge>
-                            </td>
-                            <td class="px-6 py-4 text-center">
-                                @if ($job->is_active)
-                                    <flux:badge color="green" size="sm">{{ __('Active') }}</flux:badge>
-                                @else
-                                    <flux:badge color="zinc" size="sm">{{ __('Inactive') }}</flux:badge>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4 text-center">
-                                <div class="flex items-center justify-center gap-2">
-                                    <flux:button wire:click="toggleActive({{ $job->id }})" wire:target="toggleActive({{ $job->id }})" size="sm" variant="ghost"
-                                        icon="{{ $job->is_active ? 'eye-slash' : 'eye' }}" class="app-action-btn" />
-                                    <flux:button wire:click="openEdit({{ $job->id }})" wire:target="openEdit({{ $job->id }})" size="sm" variant="ghost" icon="pencil"
-                                        class="app-action-btn" />
-                                    <flux:button
-                                        @click="$dispatch('confirm-action', {
-                                            title: 'Hapus Job Posting?',
-                                            description: 'Semua lamaran yang terkait juga akan ikut dihapus. Aksi ini tidak dapat dibatalkan.',
-                                            variant: 'danger',
-                                            method: 'delete',
-                                            args: [{{ $job->id }}]
-                                        })"
-                                        size="sm" variant="ghost" icon="trash" class="app-action-btn-danger" />
-                                </div>
-                            </td>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm modern-table">
+                    <thead>
+                        <tr>
+                            <th class="w-12 text-center!">{{ __('No.') }}</th>
+                            <th>{{ __('Title') }}</th>
+                            <th class="hidden lg:table-cell">{{ __('Department') }}</th>
+                            <th class="hidden lg:table-cell">{{ __('Site') }}</th>
+                            <th class="hidden xl:table-cell">{{ __('PTK') }}</th>
+                            <th class="text-center! hidden md:table-cell">{{ __('Level') }}</th>
+                            <th class="text-center! hidden md:table-cell">{{ __('Applicants') }}</th>
+                            <th class="text-center!">{{ __('Status') }}</th>
+                            <th class="text-center! whitespace-nowrap w-px">{{ __('Actions') }}</th>
                         </tr>
-                    @endforeach
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
+                        @foreach ($jobs as $job)
+                            <tr wire:key="{{ $job->id }}" class="cursor-pointer">
+                                <td class="px-4 py-3 text-center text-zinc-500 font-medium whitespace-nowrap">
+                                    {{ ($jobs->currentPage() - 1) * $jobs->perPage() + $loop->iteration }}
+                                </td>
+                                <td class="px-6 py-4">
+                                    <p class="font-semibold text-zinc-900 dark:text-white">{{ $job->title }}</p>
+                                    @if ($job->closed_at)
+                                        <p class="text-xs text-zinc-400 mt-0.5">
+                                            {{ __('Closes') }}: {{ $job->closed_at->format('d M Y') }}
+                                        </p>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 text-zinc-500 dark:text-zinc-400 hidden lg:table-cell">
+                                    {{ $job->department?->name ?? '—' }}
+                                </td>
+                                <td class="px-6 py-4 text-zinc-500 dark:text-zinc-400 hidden lg:table-cell">
+                                    {{ $job->site?->name ?? '—' }}
+                                </td>
+                                <td class="px-6 py-4 text-zinc-500 dark:text-zinc-400 hidden xl:table-cell">
+                                    {{ $job->ptk?->nomor_ptk ?? '—' }}
+                                </td>
+                                <td class="px-6 py-4 text-center hidden md:table-cell">
+                                    <flux:badge variant="outline" size="sm">
+                                        {{ $job->level === \App\Enums\JobLevel::Staff ? 'Staff' : 'Non-Staff' }}
+                                    </flux:badge>
+                                </td>
+                                <td class="px-6 py-4 text-center hidden md:table-cell">
+                                    <flux:badge variant="outline">{{ $job->applications_count }}</flux:badge>
+                                </td>
+                                <td class="px-6 py-4 text-center">
+                                    @if ($job->is_active)
+                                        <flux:badge color="green" size="sm">{{ __('Active') }}</flux:badge>
+                                    @else
+                                        <flux:badge color="zinc" size="sm">{{ __('Inactive') }}</flux:badge>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 text-center whitespace-nowrap w-px">
+                                    <div class="inline-flex flex-nowrap items-center justify-center gap-2 whitespace-nowrap">
+                                        <flux:button wire:click="toggleActive({{ $job->id }})"
+                                            wire:target="toggleActive({{ $job->id }})" size="sm" variant="ghost"
+                                            icon="{{ $job->is_active ? 'eye-slash' : 'eye' }}" class="app-action-btn">
+                                            {{ $job->is_active ? __('Nonaktifkan') : __('Aktifkan') }}
+                                        </flux:button>
+                                        <flux:button wire:click="openEdit({{ $job->id }})"
+                                            wire:target="openEdit({{ $job->id }})" size="sm" variant="ghost" icon="pencil"
+                                            class="app-action-btn">{{ __('Edit') }}
+                                        </flux:button>
+                                        <flux:button @click="$dispatch('confirm-action', {
+                                                                    title: 'Hapus Job Posting?',
+                                                                    description: 'Semua lamaran yang terkait juga akan ikut dihapus. Aksi ini tidak dapat dibatalkan.',
+                                                                    variant: 'danger',
+                                                                    method: 'delete',
+                                                                    args: [{{ $job->id }}]
+                                                                })" size="sm" variant="ghost" icon="trash"
+                                            class="app-action-btn-danger">
+                                            {{ __('Hapus') }}
+                                        </flux:button>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <div>{{ $jobs->links() }}</div>
