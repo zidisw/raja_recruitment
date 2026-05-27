@@ -28,7 +28,7 @@ class CandidateReview extends Component
 
         abort_unless($user->canAccessRecruitment(), 403);
 
-        abort_unless($application->job_id === $job->id, 404);
+        abort_unless((int) $application->job_id === (int) $job->getKey(), 404);
 
         $this->job = $job;
         $this->application = $application->load(['candidate.profile', 'candidate.education', 'candidate.experiences', 'candidate.organizations', 'job', 'stageLogs.decidedBy', 'psychotest', 'mcu']);

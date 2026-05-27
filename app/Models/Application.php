@@ -28,6 +28,9 @@ class Application extends Model
     protected function casts(): array
     {
         return [
+            'user_id' => 'integer',
+            'job_id' => 'integer',
+            'status' => 'integer',
             'recruitment_stage' => RecruitmentStage::class,
             'stage_updated_at' => 'datetime',
         ];
