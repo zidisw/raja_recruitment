@@ -75,8 +75,9 @@ jobs:
           SSH_PORT: ${{ secrets.HOSTINGER_PORT }}
         run: |
           mkdir -p ~/.ssh
-          ssh-keyscan -p "${SSH_PORT:-22}" -H "$SSH_HOST" >> ~/.ssh/known_hosts
-
+          ssh-keygen -R "[${SSH_HOST}]:${SSH_PORT:-22}" || true
+          ssh-keyscan -p "${SSH_PORT:-22}" -t rsa -H "$SSH_HOST" >> ~/.ssh/known_hosts
+     
       - name: Sync Laravel core
         shell: bash
         env:
