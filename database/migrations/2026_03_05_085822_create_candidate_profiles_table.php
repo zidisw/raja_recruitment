@@ -21,14 +21,14 @@ return new class extends Migration
             $table->text('address_domicile');
             $table->string('whatsapp');
             $table->string('linkedin_url')->nullable();
-            
+
             // Lampiran Dokumen
-            $table->string('ktp_path')->nullable(); 
+            $table->string('ktp_path')->nullable();
             $table->string('photo_path')->nullable();
             $table->string('portfolio_path')->nullable();
             $table->string('certificate_path')->nullable();
             $table->string('paklaring_path')->nullable();
-            
+
             $table->timestamps();
         });
     }

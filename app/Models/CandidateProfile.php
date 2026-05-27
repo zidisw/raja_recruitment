@@ -25,7 +25,7 @@ class CandidateProfile extends Model
         'photo_path',
         'portfolio_path',
         'certificate_path',
-        'paklaring_path'
+        'paklaring_path',
     ];
 
     protected function casts(): array

@@ -7,12 +7,12 @@ namespace App\Models;
 use App\Enums\UserRole;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -83,9 +83,9 @@ class User extends Authenticatable implements MustVerifyEmail
     public function initials(): string
     {
         $words = explode(' ', trim($this->name));
-        
+
         if (count($words) >= 2) {
-            return mb_strtoupper(mb_substr($words[0], 0, 1) . mb_substr(end($words), 0, 1));
+            return mb_strtoupper(mb_substr($words[0], 0, 1).mb_substr(end($words), 0, 1));
         }
 
         return mb_strtoupper(mb_substr($this->name, 0, 2));

@@ -60,7 +60,7 @@ class Dashboard extends Component
                             ->where('recruitment_stage', '!=', RecruitmentStage::REJECTED)
                             ->groupBy('recruitment_stage')
                             ->get()
-                            ->map(fn($item) => [
+                            ->map(fn ($item) => [
                                 'name' => $item->recruitment_stage instanceof RecruitmentStage
                                     ? $item->recruitment_stage->label()
                                     : (RecruitmentStage::tryFrom($item->recruitment_stage ?? '')?->label() ?? 'Unknown'),
@@ -115,7 +115,7 @@ class Dashboard extends Component
             ? "CAST(strftime('%m', created_at) AS INTEGER)"
             : 'MONTH(created_at)';
 
-        return Application::selectRaw($monthExpression . ' as month, count(*) as total')
+        return Application::selectRaw($monthExpression.' as month, count(*) as total')
             ->whereYear('created_at', now()->year)
             ->groupBy('month')
             ->orderBy('month')

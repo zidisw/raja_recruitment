@@ -70,7 +70,7 @@ class UserManagement extends Component
             'department_id' => ['nullable', 'exists:departments,id'],
         ];
 
-        if (!$this->editingId) {
+        if (! $this->editingId) {
             $rules['password'] = ['required', 'string', 'min:8'];
         } else {
             $rules['password'] = ['nullable', 'string', 'min:8'];
@@ -86,7 +86,7 @@ class UserManagement extends Component
 
         if ($this->editingId) {
             $updateData = collect($validated)->except('password')->toArray();
-            if (!empty($validated['password'])) {
+            if (! empty($validated['password'])) {
                 $updateData['password'] = Hash::make($validated['password']);
             }
             User::findOrFail($this->editingId)->update($updateData);

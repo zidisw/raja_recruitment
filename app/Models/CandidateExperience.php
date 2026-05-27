@@ -17,7 +17,7 @@ class CandidateExperience extends Model
         'end_date',
         'is_current',
         'last_salary',
-        'job_description'
+        'job_description',
     ];
 
     protected function casts(): array

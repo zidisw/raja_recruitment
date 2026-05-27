@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Livewire;
 
-use App\Enums\UserRole;
 use App\Models\Ptk;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -16,12 +15,16 @@ use Livewire\WithPagination;
 #[Layout('layouts.app')]
 class PtkManagement extends Component
 {
-    use WithPagination, WithFileUploads;
+    use WithFileUploads, WithPagination;
 
     public string $search = '';
+
     public string $filterStatus = '';
+
     public int $perPage = 10;
+
     public bool $showModal = false;
+
     public ?int $editingId = null;
 
     /** '' = pilih mode, 'upload' = upload PTK fisik, 'create' = buat PTK digital */
@@ -29,18 +32,24 @@ class PtkManagement extends Component
 
     // Shared fields
     public string $nomor_ptk = '';
+
     public string $posisi = '';
+
     public string $status = 'draft';
 
     // Create-only fields
     public string $department = '';
+
     public int $jumlah_kebutuhan = 1;
+
     public string $alasan_permintaan = '';
+
     public string $tanggal_permintaan = '';
 
     // Upload-only
     /** @var \Livewire\Features\SupportFileUploads\TemporaryUploadedFile|null */
     public $attachment = null;
+
     public ?string $existingAttachmentPath = null;
 
     public function mount(): void
@@ -78,16 +87,16 @@ class PtkManagement extends Component
     {
         if ($this->mode === 'upload') {
             $this->validate([
-                'nomor_ptk'  => ['required', 'string', 'max:255', 'unique:ptk,nomor_ptk,' . $this->editingId],
-                'posisi'     => ['required', 'string', 'max:255'],
-                'status'     => ['required', 'in:draft,approved,closed'],
+                'nomor_ptk' => ['required', 'string', 'max:255', 'unique:ptk,nomor_ptk,'.$this->editingId],
+                'posisi' => ['required', 'string', 'max:255'],
+                'status' => ['required', 'in:draft,approved,closed'],
                 'attachment' => [$this->editingId ? 'nullable' : 'required', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
             ]);
 
             $data = [
                 'nomor_ptk' => $this->nomor_ptk,
-                'posisi'    => $this->posisi,
-                'status'    => $this->status,
+                'posisi' => $this->posisi,
+                'status' => $this->status,
             ];
 
             if ($this->attachment) {
@@ -98,23 +107,23 @@ class PtkManagement extends Component
             }
         } else {
             $this->validate([
-                'nomor_ptk'          => ['required', 'string', 'max:255', 'unique:ptk,nomor_ptk,' . $this->editingId],
-                'department'         => ['required', 'string', 'max:255'],
-                'posisi'             => ['required', 'string', 'max:255'],
-                'jumlah_kebutuhan'   => ['required', 'integer', 'min:1'],
-                'alasan_permintaan'  => ['nullable', 'string'],
+                'nomor_ptk' => ['required', 'string', 'max:255', 'unique:ptk,nomor_ptk,'.$this->editingId],
+                'department' => ['required', 'string', 'max:255'],
+                'posisi' => ['required', 'string', 'max:255'],
+                'jumlah_kebutuhan' => ['required', 'integer', 'min:1'],
+                'alasan_permintaan' => ['nullable', 'string'],
                 'tanggal_permintaan' => ['required', 'date'],
-                'status'             => ['required', 'in:draft,approved,closed'],
+                'status' => ['required', 'in:draft,approved,closed'],
             ]);
 
             $data = [
-                'nomor_ptk'          => $this->nomor_ptk,
-                'department'         => $this->department,
-                'posisi'             => $this->posisi,
-                'jumlah_kebutuhan'   => $this->jumlah_kebutuhan,
-                'alasan_permintaan'  => $this->alasan_permintaan,
+                'nomor_ptk' => $this->nomor_ptk,
+                'department' => $this->department,
+                'posisi' => $this->posisi,
+                'jumlah_kebutuhan' => $this->jumlah_kebutuhan,
+                'alasan_permintaan' => $this->alasan_permintaan,
                 'tanggal_permintaan' => $this->tanggal_permintaan,
-                'status'             => $this->status,
+                'status' => $this->status,
             ];
         }
 
@@ -152,7 +161,7 @@ class PtkManagement extends Component
         $query = Ptk::with('createdBy')->latest();
 
         if ($this->search !== '') {
-            $query->whereAny(['nomor_ptk', 'posisi', 'department'], 'like', '%' . $this->search . '%');
+            $query->whereAny(['nomor_ptk', 'posisi', 'department'], 'like', '%'.$this->search.'%');
         }
 
         if ($this->filterStatus !== '') {

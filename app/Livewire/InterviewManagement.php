@@ -7,8 +7,8 @@ namespace App\Livewire;
 use App\Enums\RecruitmentStage;
 use App\Enums\UserRole;
 use App\Models\Application;
-use App\Models\Department;
 use App\Models\ApplicationStageLog;
+use App\Models\Department;
 use App\Models\Interview;
 use App\Models\Site;
 use App\Models\User;
@@ -29,30 +29,45 @@ class InterviewManagement extends Component
     use WithPagination;
 
     public bool $showModal = false;
+
     public ?int $editingId = null;
 
     public bool $showUploadModal = false;
+
     public ?int $expandedRow = null;
+
     public ?int $uploadingInterviewId = null;
+
     /** @var \Illuminate\Http\UploadedFile|null */
     public $upload_file = null;
 
     public ?int $application_id = null;
+
     public ?int $interviewer_id = null;
+
     public string $interview_type = 'HR Interview';
+
     public string $scheduled_date = '';
+
     public string $scheduled_time = '';
+
     public string $status = 'scheduled';
+
     public string $hr_notes = '';
-    
+
     /** @var \Illuminate\Http\UploadedFile|null */
     public $evaluation_file = null;
 
     public string $tab = 'hr';
+
     public string $search = '';
+
     public string $filterDepartment = '';
+
     public string $filterSite = '';
+
     public string $filterStatus = '';
+
     public int $perPage = 10;
 
     public function mount(string $tab = 'hr'): void
@@ -151,12 +166,13 @@ class InterviewManagement extends Component
         $this->showUploadModal = false;
         $this->uploadingInterviewId = null;
         $this->upload_file = null;
-        
-        $this->dispatch('notify', ['message' => __('Dokumen penilaian berhasil diunggah.'), 'type' => 'success']);    }
+
+        $this->dispatch('notify', ['message' => __('Dokumen penilaian berhasil diunggah.'), 'type' => 'success']);
+    }
 
     public function exportCsv()
     {
-        $filename = "export_interview_{$this->tab}_" . now()->format('Ymd_His') . ".csv";
+        $filename = "export_interview_{$this->tab}_".now()->format('Ymd_His').'.csv';
 
         return response()->streamDownload(function (): void {
             $output = fopen('php://output', 'w');
@@ -185,16 +201,18 @@ class InterviewManagement extends Component
         $this->authorizeAccess();
 
         $validStatuses = ['scheduled', 'completed', 'passed', 'failed'];
-        if (!in_array($newStatus, $validStatuses)) {
+        if (! in_array($newStatus, $validStatuses)) {
             $this->dispatch('notify', ['message' => __('Invalid status selected.'), 'type' => 'error']);
+
             return;
         }
 
         $interview = Interview::findOrFail($id);
 
         // Block 'passed' or 'failed' if evaluation file not uploaded
-        if (in_array($newStatus, ['passed', 'failed']) && !$interview->evaluation_path) {
+        if (in_array($newStatus, ['passed', 'failed']) && ! $interview->evaluation_path) {
             $this->dispatch('notify', ['message' => __('Upload file penilaian terlebih dahulu sebelum mengubah status.'), 'type' => 'error']);
+
             return;
         }
 
@@ -240,7 +258,7 @@ class InterviewManagement extends Component
             'evaluation_file' => ['nullable', 'file', 'mimes:pdf,docx', 'max:5120'],
         ]);
 
-        $scheduledAt = $validated['scheduled_date'] . ' ' . $validated['scheduled_time'] . ':00';
+        $scheduledAt = $validated['scheduled_date'].' '.$validated['scheduled_time'].':00';
 
         $payload = [
             'application_id' => $validated['application_id'],
@@ -255,16 +273,18 @@ class InterviewManagement extends Component
             $interview = Interview::findOrFail($this->editingId);
 
             // Block 'passed' or 'failed' without evaluation file (existing or newly uploaded)
-            if (in_array($validated['status'], ['passed', 'failed']) && !$interview->evaluation_path && !$this->evaluation_file) {
+            if (in_array($validated['status'], ['passed', 'failed']) && ! $interview->evaluation_path && ! $this->evaluation_file) {
                 $this->dispatch('notify', ['message' => __('Upload file penilaian terlebih dahulu sebelum mengubah status.'), 'type' => 'error']);
+
                 return;
             }
 
             $interview->update($payload);
         } else {
             // New interview: block 'passed' or 'failed' without evaluation file
-            if (in_array($validated['status'], ['passed', 'failed']) && !$this->evaluation_file) {
+            if (in_array($validated['status'], ['passed', 'failed']) && ! $this->evaluation_file) {
                 $this->dispatch('notify', ['message' => __('Upload file penilaian terlebih dahulu sebelum mengubah status.'), 'type' => 'error']);
+
                 return;
             }
 
@@ -308,10 +328,10 @@ class InterviewManagement extends Component
         if ($this->search !== '') {
             $interviewQuery->where(function ($query): void {
                 $query->whereHas('application.candidate', function ($q): void {
-                    $q->where('name', 'like', '%' . $this->search . '%')
-                        ->orWhere('email', 'like', '%' . $this->search . '%');
+                    $q->where('name', 'like', '%'.$this->search.'%')
+                        ->orWhere('email', 'like', '%'.$this->search.'%');
                 })->orWhereHas('application.job', function ($q): void {
-                    $q->where('title', 'like', '%' . $this->search . '%');
+                    $q->where('title', 'like', '%'.$this->search.'%');
                 });
             });
         }
@@ -359,8 +379,9 @@ class InterviewManagement extends Component
                 $application,
                 RecruitmentStage::REJECTED,
                 'rejected',
-                'Interview ' . $interview->interview_type . ': Failed'
+                'Interview '.$interview->interview_type.': Failed'
             );
+
             return;
         }
 
@@ -378,6 +399,7 @@ class InterviewManagement extends Component
                     'Interview User: Passed'
                 );
             }
+
             return;
         }
 

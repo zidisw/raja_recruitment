@@ -5,16 +5,12 @@ declare(strict_types=1);
 namespace App\Livewire;
 
 use App\Enums\RecruitmentStage;
-use App\Enums\UserRole;
 use App\Exports\ApplicationsExport;
-use App\Mail\BulkCustomEmail;
 use App\Jobs\ProcessBulkCandidateEmails;
 use App\Models\Application;
-use App\Models\ApplicationStageLog;
 use App\Models\Job;
 use App\Services\ApplicationService;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Mail;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -157,7 +153,7 @@ class ApplicationManagement extends Component
                 hasOrganization: $this->hasOrganization,
                 documentsFilter: $this->documentsFilter,
             ),
-            'applicants-' . str($this->job->title)->slug() . '-' . now()->format('Ymd') . '.xlsx'
+            'applicants-'.str($this->job->title)->slug().'-'.now()->format('Ymd').'.xlsx'
         );
     }
 
@@ -196,7 +192,7 @@ class ApplicationManagement extends Component
     {
         $this->validate([
             'bulkEmailSubject' => ['required', 'string', 'max:255'],
-            'bulkEmailBody'    => ['required', 'string', 'max:5000'],
+            'bulkEmailBody' => ['required', 'string', 'max:5000'],
         ]);
 
         $this->bulkEmailStep = 2;
@@ -283,13 +279,14 @@ class ApplicationManagement extends Component
 
         if (empty($toRejectIds)) {
             $this->showBulkRejectModal = false;
+
             return;
         }
 
         $now = now();
         $notes = filled($this->bulkRejectNotes)
-            ? trim($this->bulkRejectNotes) . ' [Bulk Rejection — ' . $now->format('d M Y') . ']'
-            : 'Tidak lolos seleksi massal — ' . $now->format('d M Y H:i');
+            ? trim($this->bulkRejectNotes).' [Bulk Rejection — '.$now->format('d M Y').']'
+            : 'Tidak lolos seleksi massal — '.$now->format('d M Y H:i');
 
         app(ApplicationService::class)->bulkReject($toRejectIds, auth()->id(), $notes);
 
@@ -320,15 +317,15 @@ class ApplicationManagement extends Component
         }
 
         if ($this->genderFilter) {
-            $query->whereHas('candidate.profile', fn($q) => $q->whereIn('gender', $this->genderFilter));
+            $query->whereHas('candidate.profile', fn ($q) => $q->whereIn('gender', $this->genderFilter));
         }
 
         if ($this->religionFilter) {
-            $query->whereHas('candidate.profile', fn($q) => $q->whereIn('religion', $this->religionFilter));
+            $query->whereHas('candidate.profile', fn ($q) => $q->whereIn('religion', $this->religionFilter));
         }
 
         if ($this->degreeFilter) {
-            $query->whereHas('candidate.education', fn($q) => $q->whereIn('degree', $this->degreeFilter));
+            $query->whereHas('candidate.education', fn ($q) => $q->whereIn('degree', $this->degreeFilter));
         }
 
         if ($this->hasExperience === 'yes') {
@@ -343,8 +340,11 @@ class ApplicationManagement extends Component
             $query->whereDoesntHave('candidate.organizations');
         }
 
+        $allowedDocs = ['ktp', 'portfolio', 'certificate', 'paklaring'];
         foreach ($this->documentsFilter as $doc) {
-            $query->whereHas('candidate.profile', fn($q) => $q->whereNotNull("{$doc}_path"));
+            if (in_array($doc, $allowedDocs, true)) {
+                $query->whereHas('candidate.profile', fn ($q) => $q->whereNotNull("{$doc}_path"));
+            }
         }
 
         $applications = $query->paginate($this->perPage);
@@ -411,13 +411,13 @@ class ApplicationManagement extends Component
         }
 
         return view('livewire.application-management', [
-            'applications'       => $applications,
-            'statuses'           => RecruitmentStage::cases(),
-            'expandedData'       => $expandedData,
-            'bulkEmailCount'     => $bulkEmailCount,
-            'bulkEmailPreview'   => $bulkEmailPreview,
-            'bulkRejectCount'    => $bulkRejectCount,
-            'bulkRejectPreview'  => $bulkRejectPreview,
+            'applications' => $applications,
+            'statuses' => RecruitmentStage::cases(),
+            'expandedData' => $expandedData,
+            'bulkEmailCount' => $bulkEmailCount,
+            'bulkEmailPreview' => $bulkEmailPreview,
+            'bulkRejectCount' => $bulkRejectCount,
+            'bulkRejectPreview' => $bulkRejectPreview,
             'bulkRejectSafeCount' => $bulkRejectSafeCount,
         ]);
     }

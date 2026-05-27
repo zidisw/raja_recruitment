@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Livewire\Auth;
 
-use App\Models\User;
 use App\Enums\UserRole;
+use App\Models\User;
 use Illuminate\Auth\Events\Registered;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Livewire\Component;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Validate;
-use Illuminate\Http\RedirectResponse;
+use Livewire\Component;
 use Livewire\Features\SupportRedirects\Redirector;
 
 #[Layout('components.layouts.guest')]

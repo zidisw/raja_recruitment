@@ -22,12 +22,7 @@
         }
     </script>
 
-    <style>
-        [x-cloak] {
-            display: none !important;
-        }
-    </style>
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    @livewireStyles
 
     @if (file_exists(public_path('build/manifest.json')) || file_exists(public_path('hot')))
         @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -73,6 +68,8 @@
 
     @include('partials.footer')
 
+    @livewireScripts
+    @fluxScripts
     @stack('scripts')
 </body>
 

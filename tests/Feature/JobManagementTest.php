@@ -18,7 +18,7 @@ beforeEach(function () {
 function createPtkForUser(User $user, string $posisi = 'Heavy Equipment Operator'): Ptk
 {
     return Ptk::create([
-        'nomor_ptk' => 'PTK-' . uniqid(),
+        'nomor_ptk' => 'PTK-'.uniqid(),
         'department' => 'HR',
         'posisi' => $posisi,
         'jumlah_kebutuhan' => 1,

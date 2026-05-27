@@ -27,7 +27,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.2"
+          php-version: "8.4"
           extensions: mbstring, bcmath, ctype, fileinfo, json, openssl, pdo, sqlite, pdo_sqlite, tokenizer, xml
           coverage: none
 
@@ -40,6 +40,9 @@ jobs:
         uses: ramsey/composer-install@v3
         with:
           composer-options: "--prefer-dist --no-interaction"
+
+      - name: Audit Composer dependencies
+        run: composer audit --no-interaction
 
       - name: Run tests
         run: composer test
@@ -60,6 +63,9 @@ jobs:
 
       - name: Install NPM dependencies
         run: npm ci
+
+      - name: Audit NPM dependencies
+        run: npm audit --audit-level=high
 
       - name: Build assets
         run: npm run build

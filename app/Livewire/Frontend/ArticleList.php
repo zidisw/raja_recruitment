@@ -40,7 +40,7 @@ class ArticleList extends Component
             ->latest('published_at');
 
         if ($this->search !== '') {
-            $query->where('title', 'like', '%' . $this->search . '%');
+            $query->where('title', 'like', '%'.$this->search.'%');
         }
 
         if ($this->category !== '') {

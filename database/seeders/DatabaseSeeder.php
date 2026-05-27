@@ -1,8 +1,8 @@
 <?php
 
 namespace Database\Seeders;
-use App\Enums\UserRole;
 
+use App\Enums\UserRole;
 use App\Models\User;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -42,8 +42,8 @@ class DatabaseSeeder extends Seeder
 
         for ($i = 1; $i <= 4; $i++) {
             User::factory()->create([
-                'name' => 'User ' . $i,
-                'email' => 'candidate' . $i . '@example.com',
+                'name' => 'User '.$i,
+                'email' => 'candidate'.$i.'@example.com',
                 'role' => UserRole::User,
             ]);
         }

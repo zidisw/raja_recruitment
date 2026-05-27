@@ -11,7 +11,6 @@ use Illuminate\Notifications\Notification;
 
 class ApplicationStatusChanged extends Notification
 {
-
     public function __construct(public readonly Application $application) {}
 
     public function via(object $notifiable): array

@@ -31,12 +31,12 @@ class ApplicationStatusUpdatedNotification extends Notification implements Shoul
         $statusLabel = $this->application->recruitment_stage->label();
 
         return (new MailMessage)
-                    ->subject('Application Status Update')
-                    ->line('Hello ' . $this->application->candidate->name . ',')
-                    ->line('Your application for the ' . $this->application->job->title . ' position has been updated.')
-                    ->line('Current Status: **' . $statusLabel . '**')
-                    ->action('View Application', url('/portal/applications'))
-                    ->line('Thank you for using our portal.');
+            ->subject('Application Status Update')
+            ->line('Hello '.$this->application->candidate->name.',')
+            ->line('Your application for the '.$this->application->job->title.' position has been updated.')
+            ->line('Current Status: **'.$statusLabel.'**')
+            ->action('View Application', url('/portal/applications'))
+            ->line('Thank you for using our portal.');
     }
 
     public function toArray(object $notifiable): array
@@ -45,8 +45,8 @@ class ApplicationStatusUpdatedNotification extends Notification implements Shoul
             'application_id' => $this->application->id,
             'job_title' => $this->application->job->title,
             'status' => $this->application->recruitment_stage->value,
-            'message' => 'Your application status for ' . $this->application->job->title . ' changed to ' . $this->application->recruitment_stage->label(),
-            'type' => 'status_update'
+            'message' => 'Your application status for '.$this->application->job->title.' changed to '.$this->application->recruitment_stage->label(),
+            'type' => 'status_update',
         ];
     }
 }

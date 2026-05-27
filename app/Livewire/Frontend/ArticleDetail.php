@@ -27,7 +27,7 @@ class ArticleDetail extends Component
             ->published()
             ->with('featuredImage')
             ->where('id', '!=', $this->article->id)
-            ->when($this->article->category, fn($q) => $q->where('category', $this->article->category))
+            ->when($this->article->category, fn ($q) => $q->where('category', $this->article->category))
             ->latest('published_at')
             ->limit(3)
             ->get();

@@ -6,7 +6,6 @@ namespace App\Livewire\Candidate;
 
 use App\Enums\OfferingStatus;
 use App\Enums\RecruitmentStage;
-use App\Enums\UserRole;
 use App\Models\Application;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
@@ -18,7 +17,7 @@ use Livewire\WithPagination;
 #[Layout('layouts.app')]
 class MyApplications extends Component
 {
-    use WithPagination, WithFileUploads;
+    use WithFileUploads, WithPagination;
 
     public string $search = '';
 
@@ -26,6 +25,7 @@ class MyApplications extends Component
     public string $tab = 'on_progress';
 
     public ?int $uploadingForApplicationId = null;
+
     public $signed_ol_file = null;
 
     public function mount(): void
@@ -46,21 +46,24 @@ class MyApplications extends Component
     public function acceptOffer(int $applicationId): void
     {
         $application = Application::where('user_id', '=', Auth::id())->findOrFail($applicationId);
-        
+
         if ($application->recruitment_stage !== RecruitmentStage::OFFERING) {
             $this->dispatch('notify', ['message' => __('Status lamaran tidak valid.'), 'type' => 'error']);
+
             return;
         }
 
         $offering = $application->offeringLetter;
-        if (!$offering) {
+        if (! $offering) {
             $this->dispatch('notify', ['message' => __('Offering letter tidak ditemukan.'), 'type' => 'error']);
+
             return;
         }
 
         // Check if signed OL has been uploaded
-        if (!$offering->signed_file_path) {
+        if (! $offering->signed_file_path) {
             $this->dispatch('notify', ['message' => __('Harap unggah OL yang sudah ditandatangani sebelum menerima penawaran.'), 'type' => 'warning']);
+
             return;
         }
 
@@ -76,15 +79,17 @@ class MyApplications extends Component
     public function rejectOffer(int $applicationId): void
     {
         $application = Application::where('user_id', '=', Auth::id())->findOrFail($applicationId);
-        
+
         if ($application->recruitment_stage !== RecruitmentStage::OFFERING) {
             $this->dispatch('notify', ['message' => __('Status lamaran tidak valid.'), 'type' => 'error']);
+
             return;
         }
 
         $offering = $application->offeringLetter;
-        if (!$offering) {
+        if (! $offering) {
             $this->dispatch('notify', ['message' => __('Offering letter tidak ditemukan.'), 'type' => 'error']);
+
             return;
         }
 
@@ -108,8 +113,9 @@ class MyApplications extends Component
         $application = Application::where('user_id', '=', Auth::id())->findOrFail($applicationId);
         $offering = $application->offeringLetter;
 
-        if (!$offering) {
+        if (! $offering) {
             $this->dispatch('notify', ['message' => __('Offering letter tidak ditemukan.'), 'type' => 'error']);
+
             return;
         }
 

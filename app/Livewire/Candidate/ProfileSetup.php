@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Livewire\Candidate;
 
-use App\Enums\UserRole;
 use App\Models\CandidateEducation;
 use App\Models\CandidateExperience;
 use App\Models\CandidateOrganization;
@@ -145,46 +144,46 @@ class ProfileSetup extends Component
         // Re-validate all steps to prevent tampered Livewire state from bypassing step guards
         $this->validate([
             // Step 1 – Personal data
-            'nik'              => ['required', 'string', 'digits:16'],
-            'place_of_birth'   => ['required', 'string', 'max:100'],
-            'date_of_birth'    => ['required', 'date', 'before:today'],
-            'gender'           => ['required', 'in:male,female'],
-            'religion'         => ['required', 'string', 'max:50'],
-            'marital_status'   => ['required', 'in:single,married,divorced,widowed'],
-            'address_ktp'      => ['required', 'string', 'max:500'],
+            'nik' => ['required', 'string', 'digits:16'],
+            'place_of_birth' => ['required', 'string', 'max:100'],
+            'date_of_birth' => ['required', 'date', 'before:today'],
+            'gender' => ['required', 'in:male,female'],
+            'religion' => ['required', 'string', 'max:50'],
+            'marital_status' => ['required', 'in:single,married,divorced,widowed'],
+            'address_ktp' => ['required', 'string', 'max:500'],
             'address_domicile' => ['required', 'string', 'max:500'],
-            'whatsapp'         => ['required', 'string', 'max:20'],
-            'linkedin_url'     => ['nullable', 'url', 'max:255'],
-            'photo'            => ['required', 'image', 'max:2048'],
-            'ktp_file'         => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:2048'],
+            'whatsapp' => ['required', 'string', 'max:20'],
+            'linkedin_url' => ['nullable', 'url', 'max:255'],
+            'photo' => ['required', 'image', 'max:2048'],
+            'ktp_file' => ['required', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:2048'],
             // Step 2 – Education
-            'educations'                     => ['required', 'array', 'min:1'],
-            'educations.*.degree'            => ['required', 'string', 'max:50'],
-            'educations.*.institution_name'  => ['required', 'string', 'max:255'],
-            'educations.*.major'             => ['required', 'string', 'max:255'],
-            'educations.*.start_year'        => ['required', 'integer', 'min:1970', 'max:' . date('Y')],
-            'educations.*.end_year'          => ['nullable', 'integer', 'min:1970', 'max:' . (date('Y') + 6)],
-            'educations.*.gpa'              => ['nullable', 'numeric', 'min:0', 'max:4'],
+            'educations' => ['required', 'array', 'min:1'],
+            'educations.*.degree' => ['required', 'string', 'max:50'],
+            'educations.*.institution_name' => ['required', 'string', 'max:255'],
+            'educations.*.major' => ['required', 'string', 'max:255'],
+            'educations.*.start_year' => ['required', 'integer', 'min:1970', 'max:'.date('Y')],
+            'educations.*.end_year' => ['nullable', 'integer', 'min:1970', 'max:'.(date('Y') + 6)],
+            'educations.*.gpa' => ['nullable', 'numeric', 'min:0', 'max:4'],
             // Step 3 – Work experience
-            'experiences'                       => ['nullable', 'array'],
-            'experiences.*.company_name'        => ['required', 'string', 'max:255'],
-            'experiences.*.position'            => ['required', 'string', 'max:255'],
-            'experiences.*.start_date'          => ['required', 'date'],
-            'experiences.*.end_date'            => ['nullable', 'date'],
-            'experiences.*.is_current'          => ['boolean'],
-            'experiences.*.last_salary'         => ['nullable', 'numeric', 'min:0'],
-            'experiences.*.job_description'     => ['nullable', 'string', 'max:2000'],
+            'experiences' => ['nullable', 'array'],
+            'experiences.*.company_name' => ['required', 'string', 'max:255'],
+            'experiences.*.position' => ['required', 'string', 'max:255'],
+            'experiences.*.start_date' => ['required', 'date'],
+            'experiences.*.end_date' => ['nullable', 'date'],
+            'experiences.*.is_current' => ['boolean'],
+            'experiences.*.last_salary' => ['nullable', 'numeric', 'min:0'],
+            'experiences.*.job_description' => ['nullable', 'string', 'max:2000'],
             // Step 4 – Organizations
-            'organizations'                          => ['nullable', 'array'],
-            'organizations.*.organization_name'      => ['required', 'string', 'max:255'],
-            'organizations.*.position'               => ['required', 'string', 'max:255'],
-            'organizations.*.start_date'             => ['required', 'date'],
-            'organizations.*.end_date'               => ['nullable', 'date'],
-            'organizations.*.is_current'             => ['boolean'],
+            'organizations' => ['nullable', 'array'],
+            'organizations.*.organization_name' => ['required', 'string', 'max:255'],
+            'organizations.*.position' => ['required', 'string', 'max:255'],
+            'organizations.*.start_date' => ['required', 'date'],
+            'organizations.*.end_date' => ['nullable', 'date'],
+            'organizations.*.is_current' => ['boolean'],
             // Step 5 – Documents
-            'portfolio'   => ['nullable', 'file', 'mimes:pdf', 'max:5120'],
+            'portfolio' => ['nullable', 'file', 'mimes:pdf', 'max:5120'],
             'certificate' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
-            'paklaring'   => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
+            'paklaring' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
         ]);
 
         $user = auth()->user();
@@ -281,8 +280,8 @@ class ProfileSetup extends Component
                 'educations.*.degree' => ['required', 'string', 'max:50'],
                 'educations.*.institution_name' => ['required', 'string', 'max:255'],
                 'educations.*.major' => ['required', 'string', 'max:255'],
-                'educations.*.start_year' => ['required', 'integer', 'min:1970', 'max:' . date('Y')],
-                'educations.*.end_year' => ['nullable', 'integer', 'min:1970', 'max:' . (date('Y') + 6)],
+                'educations.*.start_year' => ['required', 'integer', 'min:1970', 'max:'.date('Y')],
+                'educations.*.end_year' => ['nullable', 'integer', 'min:1970', 'max:'.(date('Y') + 6)],
                 'educations.*.gpa' => ['nullable', 'numeric', 'min:0', 'max:4'],
             ]),
             3 => $this->validate([

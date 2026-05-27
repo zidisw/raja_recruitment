@@ -14,6 +14,7 @@ use Illuminate\Queue\SerializesModels;
 class BulkCustomEmail extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
+
     public string $resolvedSubject;
 
     public string $resolvedBody;
@@ -49,9 +50,9 @@ class BulkCustomEmail extends Mailable implements ShouldQueue
         return new Content(
             view: 'mail.bulk-custom-email',
             with: [
-                'body'          => $this->resolvedBody,
+                'body' => $this->resolvedBody,
                 'candidateName' => $this->candidateName,
-                'jobTitle'      => $this->jobTitle,
+                'jobTitle' => $this->jobTitle,
             ],
         );
     }

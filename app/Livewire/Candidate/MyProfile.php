@@ -6,7 +6,6 @@ namespace App\Livewire\Candidate;
 
 use App\Concerns\PasswordValidationRules;
 use App\Concerns\ProfileValidationRules;
-use App\Enums\UserRole;
 use App\Models\CandidateEducation;
 use App\Models\CandidateExperience;
 use App\Models\CandidateOrganization;
@@ -246,7 +245,7 @@ class MyProfile extends Component
             $this->paklaring = null;
         }
 
-        if (!empty($profileData)) {
+        if (! empty($profileData)) {
             CandidateProfile::updateOrCreate(['user_id' => Auth::id()], $profileData);
             $this->dispatch('notify', ['message' => 'Documents updated successfully.', 'type' => 'success']);
         } else {
@@ -261,8 +260,8 @@ class MyProfile extends Component
             'educations.*.degree' => ['required', 'string', 'max:50'],
             'educations.*.institution_name' => ['required', 'string', 'max:255'],
             'educations.*.major' => ['required', 'string', 'max:255'],
-            'educations.*.start_year' => ['required', 'integer', 'min:1970', 'max:' . date('Y')],
-            'educations.*.end_year' => ['nullable', 'integer', 'min:1970', 'max:' . (date('Y') + 6)],
+            'educations.*.start_year' => ['required', 'integer', 'min:1970', 'max:'.date('Y')],
+            'educations.*.end_year' => ['nullable', 'integer', 'min:1970', 'max:'.(date('Y') + 6)],
             'educations.*.gpa' => ['nullable', 'numeric', 'min:0', 'max:4'],
         ]);
 

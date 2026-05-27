@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Livewire;
 
 use App\Enums\RecruitmentStage;
-use App\Enums\UserRole;
 use App\Models\Application;
 use App\Models\Department;
 use App\Models\Psychotest;
@@ -22,20 +21,32 @@ use Livewire\WithPagination;
 #[Layout('layouts.app')]
 class PsychotestManagement extends Component
 {
-    use WithPagination, WithFileUploads;
+    use WithFileUploads, WithPagination;
 
     public bool $showModal = false;
+
     public ?int $expandedRow = null;
+
     public ?int $editingId = null;
+
     public ?int $application_id = null;
+
     public string $test_date = '';
+
     public string $result = 'passed';
+
     public string $notes = '';
+
     public $psychotest_file;
+
     public string $search = '';
+
     public string $filterDepartment = '';
+
     public string $filterSite = '';
+
     public string $filterResult = '';
+
     public int $perPage = 10;
 
     #[Computed]
@@ -44,6 +55,7 @@ class PsychotestManagement extends Component
         if (! $this->editingId) {
             return null;
         }
+
         return Psychotest::find($this->editingId);
     }
 
@@ -163,7 +175,7 @@ class PsychotestManagement extends Component
                 'application_id' => $application->id,
                 'stage' => $oldStage,
                 'decision' => 'rejected',
-                'notes' => 'Hasil Psychotest: Failed. ' . ($validated['notes'] ?? ''),
+                'notes' => 'Hasil Psychotest: Failed. '.($validated['notes'] ?? ''),
                 'decided_by' => Auth::id(),
             ]);
         }
@@ -181,10 +193,10 @@ class PsychotestManagement extends Component
         if ($this->search !== '') {
             $query->where(function ($q): void {
                 $q->whereHas('candidate', function ($candidate): void {
-                    $candidate->where('name', 'like', '%' . $this->search . '%')
-                        ->orWhere('email', 'like', '%' . $this->search . '%');
+                    $candidate->where('name', 'like', '%'.$this->search.'%')
+                        ->orWhere('email', 'like', '%'.$this->search.'%');
                 })->orWhereHas('job', function ($job): void {
-                    $job->where('title', 'like', '%' . $this->search . '%');
+                    $job->where('title', 'like', '%'.$this->search.'%');
                 });
             });
         }

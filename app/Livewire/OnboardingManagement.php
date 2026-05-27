@@ -23,20 +23,35 @@ class OnboardingManagement extends Component
     use WithPagination;
 
     public bool $showModal = false;
+
     public ?int $expandedRow = null;
+
     public ?int $editingOnboardingId = null;
+
     public ?int $application_id = null;
+
     public string $joining_date = '';
+
     public string $onboarding_status = 'pending';
+
     public string $travel_ticket_number = '';
+
     public string $travel_ticket_notes = '';
+
     public string $onsite_date = '';
+
     public string $onsite_location = '';
+
     public string $onsite_notes = '';
+
     public string $search = '';
+
     public string $filterDepartment = '';
+
     public string $filterSite = '';
+
     public string $filterStatus = '';
+
     public int $perPage = 10;
 
     public function mount(): void
@@ -168,10 +183,10 @@ class OnboardingManagement extends Component
         if ($this->search !== '') {
             $query->where(function ($q): void {
                 $q->whereHas('candidate', function ($candidate): void {
-                    $candidate->where('name', 'like', '%' . $this->search . '%')
-                        ->orWhere('email', 'like', '%' . $this->search . '%');
+                    $candidate->where('name', 'like', '%'.$this->search.'%')
+                        ->orWhere('email', 'like', '%'.$this->search.'%');
                 })->orWhereHas('job', function ($job): void {
-                    $job->where('title', 'like', '%' . $this->search . '%');
+                    $job->where('title', 'like', '%'.$this->search.'%');
                 });
             });
         }

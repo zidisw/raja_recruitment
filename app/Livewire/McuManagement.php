@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Livewire;
 
 use App\Enums\RecruitmentStage;
-use App\Enums\UserRole;
 use App\Models\Application;
 use App\Models\Department;
 use App\Models\Mcu;
@@ -22,20 +21,32 @@ use Livewire\WithPagination;
 #[Layout('layouts.app')]
 class McuManagement extends Component
 {
-    use WithPagination, WithFileUploads;
+    use WithFileUploads, WithPagination;
 
     public bool $showModal = false;
+
     public ?int $expandedRow = null;
+
     public ?int $editingId = null;
+
     public ?int $application_id = null;
+
     public string $mcu_date = '';
+
     public string $result = 'fit';
+
     public string $notes = '';
+
     public $mcu_file;
+
     public string $search = '';
+
     public string $filterDepartment = '';
+
     public string $filterSite = '';
+
     public string $filterResult = '';
+
     public int $perPage = 10;
 
     #[Computed]
@@ -44,6 +55,7 @@ class McuManagement extends Component
         if (! $this->editingId) {
             return null;
         }
+
         return Mcu::find($this->editingId);
     }
 
@@ -148,7 +160,7 @@ class McuManagement extends Component
                 'stage' => $oldStage,
                 'decision' => 'passed',
                 'notes' => $validated['result'] === 'fit_with_notes'
-                    ? 'Hasil MCU: Fit With Notes. ' . ($validated['notes'] ?? '')
+                    ? 'Hasil MCU: Fit With Notes. '.($validated['notes'] ?? '')
                     : 'Hasil MCU: Fit to Work',
                 'decided_by' => Auth::id(),
             ]);
@@ -161,7 +173,7 @@ class McuManagement extends Component
                 'application_id' => $application->id,
                 'stage' => $oldStage,
                 'decision' => 'rejected',
-                'notes' => 'Hasil MCU: Unfit. ' . ($validated['notes'] ?? ''),
+                'notes' => 'Hasil MCU: Unfit. '.($validated['notes'] ?? ''),
                 'decided_by' => Auth::id(),
             ]);
         }
@@ -179,10 +191,10 @@ class McuManagement extends Component
         if ($this->search !== '') {
             $query->where(function ($q): void {
                 $q->whereHas('candidate', function ($candidate): void {
-                    $candidate->where('name', 'like', '%' . $this->search . '%')
-                        ->orWhere('email', 'like', '%' . $this->search . '%');
+                    $candidate->where('name', 'like', '%'.$this->search.'%')
+                        ->orWhere('email', 'like', '%'.$this->search.'%');
                 })->orWhereHas('job', function ($job): void {
-                    $job->where('title', 'like', '%' . $this->search . '%');
+                    $job->where('title', 'like', '%'.$this->search.'%');
                 });
             });
         }

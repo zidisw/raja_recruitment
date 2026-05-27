@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Livewire;
 
-use App\Enums\UserRole;
 use App\Models\Department;
 use App\Models\Job;
 use App\Models\Site;

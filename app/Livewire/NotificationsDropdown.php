@@ -10,6 +10,7 @@ class NotificationsDropdown extends Component
     {
         /** @var \App\Models\User $user */
         $user = \Illuminate\Support\Facades\Auth::user();
+
         return $user;
     }
 

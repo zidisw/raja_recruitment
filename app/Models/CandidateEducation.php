@@ -16,7 +16,7 @@ class CandidateEducation extends Model
         'major',
         'start_year',
         'end_year',
-        'gpa'
+        'gpa',
     ];
 
     public function user(): BelongsTo

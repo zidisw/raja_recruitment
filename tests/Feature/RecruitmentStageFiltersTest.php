@@ -14,8 +14,8 @@ use App\Models\Job;
 use App\Models\Mcu;
 use App\Models\OfferingLetter;
 use App\Models\Onboarding;
-use App\Models\Ptk;
 use App\Models\Psychotest;
+use App\Models\Ptk;
 use App\Models\Site;
 use App\Models\User;
 use Livewire\Livewire;
@@ -23,7 +23,7 @@ use Livewire\Livewire;
 function makePtk(User $creator, string $position): Ptk
 {
     return Ptk::create([
-        'nomor_ptk' => 'PTK-' . uniqid(),
+        'nomor_ptk' => 'PTK-'.uniqid(),
         'department' => 'HR',
         'posisi' => $position,
         'jumlah_kebutuhan' => 1,

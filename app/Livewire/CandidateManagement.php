@@ -9,17 +9,17 @@ use App\Enums\UserRole;
 use App\Models\Application;
 use App\Models\ApplicationStageLog;
 use App\Models\Department;
+use App\Models\Interview;
 use App\Models\Mcu;
 use App\Models\OfferingLetter;
 use App\Models\Onboarding;
 use App\Models\Psychotest;
 use App\Models\Site;
-use App\Models\Interview;
 use App\Models\User;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -47,19 +47,26 @@ class CandidateManagement extends Component
     public ?int $expandedRow = null;
 
     public array $selectedIds = [];
-    
+
     public bool $selectAll = false;
+
     public bool $selectionMode = false;
 
     public bool $showBulkStageModal = false;
+
     public string $bulkStage = '';
 
     // Interview Scheduling fields
     public bool $showScheduleModal = false;
+
     public ?int $schedulingApplicationId = null;
+
     public ?int $interviewer_id = null;
+
     public string $scheduled_date = '';
+
     public string $scheduled_time = '';
+
     public string $hr_notes = '';
 
     public function mount(string $tab = 'administrasi'): void
@@ -149,7 +156,7 @@ class CandidateManagement extends Component
     {
         $application = Application::findOrFail($applicationId);
 
-        if ($application->recruitment_stage->isTerminal() && !Auth::user()->isSuperAdmin()) {
+        if ($application->recruitment_stage->isTerminal() && ! Auth::user()->isSuperAdmin()) {
             abort(403, 'Hanya superadmin yang dapat mengubah status untuk kandidat yang sudah berada di log terminal (Rejected/Hired).');
         }
 
@@ -183,10 +190,10 @@ class CandidateManagement extends Component
         DB::transaction(function () use ($application): void {
             $application->stageLogs()->delete();
             $application->interviews()->delete();
-            $application->offeringLetter()?->delete();
-            $application->psychotest()?->delete();
-            $application->mcu()?->delete();
-            $application->onboarding()?->delete();
+            $application->offeringLetter?->delete();
+            $application->psychotest?->delete();
+            $application->mcu?->delete();
+            $application->onboarding?->delete();
             $application->delete();
         });
 
@@ -197,8 +204,8 @@ class CandidateManagement extends Component
     public function updateProgressStage(int $applicationId, string $stage): void
     {
         $application = Application::findOrFail($applicationId);
-        
-        if ($application->recruitment_stage->isTerminal() && !Auth::user()->isSuperAdmin()) {
+
+        if ($application->recruitment_stage->isTerminal() && ! Auth::user()->isSuperAdmin()) {
             abort(403, 'Hanya superadmin yang dapat mengubah status untuk kandidat yang sudah berada di log terminal (Rejected/Hired).');
         }
 
@@ -229,7 +236,7 @@ class CandidateManagement extends Component
     public function updatedSelectAll($value): void
     {
         if ($value) {
-            $this->selectedIds = $this->getFilteredQuery()->pluck('id')->map(fn($id) => (string) $id)->toArray();
+            $this->selectedIds = $this->getFilteredQuery()->pluck('id')->map(fn ($id) => (string) $id)->toArray();
         } else {
             $this->selectedIds = [];
         }
@@ -342,7 +349,7 @@ class CandidateManagement extends Component
 
         // Pre-fetch old stages so we log the correct stage they passed
         $applications = Application::whereIn('id', $this->selectedIds)->get(['id', 'recruitment_stage']);
-        
+
         Application::whereIn('id', $this->selectedIds)->update([
             'recruitment_stage' => RecruitmentStage::HR_INTERVIEW,
             'stage_updated_at' => now(),
@@ -445,7 +452,7 @@ class CandidateManagement extends Component
 
     public function exportCsv()
     {
-        $filename = "export_kandidat_{$this->tab}_" . now()->format('Ymd_His') . ".csv";
+        $filename = "export_kandidat_{$this->tab}_".now()->format('Ymd_His').'.csv';
 
         return response()->streamDownload(function (): void {
             $output = fopen('php://output', 'w');
@@ -491,7 +498,7 @@ class CandidateManagement extends Component
             'hr_notes' => ['nullable', 'string', 'max:2000'],
         ]);
 
-        $scheduledAt = Carbon::parse($validated['scheduled_date'] . ' ' . $validated['scheduled_time']);
+        $scheduledAt = Carbon::parse($validated['scheduled_date'].' '.$validated['scheduled_time']);
 
         Interview::create([
             'application_id' => $validated['schedulingApplicationId'],
@@ -517,8 +524,8 @@ class CandidateManagement extends Component
 
         if ($this->search !== '') {
             $query->whereHas('candidate', function ($q): void {
-                $q->where('name', 'like', '%' . $this->search . '%')
-                    ->orWhere('email', 'like', '%' . $this->search . '%');
+                $q->where('name', 'like', '%'.$this->search.'%')
+                    ->orWhere('email', 'like', '%'.$this->search.'%');
             });
         }
 
@@ -530,12 +537,11 @@ class CandidateManagement extends Component
             $query->whereHas('job', fn ($q) => $q->where('site_id', (int) $this->filterSite));
         }
 
-        if ($this->filterStage !== '') {
-            $query->where('recruitment_stage', $this->filterStage);
-        }
-
-        if ($this->filterStatus !== '') {
-            $query->where('recruitment_stage', $this->filterStatus);
+        // Use filterStage if set, otherwise fall back to filterStatus.
+        // Both target the same column so they are merged into one check.
+        $stageFilter = $this->filterStage !== '' ? $this->filterStage : $this->filterStatus;
+        if ($stageFilter !== '') {
+            $query->where('recruitment_stage', $stageFilter);
         }
 
         // Administrasi: candidates still in admin screening (already applied).
@@ -554,7 +560,7 @@ class CandidateManagement extends Component
                 RecruitmentStage::REJECTED,
             ]);
         }
-        
+
         return $query;
     }
 

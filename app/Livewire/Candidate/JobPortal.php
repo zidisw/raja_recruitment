@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Livewire\Candidate;
 
 use App\Enums\RecruitmentStage;
-use App\Enums\UserRole;
 use App\Models\Application;
 use App\Models\Department;
 use App\Models\Job;
@@ -107,7 +106,7 @@ class JobPortal extends Component
 
     public function confirmApply(): void
     {
-        if (!$this->confirmingJobId || !$this->confirmingJob) {
+        if (! $this->confirmingJobId || ! $this->confirmingJob) {
             return;
         }
 
@@ -120,6 +119,7 @@ class JobPortal extends Component
         if ($alreadyApplied) {
             $this->dispatch('notify', ['message' => __('You have already applied for this position.'), 'type' => 'error']);
             $this->showConfirmModal = false;
+
             return;
         }
 
@@ -130,6 +130,7 @@ class JobPortal extends Component
         if ($activeApplicationsCount >= 2) {
             $this->dispatch('notify', ['message' => __('You can only have 2 active applications at a time.'), 'type' => 'error']);
             $this->showConfirmModal = false;
+
             return;
         }
 
@@ -146,12 +147,14 @@ class JobPortal extends Component
         } catch (QueryException) {
             $this->dispatch('notify', ['message' => __('You have already applied for this position.'), 'type' => 'error']);
             $this->showConfirmModal = false;
+
             return;
         }
 
         if (! $application->wasRecentlyCreated) {
             $this->dispatch('notify', ['message' => __('You have already applied for this position.'), 'type' => 'error']);
             $this->showConfirmModal = false;
+
             return;
         }
 

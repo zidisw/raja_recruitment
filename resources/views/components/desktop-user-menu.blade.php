@@ -20,7 +20,7 @@
 
         <form method="POST" action="{{ route('logout') }}" class="w-full">
             @csrf
-            <flux:menu.item as="button" type="submit" icon="arrow-right-start-on-rectangle"
+            <flux:menu.item as="button" type="submit" onclick="this.closest('form').submit();" icon="arrow-right-start-on-rectangle"
                 class="w-full text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-500/10"
                 data-test="logout-button">
                 {{ __('Log out') }}

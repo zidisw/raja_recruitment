@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Exports;
 
-use App\Enums\RecruitmentStage;
 use App\Models\Application;
 use Illuminate\Database\Eloquent\Builder;
 use Maatwebsite\Excel\Concerns\FromQuery;
@@ -49,15 +48,15 @@ class ApplicationsExport implements FromQuery, WithHeadings, WithMapping
         }
 
         if ($this->genderFilter) {
-            $query->whereHas('candidate.profile', fn($q) => $q->whereIn('gender', $this->genderFilter));
+            $query->whereHas('candidate.profile', fn ($q) => $q->whereIn('gender', $this->genderFilter));
         }
 
         if ($this->religionFilter) {
-            $query->whereHas('candidate.profile', fn($q) => $q->whereIn('religion', $this->religionFilter));
+            $query->whereHas('candidate.profile', fn ($q) => $q->whereIn('religion', $this->religionFilter));
         }
 
         if ($this->degreeFilter) {
-            $query->whereHas('candidate.education', fn($q) => $q->whereIn('degree', $this->degreeFilter));
+            $query->whereHas('candidate.education', fn ($q) => $q->whereIn('degree', $this->degreeFilter));
         }
 
         if ($this->hasExperience === 'yes') {
@@ -72,8 +71,11 @@ class ApplicationsExport implements FromQuery, WithHeadings, WithMapping
             $query->whereDoesntHave('candidate.organizations');
         }
 
+        $allowedDocs = ['ktp', 'portfolio', 'certificate', 'paklaring'];
         foreach ($this->documentsFilter as $doc) {
-            $query->whereHas('candidate.profile', fn($q) => $q->whereNotNull("{$doc}_path"));
+            if (in_array($doc, $allowedDocs, true)) {
+                $query->whereHas('candidate.profile', fn ($q) => $q->whereNotNull("{$doc}_path"));
+            }
         }
 
         return $query;

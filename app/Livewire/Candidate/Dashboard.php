@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Livewire\Candidate;
 
 use App\Enums\RecruitmentStage;
-use App\Enums\UserRole;
 use App\Models\Application;
 use App\Models\Job;
 use Illuminate\Support\Facades\Auth;

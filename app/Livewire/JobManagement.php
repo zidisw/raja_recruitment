@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Livewire;
 
 use App\Enums\JobLevel;
-use App\Enums\UserRole;
 use App\Exports\JobsExport;
 use App\Models\Department;
 use App\Models\Job;
@@ -101,6 +100,7 @@ class JobManagement extends Component
     {
         if (! $value) {
             $this->title = '';
+
             return;
         }
 
@@ -205,7 +205,7 @@ class JobManagement extends Component
                 filterStatus: $this->filterStatus,
                 departmentId: null,
             ),
-            'jobs-export-' . now()->format('Ymd-His') . '.xlsx'
+            'jobs-export-'.now()->format('Ymd-His').'.xlsx'
         );
     }
 

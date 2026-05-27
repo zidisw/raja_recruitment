@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Livewire;
 
 use App\Enums\RecruitmentStage;
-use App\Enums\UserRole;
 use App\Models\Application;
 use App\Models\ApplicationStageLog;
 use App\Models\Job;
@@ -71,7 +70,7 @@ class CandidateReview extends Component
         $this->notes = '';
         $this->application->refresh()->load(['candidate.profile', 'candidate.education', 'candidate.experiences', 'candidate.organizations', 'job', 'stageLogs.decidedBy', 'psychotest', 'mcu']);
 
-        $this->dispatch('notify', ['message' => __('Candidate advanced to') . ' ' . $this->application->recruitment_stage->label() . '.', 'type' => 'success']);
+        $this->dispatch('notify', ['message' => __('Candidate advanced to').' '.$this->application->recruitment_stage->label().'.', 'type' => 'success']);
     }
 
     public function reject(): void

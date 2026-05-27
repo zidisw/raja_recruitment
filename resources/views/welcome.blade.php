@@ -25,10 +25,7 @@
         })();
     </script>
 
-    <!-- Alpine plugins used by x-intersect must load before Alpine core -->
-    <script src="https://cdn.jsdelivr.net/npm/@alpinejs/intersect@3.x.x/dist/cdn.min.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
-
+    @livewireStyles
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
@@ -517,6 +514,8 @@
     </section>
 
     @include('partials.footer')
+    @livewireScripts
+    @fluxScripts
 </body>
 
 </html>

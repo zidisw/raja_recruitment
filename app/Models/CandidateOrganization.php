@@ -15,7 +15,7 @@ class CandidateOrganization extends Model
         'position',
         'start_date',
         'end_date',
-        'is_current'
+        'is_current',
     ];
 
     protected function casts(): array

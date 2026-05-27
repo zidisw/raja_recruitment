@@ -1,8 +1,8 @@
 <?php
 
-$file = __DIR__ . '/_ide_helper.php';
+$file = __DIR__.'/_ide_helper.php';
 
-if (!file_exists($file)) {
+if (! file_exists($file)) {
     echo "File not found\n";
     exit(1);
 }

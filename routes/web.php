@@ -1,31 +1,31 @@
 <?php
 
 use App\Livewire\ApplicationManagement;
-use App\Livewire\CandidateReview;
 use App\Livewire\Candidate\Dashboard as CandidateDashboard;
 use App\Livewire\Candidate\JobPortal;
-use App\Livewire\EmailTemplateManagement;
-use App\Livewire\JobApplications;
 use App\Livewire\Candidate\MyApplications;
 use App\Livewire\Candidate\MyProfile;
 use App\Livewire\Candidate\ProfileSetup;
+use App\Livewire\CandidateManagement;
+use App\Livewire\CandidateReview;
 use App\Livewire\Dashboard;
 use App\Livewire\DepartmentManagement;
-use App\Livewire\JobManagement;
-use App\Livewire\NewsManagement;
+use App\Livewire\EmailTemplateManagement;
 use App\Livewire\Frontend\ArticleDetail;
 use App\Livewire\Frontend\ArticleList;
 use App\Livewire\Frontend\CareerDetail;
 use App\Livewire\Frontend\CareerList;
 use App\Livewire\Frontend\Contact;
-use App\Livewire\PtkManagement;
-use App\Livewire\SiteManagement;
-use App\Livewire\CandidateManagement;
 use App\Livewire\InterviewManagement;
+use App\Livewire\JobApplications;
+use App\Livewire\JobManagement;
 use App\Livewire\McuManagement;
+use App\Livewire\NewsManagement;
 use App\Livewire\OfferingLetterManagement;
 use App\Livewire\OnboardingManagement;
 use App\Livewire\PsychotestManagement;
+use App\Livewire\PtkManagement;
+use App\Livewire\SiteManagement;
 use App\Livewire\Superadmin\SmtpSettings;
 use App\Livewire\UserManagement;
 use Illuminate\Support\Facades\Route;
@@ -37,7 +37,7 @@ Route::get('/', function () {
         ->latest('published_at')
         ->limit(3)
         ->get();
-    
+
     return view('welcome', compact('latestArticles'));
 })->name('home');
 Route::view('/about', 'about')->name('about');

@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -31,7 +31,7 @@ return new class extends Migration
             '99' => \App\Enums\RecruitmentStage::REJECTED->value,
         ];
         foreach ($mapping as $old => $new) {
-            DB::statement("UPDATE application_stage_logs SET stage = ? WHERE stage = ?", [$new, $old]);
+            DB::statement('UPDATE application_stage_logs SET stage = ? WHERE stage = ?', [$new, $old]);
         }
     }
 

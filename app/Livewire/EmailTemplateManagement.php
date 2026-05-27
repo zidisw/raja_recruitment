@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Livewire;
 
 use App\Enums\RecruitmentStage;
-use App\Enums\UserRole;
 use App\Models\EmailTemplate;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -76,7 +75,7 @@ class EmailTemplateManagement extends Component
     {
         $stages = RecruitmentStage::emailTemplateStages();
 
-        $templates = EmailTemplate::all()->keyBy(fn ($t) => $t->stage->value . '_' . $t->job_level);
+        $templates = EmailTemplate::all()->keyBy(fn ($t) => $t->stage->value.'_'.$t->job_level);
 
         return view('livewire.email-template-management', [
             'stages' => array_values($stages),

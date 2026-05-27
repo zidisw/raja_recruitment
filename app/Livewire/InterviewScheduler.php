@@ -4,24 +4,28 @@ declare(strict_types=1);
 
 namespace App\Livewire;
 
-use App\Models\User;
-use App\Models\Application;
 use App\Enums\RecruitmentStage;
 use App\Enums\UserRole;
-use App\Models\Interview;
-use Illuminate\Support\Facades\Mail;
 use App\Mail\InterviewInvitationMail;
+use App\Models\Application;
+use App\Models\Interview;
+use App\Models\User;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 
 class InterviewScheduler extends Component
 {
     public Application $application;
+
     public $interviewer_id;
+
     public $scheduled_date;
+
     public $scheduled_time;
+
     public $meeting_link;
-    
+
     public bool $showModal = false;
 
     public function mount(Application $application)
@@ -37,8 +41,9 @@ class InterviewScheduler extends Component
 
     public function openScheduler()
     {
-        if (!$this->isValidInterviewStatus()) {
+        if (! $this->isValidInterviewStatus()) {
             $this->dispatch('notify', ['message' => __('You can only schedule an interview when the candidate is in the Interview stage.'), 'type' => 'error']);
+
             return;
         }
         $this->showModal = true;
@@ -54,8 +59,9 @@ class InterviewScheduler extends Component
 
     public function saveSchedule()
     {
-        if (!$this->isValidInterviewStatus()) {
+        if (! $this->isValidInterviewStatus()) {
             $this->dispatch('notify', ['message' => __('Cannot schedule an interview for the current application stage.'), 'type' => 'error']);
+
             return;
         }
 
@@ -74,7 +80,7 @@ class InterviewScheduler extends Component
             'meeting_link' => ['nullable', 'url'],
         ]);
 
-        $scheduledAt = $this->scheduled_date . ' ' . $this->scheduled_time . ':00';
+        $scheduledAt = $this->scheduled_date.' '.$this->scheduled_time.':00';
 
         $interview = Interview::updateOrCreate(
             ['application_id' => $this->application->id],
@@ -82,7 +88,7 @@ class InterviewScheduler extends Component
                 'interviewer_id' => $this->interviewer_id,
                 'scheduled_at' => $scheduledAt,
                 'meeting_link' => $this->meeting_link,
-                'status' => 'scheduled'
+                'status' => 'scheduled',
             ]
         );
 
@@ -111,6 +117,7 @@ class InterviewScheduler extends Component
             UserRole::HR,
             UserRole::Interviewer,
         ])->get();
+
         return view('livewire.interview-scheduler', compact('interviewers'));
     }
 }

@@ -1,4 +1,4 @@
-name: Deploy (SSH)
+name: Deploy Production (Hostinger SSH)
 
 on:
   workflow_dispatch:
@@ -12,13 +12,14 @@ on:
         required: false
         type: boolean
         default: true
-      environment:
-        description: "GitHub Environment name (for scoped secrets)"
+      sync_static_media:
+        description: "Sync public/rjs-photos static media"
         required: false
-        default: "production"
+        type: boolean
+        default: true
 
 concurrency:
-  group: deploy-${{ inputs.environment }}
+  group: deploy-production
   cancel-in-progress: false
 
 permissions:
@@ -26,9 +27,9 @@ permissions:
 
 jobs:
   deploy:
-    name: Deploy
+    name: Deploy to Hostinger
     runs-on: ubuntu-latest
-    environment: ${{ inputs.environment }}
+    environment: production
 
     steps:
       - name: Checkout
@@ -50,9 +51,12 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.2"
+          php-version: "8.4"
           extensions: mbstring, bcmath, ctype, fileinfo, json, openssl, pdo, sqlite, pdo_sqlite, tokenizer, xml
           coverage: none
+
+      - name: Audit Composer dependencies
+        run: composer audit --no-interaction
 
       - name: Install Composer dependencies (no-dev)
         uses: ramsey/composer-install@v3
@@ -62,51 +66,103 @@ jobs:
       - name: Start SSH agent
         uses: webfactory/ssh-agent@v0.9.0
         with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+          ssh-private-key: ${{ secrets.HOSTINGER_SSH_PRIVATE_KEY }}
 
       - name: Add server to known_hosts
         shell: bash
         env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_HOST: ${{ secrets.HOSTINGER_HOST }}
+          SSH_PORT: ${{ secrets.HOSTINGER_PORT }}
         run: |
           mkdir -p ~/.ssh
           ssh-keyscan -p "${SSH_PORT:-22}" -H "$SSH_HOST" >> ~/.ssh/known_hosts
 
-      - name: Rsync project to server
+      - name: Sync Laravel core
         shell: bash
         env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_USER: ${{ secrets.SSH_USER }}
-          SSH_PORT: ${{ secrets.SSH_PORT }}
-          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          SSH_HOST: ${{ secrets.HOSTINGER_HOST }}
+          SSH_USER: ${{ secrets.HOSTINGER_USER }}
+          SSH_PORT: ${{ secrets.HOSTINGER_PORT }}
+          CORE_PATH: ${{ secrets.HOSTINGER_CORE_PATH }}
         run: |
           rsync -az --delete \
             -e "ssh -p ${SSH_PORT:-22}" \
             --exclude ".git/" \
             --exclude ".github/" \
             --exclude ".env" \
-            --exclude "storage/" \
+            --exclude ".env.*" \
             --exclude "node_modules/" \
-            ./ "${SSH_USER}@${SSH_HOST}:${DEPLOY_PATH}/"
+            --exclude "public/hot" \
+            --exclude "public/rjs-photos/" \
+            --exclude "public/storage" \
+            --exclude "storage/" \
+            ./ "${SSH_USER}@${SSH_HOST}:${CORE_PATH}/"
+
+      - name: Sync public build assets
+        shell: bash
+        env:
+          SSH_HOST: ${{ secrets.HOSTINGER_HOST }}
+          SSH_USER: ${{ secrets.HOSTINGER_USER }}
+          SSH_PORT: ${{ secrets.HOSTINGER_PORT }}
+          PUBLIC_PATH: ${{ secrets.HOSTINGER_PUBLIC_PATH }}
+        run: |
+          rsync -az --delete \
+            -e "ssh -p ${SSH_PORT:-22}" \
+            public/build/ "${SSH_USER}@${SSH_HOST}:${PUBLIC_PATH}/build/"
+
+      - name: Sync static public media
+        if: ${{ inputs.sync_static_media }}
+        shell: bash
+        env:
+          SSH_HOST: ${{ secrets.HOSTINGER_HOST }}
+          SSH_USER: ${{ secrets.HOSTINGER_USER }}
+          SSH_PORT: ${{ secrets.HOSTINGER_PORT }}
+          PUBLIC_PATH: ${{ secrets.HOSTINGER_PUBLIC_PATH }}
+        run: |
+          rsync -az \
+            -e "ssh -p ${SSH_PORT:-22}" \
+            public/rjs-photos/ "${SSH_USER}@${SSH_HOST}:${PUBLIC_PATH}/rjs-photos/"
+
+      - name: Sync public root assets
+        shell: bash
+        env:
+          SSH_HOST: ${{ secrets.HOSTINGER_HOST }}
+          SSH_USER: ${{ secrets.HOSTINGER_USER }}
+          SSH_PORT: ${{ secrets.HOSTINGER_PORT }}
+          PUBLIC_PATH: ${{ secrets.HOSTINGER_PUBLIC_PATH }}
+        run: |
+          rsync -az \
+            -e "ssh -p ${SSH_PORT:-22}" \
+            public/apple-touch-icon.png \
+            public/favicon.ico \
+            public/raja.svg \
+            public/rajaori.svg \
+            public/rajawhite.svg \
+            public/robots.txt \
+            "${SSH_USER}@${SSH_HOST}:${PUBLIC_PATH}/"
 
       - name: Run remote post-deploy commands
         shell: bash
         env:
-          SSH_HOST: ${{ secrets.SSH_HOST }}
-          SSH_USER: ${{ secrets.SSH_USER }}
-          SSH_PORT: ${{ secrets.SSH_PORT }}
-          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
+          SSH_HOST: ${{ secrets.HOSTINGER_HOST }}
+          SSH_USER: ${{ secrets.HOSTINGER_USER }}
+          SSH_PORT: ${{ secrets.HOSTINGER_PORT }}
+          CORE_PATH: ${{ secrets.HOSTINGER_CORE_PATH }}
+          PUBLIC_PATH: ${{ secrets.HOSTINGER_PUBLIC_PATH }}
           RUN_MIGRATIONS: ${{ inputs.run_migrations }}
         run: |
           ssh -p "${SSH_PORT:-22}" "${SSH_USER}@${SSH_HOST}" \
-            "DEPLOY_PATH='${DEPLOY_PATH}' RUN_MIGRATIONS='${RUN_MIGRATIONS}' bash -s" <<'EOF'
+            "CORE_PATH='${CORE_PATH}' PUBLIC_PATH='${PUBLIC_PATH}' RUN_MIGRATIONS='${RUN_MIGRATIONS}' bash -s" <<'EOF'
           set -euo pipefail
-          cd "${DEPLOY_PATH}"
+          cd "${CORE_PATH}"
 
-          if [ ! -d vendor ] && command -v composer >/dev/null 2>&1; then
-            composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
-          fi
+          mkdir -p \
+            storage/app/public \
+            storage/framework/cache \
+            storage/framework/sessions \
+            storage/framework/views \
+            storage/logs \
+            bootstrap/cache
 
           if [ "${RUN_MIGRATIONS}" = "true" ]; then
             php artisan migrate --force
@@ -114,10 +170,21 @@ jobs:
 
           php artisan config:clear
           php artisan cache:clear
+          php artisan route:clear
           php artisan view:clear
 
+          if [ -L "${PUBLIC_PATH}/storage" ]; then
+            rm "${PUBLIC_PATH}/storage"
+            ln -s "${CORE_PATH}/storage/app/public" "${PUBLIC_PATH}/storage"
+          elif [ -e "${PUBLIC_PATH}/storage" ]; then
+            echo "::warning::${PUBLIC_PATH}/storage exists and is not a symlink. Leaving it untouched to protect production uploads."
+          else
+            ln -s "${CORE_PATH}/storage/app/public" "${PUBLIC_PATH}/storage"
+          fi
+
           php artisan config:cache
-          php artisan view:cache
+          php artisan route:cache
+          # view:cache is intentionally skipped; Livewire view paths make it slow on this project.
 
           php artisan queue:restart || true
           EOF

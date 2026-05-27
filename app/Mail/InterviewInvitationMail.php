@@ -14,6 +14,7 @@ class InterviewInvitationMail extends Mailable
     use Queueable, SerializesModels;
 
     public $interview;
+
     public $roleType;
 
     /**
@@ -31,7 +32,7 @@ class InterviewInvitationMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Undangan Wawancara - ' . $this->interview->application->job->title,
+            subject: 'Undangan Wawancara - '.$this->interview->application->job->title,
         );
     }
 

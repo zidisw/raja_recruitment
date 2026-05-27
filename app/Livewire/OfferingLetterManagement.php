@@ -6,16 +6,14 @@ namespace App\Livewire;
 
 use App\Enums\OfferingStatus;
 use App\Enums\RecruitmentStage;
-use App\Enums\UserRole;
 use App\Models\Application;
-use App\Models\Department;
 use App\Models\ApplicationStageLog;
+use App\Models\Department;
 use App\Models\OfferingLetter;
 use App\Models\Site;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -25,20 +23,30 @@ use Livewire\WithPagination;
 #[Layout('layouts.app')]
 class OfferingLetterManagement extends Component
 {
-    use WithPagination, WithFileUploads;
+    use WithFileUploads, WithPagination;
 
     public bool $showModal = false;
+
     public ?int $expandedRow = null;
+
     public ?int $editingId = null;
 
     public ?int $application_id = null;
+
     public string $offer_date = '';
+
     public $offer_file; // For uploading new file
+
     public string $status = 'waiting_response';
+
     public string $search = '';
+
     public string $filterDepartment = '';
+
     public string $filterSite = '';
+
     public string $filterStatus = '';
+
     public int $perPage = 10;
 
     #[Computed]
@@ -47,6 +55,7 @@ class OfferingLetterManagement extends Component
         if (! $this->editingId) {
             return null;
         }
+
         return OfferingLetter::find($this->editingId);
     }
 
@@ -152,7 +161,7 @@ class OfferingLetterManagement extends Component
                 'application_id' => $application->id,
                 'stage' => $oldStage->value,
                 'decision' => $targetStage === RecruitmentStage::REJECTED ? 'rejected' : 'passed',
-                'notes' => 'Offering status: ' . str_replace('_', ' ', $validated['status']),
+                'notes' => 'Offering status: '.str_replace('_', ' ', $validated['status']),
                 'decided_by' => Auth::id() ?? $application->user_id,
             ]);
         }
@@ -174,10 +183,10 @@ class OfferingLetterManagement extends Component
         if ($this->search !== '') {
             $query->where(function ($q): void {
                 $q->whereHas('candidate', function ($candidate): void {
-                    $candidate->where('name', 'like', '%' . $this->search . '%')
-                        ->orWhere('email', 'like', '%' . $this->search . '%');
+                    $candidate->where('name', 'like', '%'.$this->search.'%')
+                        ->orWhere('email', 'like', '%'.$this->search.'%');
                 })->orWhereHas('job', function ($job): void {
-                    $job->where('title', 'like', '%' . $this->search . '%');
+                    $job->where('title', 'like', '%'.$this->search.'%');
                 });
             });
         }

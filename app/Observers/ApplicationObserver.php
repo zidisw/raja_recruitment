@@ -2,12 +2,12 @@
 
 namespace App\Observers;
 
+use App\Enums\UserRole;
 use App\Models\Application;
 use App\Models\ApplicationStageLog;
 use App\Models\User;
-use App\Enums\UserRole;
-use App\Notifications\NewApplicationNotification;
 use App\Notifications\ApplicationStatusUpdatedNotification;
+use App\Notifications\NewApplicationNotification;
 
 class ApplicationObserver
 {

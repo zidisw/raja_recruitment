@@ -15,9 +15,9 @@ return new class extends Migration
             $table->integer('status')->default(0); // Enum: ApplicationStatus
             $table->text('hr_notes')->nullable();
             $table->timestamps();
-            
+
             // Mencegah user melamar posisi yang sama berkali-kali
-            $table->unique(['user_id', 'job_id']); 
+            $table->unique(['user_id', 'job_id']);
         });
     }
 
