@@ -64,7 +64,7 @@
     @else
         <div class="flex flex-col gap-5">
             @foreach ($applications as $application)
-                <div wire:key="{{ $application->id }}"
+                <div wire:key="candidate-application-{{ $application->id }}"
                     class="theme-surface group overflow-hidden rounded-xl border backdrop-blur-sm shadow-sm hover:shadow-md">
 
                     {{-- Header --}}
@@ -277,16 +277,27 @@
                                                 </p>
                                                 @if ($uploadingForApplicationId === $application->id)
                                                     <form wire:submit="uploadSignedOL({{ $application->id }})" class="space-y-2">
-                                                        <input type="file" wire:model="signed_ol_file" accept=".pdf"
+                                                        <input type="file" wire:model="signed_ol_file"
+                                                            wire:key="signed-ol-file-{{ $application->id }}" accept=".pdf"
                                                             class="block w-full text-xs text-zinc-600 dark:text-zinc-300
                                                                                     file:mr-2 file:py-1 file:px-2 file:rounded file:border-0
                                                                                     file:text-xs file:font-medium file:bg-amber-100 file:text-amber-700
                                                                                     dark:file:bg-amber-900/30 dark:file:text-amber-300
                                                                                     hover:file:bg-amber-200 dark:hover:file:bg-amber-900/50" />
+                                                        <div wire:loading wire:target="signed_ol_file" class="text-xs text-amber-700 dark:text-amber-300">
+                                                            {{ __('Uploading...') }}
+                                                        </div>
                                                         <div class="flex gap-2">
                                                             <flux:button type="submit" size="sm" variant="primary"
-                                                                class="bg-amber-600 hover:bg-amber-700">
-                                                                {{ __('Upload') }}
+                                                                class="bg-amber-600 hover:bg-amber-700"
+                                                                wire:loading.attr="disabled"
+                                                                wire:target="uploadSignedOL({{ $application->id }}),signed_ol_file">
+                                                                <span wire:loading.remove wire:target="uploadSignedOL({{ $application->id }})">
+                                                                    {{ __('Upload') }}
+                                                                </span>
+                                                                <span wire:loading wire:target="uploadSignedOL({{ $application->id }})">
+                                                                    {{ __('Uploading...') }}
+                                                                </span>
                                                             </flux:button>
                                                             <flux:button type="button" size="sm" variant="ghost"
                                                                 wire:click="$set('uploadingForApplicationId', null)">

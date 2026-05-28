@@ -252,7 +252,10 @@
                                             href="{{ Storage::url($profile->photo_path) }}" target="_blank"
                                             class="text-blue-500 underline">{{ __('View') }}</a></p>
                                 @endif
-                                <flux:input wire:model="photo" type="file" accept="image/*" />
+                                <flux:input wire:model="photo" type="file" accept="image/*" wire:key="profile-photo-file" />
+                                <div wire:loading wire:target="photo" class="mt-1 text-xs text-brand-500">
+                                    {{ __('Uploading...') }}
+                                </div>
                                 <flux:error name="photo" />
                             </flux:field>
 
@@ -264,7 +267,10 @@
                                             href="{{ Storage::url($profile->ktp_path) }}" target="_blank"
                                             class="text-blue-500 underline">{{ __('View') }}</a></p>
                                 @endif
-                                <flux:input wire:model="ktp_file" type="file" accept=".pdf,image/*" />
+                                <flux:input wire:model="ktp_file" type="file" accept=".pdf,image/*" wire:key="profile-ktp-file" />
+                                <div wire:loading wire:target="ktp_file" class="mt-1 text-xs text-brand-500">
+                                    {{ __('Uploading...') }}
+                                </div>
                                 <flux:error name="ktp_file" />
                             </flux:field>
 
@@ -276,7 +282,10 @@
                                             href="{{ Storage::url($profile->portfolio_path) }}" target="_blank"
                                             class="text-blue-500 underline">{{ __('View') }}</a></p>
                                 @endif
-                                <flux:input wire:model="portfolio" type="file" accept=".pdf" />
+                                <flux:input wire:model="portfolio" type="file" accept=".pdf" wire:key="profile-portfolio-file" />
+                                <div wire:loading wire:target="portfolio" class="mt-1 text-xs text-brand-500">
+                                    {{ __('Uploading...') }}
+                                </div>
                                 <flux:error name="portfolio" />
                             </flux:field>
 
@@ -288,7 +297,10 @@
                                             href="{{ Storage::url($profile->certificate_path) }}" target="_blank"
                                             class="text-blue-500 underline">{{ __('View') }}</a></p>
                                 @endif
-                                <flux:input wire:model="certificate" type="file" accept=".pdf,image/*" />
+                                <flux:input wire:model="certificate" type="file" accept=".pdf,image/*" wire:key="profile-certificate-file" />
+                                <div wire:loading wire:target="certificate" class="mt-1 text-xs text-brand-500">
+                                    {{ __('Uploading...') }}
+                                </div>
                                 <flux:error name="certificate" />
                             </flux:field>
 
@@ -300,15 +312,19 @@
                                             href="{{ Storage::url($profile->paklaring_path) }}" target="_blank"
                                             class="text-blue-500 underline">{{ __('View') }}</a></p>
                                 @endif
-                                <flux:input wire:model="paklaring" type="file" accept=".pdf,image/*" />
+                                <flux:input wire:model="paklaring" type="file" accept=".pdf,image/*" wire:key="profile-paklaring-file" />
+                                <div wire:loading wire:target="paklaring" class="mt-1 text-xs text-brand-500">
+                                    {{ __('Uploading...') }}
+                                </div>
                                 <flux:error name="paklaring" />
                             </flux:field>
                         </div>
 
                         <div class="flex justify-end mt-4">
-                            <flux:button type="submit" variant="primary" icon="check" wire:loading.attr="disabled">
-                                <span wire:loading.remove>{{ __('Save Documents') }}</span>
-                                <span wire:loading>{{ __('Saving...') }}</span>
+                            <flux:button type="submit" variant="primary" icon="check" wire:loading.attr="disabled"
+                                wire:target="saveDocuments,photo,ktp_file,portfolio,certificate,paklaring">
+                                <span wire:loading.remove wire:target="saveDocuments">{{ __('Save Documents') }}</span>
+                                <span wire:loading wire:target="saveDocuments">{{ __('Saving...') }}</span>
                             </flux:button>
                         </div>
                     </form>

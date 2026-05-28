@@ -31,8 +31,10 @@ class DepartmentManagement extends Component
         $this->showModal = true;
     }
 
-    public function openEdit(Department $department): void
+    public function openEdit(int $departmentId): void
     {
+        $department = Department::findOrFail($departmentId);
+
         $this->editingId = $department->id;
         $this->name = $department->name;
         $this->description = $department->description ?? '';
@@ -58,8 +60,10 @@ class DepartmentManagement extends Component
         $this->reset(['editingId', 'name', 'description']);
     }
 
-    public function delete(Department $department): void
+    public function delete(int $departmentId): void
     {
+        $department = Department::findOrFail($departmentId);
+
         $department->delete();
         $this->dispatch('notify', ['message' => 'Department deleted successfully.', 'type' => 'success']);
     }

@@ -266,7 +266,7 @@
 
                 @if($editingId)
                     <flux:field>
-                        <flux:label>{{ __('Dokumen Penilaian (PDF/DOCX)') }}</flux:label>
+                        <flux:label>{{ __('Dokumen Penilaian (PDF/DOCX/Gambar)') }}</flux:label>
                         @if($editingId && ($editedInterview = $interviews->firstWhere('id', $editingId)) && $editedInterview->evaluation_path)
                             <a href="{{ Storage::url($editedInterview->evaluation_path) }}" target="_blank"
                                 class="mb-2 inline-flex items-center gap-1 text-sm text-brand-500 hover:underline">
@@ -274,7 +274,12 @@
                             </a>
                         @endif
                         <input type="file" wire:model="evaluation_file"
+                            wire:key="interview-evaluation-file-{{ $editingId ?? 'new' }}"
+                            accept=".pdf,.docx,.jpg,.jpeg,.png"
                             class="block w-full text-sm text-zinc-600 dark:text-zinc-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-zinc-100 file:text-zinc-700 hover:file:bg-zinc-200 dark:file:bg-zinc-800 dark:file:text-zinc-300 dark:hover:file:bg-zinc-700 focus:outline-none cursor-pointer" />
+                        <div wire:loading wire:target="evaluation_file" class="mt-2 text-sm text-brand-500">
+                            {{ __('Uploading...') }}
+                        </div>
                         <flux:error name="evaluation_file" />
                     </flux:field>
                 @endif
@@ -288,7 +293,11 @@
                 <div class="flex justify-end gap-3">
                     <flux:button type="button" variant="ghost" wire:click="$set('showModal', false)">{{ __('Cancel') }}
                     </flux:button>
-                    <flux:button type="submit" variant="primary">{{ __('Save') }}</flux:button>
+                    <flux:button type="submit" variant="primary" wire:loading.attr="disabled"
+                        wire:target="save,evaluation_file">
+                        <span wire:loading.remove wire:target="save">{{ __('Save') }}</span>
+                        <span wire:loading wire:target="save">{{ __('Saving...') }}</span>
+                    </flux:button>
                 </div>
             </form>
         </div>
@@ -298,13 +307,18 @@
     <flux:modal wire:model="showUploadModal" class="w-full max-w-md">
         <div class="space-y-4">
             <flux:heading size="lg">{{ __('Upload Penilaian Interview') }}</flux:heading>
-            <flux:subheading>{{ __('Silakan unggah dokumen hasil wawancara (PDF/DOCX).') }}</flux:subheading>
+            <flux:subheading>{{ __('Silakan unggah dokumen hasil wawancara (PDF/DOCX/Gambar).') }}</flux:subheading>
 
             <form wire:submit="saveUpload" class="space-y-4">
                 <flux:field>
                     <flux:label>{{ __('Dokumen Penilaian') }}</flux:label>
                     <input type="file" wire:model="upload_file"
+                        wire:key="interview-upload-file-{{ $uploadingInterviewId ?? 'new' }}"
+                        accept=".pdf,.docx,.jpg,.jpeg,.png"
                         class="block w-full text-sm text-zinc-600 dark:text-zinc-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-zinc-100 file:text-zinc-700 hover:file:bg-zinc-200 dark:file:bg-zinc-800 dark:file:text-zinc-300 dark:hover:file:bg-zinc-700 focus:outline-none cursor-pointer" />
+                    <div wire:loading wire:target="upload_file" class="mt-2 text-sm text-brand-500">
+                        {{ __('Uploading...') }}
+                    </div>
                     <flux:error name="upload_file" />
                 </flux:field>
 
@@ -312,7 +326,11 @@
                     <flux:button type="button" variant="ghost" wire:click="$set('showUploadModal', false)">
                         {{ __('Batal') }}
                     </flux:button>
-                    <flux:button type="submit" variant="primary">{{ __('Upload') }}</flux:button>
+                    <flux:button type="submit" variant="primary" wire:loading.attr="disabled"
+                        wire:target="saveUpload,upload_file">
+                        <span wire:loading.remove wire:target="saveUpload">{{ __('Upload') }}</span>
+                        <span wire:loading wire:target="saveUpload">{{ __('Uploading...') }}</span>
+                    </flux:button>
                 </div>
             </form>
         </div>

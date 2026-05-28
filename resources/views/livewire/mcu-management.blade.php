@@ -66,7 +66,7 @@
                 </thead>
                 <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
                     @forelse ($applications_paginated as $app)
-                        <tr>
+                        <tr wire:key="mcu-row-{{ $app->id }}">
                             <td class="px-4 py-3 text-center text-zinc-500 font-medium">
                                 {{ ($applications_paginated->currentPage() - 1) * $applications_paginated->perPage() + $loop->iteration }}
                             </td>
@@ -182,7 +182,8 @@
                                 </a>
                             @endif
                         @endif
-                        <flux:input type="file" wire:model="mcu_file" accept=".pdf" />
+                        <flux:input type="file" wire:model="mcu_file"
+                            wire:key="mcu-file-{{ $editingId ?? 'new' }}" accept=".pdf" />
                         <div wire:loading wire:target="mcu_file" class="text-sm text-brand-500">{{ __('Uploading...') }}
                         </div>
                     </div>
@@ -196,7 +197,11 @@
                 <div class="flex justify-end gap-3">
                     <flux:button type="button" variant="ghost" wire:click="$set('showModal', false)">{{ __('Cancel') }}
                     </flux:button>
-                    <flux:button type="submit" variant="primary">{{ __('Save') }}</flux:button>
+                    <flux:button type="submit" variant="primary" wire:loading.attr="disabled"
+                        wire:target="save,mcu_file">
+                        <span wire:loading.remove wire:target="save">{{ __('Save') }}</span>
+                        <span wire:loading wire:target="save">{{ __('Saving...') }}</span>
+                    </flux:button>
                 </div>
             </form>
         </div>

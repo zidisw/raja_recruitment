@@ -223,7 +223,7 @@ test('candidate can move end to end from profile setup to hired', function () {
 
     Livewire::actingAs($admin)
         ->test(OfferingLetterManagement::class)
-        ->call('openEdit', $offering)
+        ->call('openEdit', $offering->id)
         ->set('status', 'accepted')
         ->call('save')
         ->assertHasNoErrors();

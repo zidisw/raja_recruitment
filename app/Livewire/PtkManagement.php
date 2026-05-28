@@ -68,8 +68,10 @@ class PtkManagement extends Component
         $this->mode = $mode;
     }
 
-    public function openEdit(Ptk $ptk): void
+    public function openEdit(int $ptkId): void
     {
+        $ptk = Ptk::findOrFail($ptkId);
+
         $this->editingId = $ptk->id;
         $this->nomor_ptk = $ptk->nomor_ptk;
         $this->posisi = $ptk->posisi;
@@ -140,8 +142,10 @@ class PtkManagement extends Component
         $this->showModal = false;
     }
 
-    public function delete(Ptk $ptk): void
+    public function delete(int $ptkId): void
     {
+        $ptk = Ptk::findOrFail($ptkId);
+
         if ($ptk->jobs()->exists()) {
             $this->dispatch('notify', ['message' => __('PTK tidak dapat dihapus karena sudah digunakan di lowongan.'), 'type' => 'error']);
 

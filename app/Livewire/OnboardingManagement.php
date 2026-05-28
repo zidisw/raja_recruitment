@@ -97,8 +97,10 @@ class OnboardingManagement extends Component
         $this->showModal = true;
     }
 
-    public function openEdit(Onboarding $onboarding): void
+    public function openEdit(int $onboardingId): void
     {
+        $onboarding = Onboarding::findOrFail($onboardingId);
+
         $this->editingOnboardingId = $onboarding->id;
         $this->application_id = $onboarding->application_id;
         $this->joining_date = $onboarding->joining_date

@@ -125,7 +125,7 @@ test('candidate tabs render reachable detail links', function (string $tab, Recr
         ->assertSee('/applications/'.$job->id.'/'.$application->id, false);
 })->with([
     'administrasi' => ['administrasi', RecruitmentStage::APPLIED],
-    'on progress' => ['on-progress', RecruitmentStage::HR_INTERVIEW],
+    'on progress' => ['on-progress', RecruitmentStage::ADMINISTRASI],
     'riwayat' => ['riwayat', RecruitmentStage::REJECTED],
 ]);
 

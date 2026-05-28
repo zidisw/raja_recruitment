@@ -43,7 +43,7 @@
                     </thead>
                     <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
                         @foreach ($departments as $department)
-                            <tr wire:key="{{ $department->id }}" class="cursor-pointer">
+                            <tr wire:key="department-row-{{ $department->id }}" class="cursor-pointer">
                                 <td class="px-4 py-3 text-center text-zinc-500 font-medium whitespace-nowrap">
                                     {{ $loop->iteration }}
                                 </td>

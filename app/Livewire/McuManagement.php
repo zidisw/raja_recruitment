@@ -114,8 +114,10 @@ class McuManagement extends Component
         $this->showModal = true;
     }
 
-    public function openEdit(Mcu $mcu): void
+    public function openEdit(int $mcuId): void
     {
+        $mcu = Mcu::findOrFail($mcuId);
+
         $this->editingId = $mcu->id;
         $this->application_id = $mcu->application_id;
         $this->mcu_date = $mcu->mcu_date ? Carbon::parse($mcu->mcu_date)->format('Y-m-d') : '';

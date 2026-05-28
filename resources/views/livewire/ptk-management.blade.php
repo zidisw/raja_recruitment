@@ -51,7 +51,7 @@
                 </thead>
                 <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
                     @forelse ($ptkItems as $item)
-                        <tr wire:key="{{ $item->id }}" class="cursor-pointer">
+                        <tr wire:key="ptk-row-{{ $item->id }}" class="cursor-pointer">
                             <td class="px-4 py-4 text-center text-zinc-500 font-medium">
                                 {{ ($ptkItems->currentPage() - 1) * $ptkItems->perPage() + $loop->iteration }}
                             </td>
@@ -276,7 +276,8 @@
                             <p class="text-xs text-zinc-400 mb-2">Upload file baru untuk menggantikan</p>
                         @endif
 
-                        <input type="file" wire:model="attachment" accept=".jpg,.jpeg,.png,.pdf" class="block w-full text-sm text-zinc-500 dark:text-zinc-400
+                        <input type="file" wire:model="attachment" wire:key="ptk-attachment-{{ $editingId ?? 'new' }}"
+                            accept=".jpg,.jpeg,.png,.pdf" class="block w-full text-sm text-zinc-500 dark:text-zinc-400
                                                            file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0
                                                            file:text-sm file:font-semibold
                                                            file:bg-zinc-100 file:text-zinc-700

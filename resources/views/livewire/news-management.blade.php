@@ -43,7 +43,7 @@
                     </thead>
                     <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
                         @foreach ($articles as $article)
-                            <tr wire:key="{{ $article->id }}" class="cursor-pointer">
+                            <tr wire:key="news-row-{{ $article->id }}" class="cursor-pointer">
                                 <td class="px-4 py-4 text-center text-zinc-500 font-medium">
                                     {{ $articles->firstItem() + $loop->index }}
                                 </td>
@@ -199,7 +199,8 @@
                             @endif
                         @endif
                         <div class="flex-1">
-                            <input type="file" wire:model="featuredImage" accept="image/*" class="block w-full text-sm text-zinc-500 dark:text-zinc-400
+                            <input type="file" wire:model="featuredImage"
+                                wire:key="news-featured-image-{{ $editingId ?? 'new' }}" accept="image/*" class="block w-full text-sm text-zinc-500 dark:text-zinc-400
                                     file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0
                                     file:text-sm file:font-semibold file:bg-zinc-100 file:text-zinc-700
                                     dark:file:bg-zinc-800 dark:file:text-zinc-300
@@ -259,7 +260,8 @@
                         </div>
                     @endif
 
-                    <input type="file" wire:model="galleryImages" accept="image/*" multiple class="block w-full text-sm text-zinc-500 dark:text-zinc-400
+                    <input type="file" wire:model="galleryImages"
+                        wire:key="news-gallery-images-{{ $editingId ?? 'new' }}" accept="image/*" multiple class="block w-full text-sm text-zinc-500 dark:text-zinc-400
                             file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0
                             file:text-sm file:font-semibold file:bg-zinc-100 file:text-zinc-700
                             dark:file:bg-zinc-800 dark:file:text-zinc-300
@@ -291,7 +293,8 @@
                     <flux:button type="button" variant="ghost" wire:click="$set('showModal', false)">
                         {{ __('Cancel') }}
                     </flux:button>
-                    <flux:button type="submit" variant="primary" wire:loading.attr="disabled" wire:target="save">
+                    <flux:button type="submit" variant="primary" wire:loading.attr="disabled"
+                        wire:target="save,featuredImage,galleryImages">
                         <span wire:loading.remove wire:target="save">
                             {{ $editingId ? __('Update Article') : __('Publish Article') }}
                         </span>

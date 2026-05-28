@@ -33,8 +33,10 @@ class SiteManagement extends Component
         $this->showModal = true;
     }
 
-    public function openEdit(Site $site): void
+    public function openEdit(int $siteId): void
     {
+        $site = Site::findOrFail($siteId);
+
         $this->editingId = $site->id;
         $this->name = $site->name;
         $this->location = $site->location ?? '';
@@ -62,8 +64,10 @@ class SiteManagement extends Component
         $this->reset(['editingId', 'name', 'location', 'description']);
     }
 
-    public function delete(Site $site): void
+    public function delete(int $siteId): void
     {
+        $site = Site::findOrFail($siteId);
+
         $site->delete();
         $this->dispatch('notify', ['message' => 'Site deleted successfully.', 'type' => 'success']);
     }

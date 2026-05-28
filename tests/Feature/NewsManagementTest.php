@@ -64,7 +64,7 @@ test('superadmin can edit an article', function () {
 
     Livewire::actingAs($user)
         ->test(\App\Livewire\NewsManagement::class)
-        ->call('openEdit', $article)
+        ->call('openEdit', $article->id)
         ->set('title', 'Updated Title')
         ->set('slug', 'updated-title')
         ->call('save')
@@ -86,7 +86,7 @@ test('superadmin can delete an article', function () {
 
     Livewire::actingAs($user)
         ->test(\App\Livewire\NewsManagement::class)
-        ->call('delete', $article);
+        ->call('delete', $article->id);
 
     expect(Article::find($article->id))->toBeNull();
 });

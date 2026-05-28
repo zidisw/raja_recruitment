@@ -43,7 +43,7 @@
                     </thead>
                     <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
                         @foreach ($sites as $site)
-                            <tr wire:key="{{ $site->id }}" class="cursor-pointer">
+                            <tr wire:key="site-row-{{ $site->id }}" class="cursor-pointer">
                                 <td class="px-4 py-3 text-center text-zinc-500 font-medium whitespace-nowrap">
                                     {{ $loop->iteration }}
                                 </td>

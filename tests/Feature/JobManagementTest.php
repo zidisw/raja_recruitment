@@ -144,7 +144,7 @@ test('deleting a job also deletes its images from storage', function () {
 
     Livewire::actingAs($user)
         ->test(\App\Livewire\JobManagement::class)
-        ->call('delete', $job);
+        ->call('delete', $job->id);
 
     expect(Job::find($job->id))->toBeNull();
     Storage::disk('public')->assertMissing($path);

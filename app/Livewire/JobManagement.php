@@ -79,8 +79,10 @@ class JobManagement extends Component
         $this->showModal = true;
     }
 
-    public function openEdit(Job $job): void
+    public function openEdit(int $jobId): void
     {
+        $job = Job::with('ptk')->findOrFail($jobId);
+
         $this->reset(['featuredImage', 'galleryImages']);
         $this->editingId = $job->id;
         $this->title = $job->ptk?->posisi ?? $job->title;
@@ -178,13 +180,17 @@ class JobManagement extends Component
         $image->delete();
     }
 
-    public function toggleActive(Job $job): void
+    public function toggleActive(int $jobId): void
     {
+        $job = Job::findOrFail($jobId);
+
         $job->update(['is_active' => ! $job->is_active]);
     }
 
-    public function delete(Job $job): void
+    public function delete(int $jobId): void
     {
+        $job = Job::with('images')->findOrFail($jobId);
+
         foreach ($job->images as $image) {
             Storage::disk('public')->delete($image->path);
         }

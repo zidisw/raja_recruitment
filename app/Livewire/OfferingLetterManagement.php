@@ -104,8 +104,10 @@ class OfferingLetterManagement extends Component
         $this->showModal = true;
     }
 
-    public function openEdit(OfferingLetter $offering): void
+    public function openEdit(int $offeringId): void
     {
+        $offering = OfferingLetter::findOrFail($offeringId);
+
         $this->editingId = $offering->id;
         $this->application_id = $offering->application_id;
         $this->offer_date = $offering->offer_date ? Carbon::parse($offering->offer_date)->format('Y-m-d') : '';

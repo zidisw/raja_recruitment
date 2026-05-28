@@ -82,7 +82,7 @@
                     </thead>
                     <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
                         @foreach ($jobs as $job)
-                            <tr wire:key="{{ $job->id }}" class="cursor-pointer">
+                            <tr wire:key="job-row-{{ $job->id }}" class="cursor-pointer">
                                 <td class="px-4 py-3 text-center text-zinc-500 font-medium whitespace-nowrap">
                                     {{ ($jobs->currentPage() - 1) * $jobs->perPage() + $loop->iteration }}
                                 </td>

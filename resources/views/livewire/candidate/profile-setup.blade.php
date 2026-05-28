@@ -116,11 +116,14 @@
                 <flux:field>
                     <flux:label>{{ __('Profile Photo') }} * <span class="text-zinc-400 font-normal text-xs">(max 2MB)</span>
                     </flux:label>
-                    <input type="file" wire:model="photo" accept="image/*" class="block w-full text-sm text-zinc-500 dark:text-zinc-400
+                    <input type="file" wire:model="photo" wire:key="setup-photo-file" accept="image/*" class="block w-full text-sm text-zinc-500 dark:text-zinc-400
                                     file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0
                                     file:text-sm file:font-medium file:bg-zinc-100 file:text-zinc-700
                                     dark:file:bg-zinc-800 dark:file:text-zinc-300
                                     hover:file:bg-zinc-200 dark:hover:file:bg-zinc-700" />
+                    <div wire:loading wire:target="photo" class="mt-2 text-xs text-brand-500">
+                        {{ __('Uploading...') }}
+                    </div>
                     @if ($photo)
                         <img src="{{ $photo->temporaryUrl() }}" class="mt-2 h-20 w-20 rounded-full object-cover" />
                     @endif
@@ -130,11 +133,14 @@
                 <flux:field>
                     <flux:label>{{ __('KTP Scan') }} * <span class="text-zinc-400 font-normal text-xs">(PDF/image, max
                             2MB)</span></flux:label>
-                    <input type="file" wire:model="ktp_file" accept=".pdf,.jpg,.jpeg,.png" class="block w-full text-sm text-zinc-500 dark:text-zinc-400
+                    <input type="file" wire:model="ktp_file" wire:key="setup-ktp-file" accept=".pdf,.jpg,.jpeg,.png" class="block w-full text-sm text-zinc-500 dark:text-zinc-400
                                     file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0
                                     file:text-sm file:font-medium file:bg-zinc-100 file:text-zinc-700
                                     dark:file:bg-zinc-800 dark:file:text-zinc-300
                                     hover:file:bg-zinc-200 dark:hover:file:bg-zinc-700" />
+                    <div wire:loading wire:target="ktp_file" class="mt-2 text-xs text-brand-500">
+                        {{ __('Uploading...') }}
+                    </div>
                     <flux:error name="ktp_file" />
                 </flux:field>
             </div>
@@ -396,11 +402,14 @@
                     <flux:label>{{ __('Portfolio') }} <span class="text-zinc-400 font-normal text-xs">(optional, PDF, max
                             5MB)</span>
                     </flux:label>
-                    <input type="file" wire:model="portfolio" accept=".pdf" class="block w-full text-sm text-zinc-500 dark:text-zinc-400
+                    <input type="file" wire:model="portfolio" wire:key="setup-portfolio-file" accept=".pdf" class="block w-full text-sm text-zinc-500 dark:text-zinc-400
                                     file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0
                                     file:text-sm file:font-medium file:bg-zinc-100 file:text-zinc-700
                                     dark:file:bg-zinc-800 dark:file:text-zinc-300
                                     hover:file:bg-zinc-200 dark:hover:file:bg-zinc-700" />
+                    <div wire:loading wire:target="portfolio" class="mt-2 text-xs text-brand-500">
+                        {{ __('Uploading...') }}
+                    </div>
                     <flux:error name="portfolio" />
                 </flux:field>
 
@@ -408,22 +417,28 @@
                     <flux:label>{{ __('Certificate') }} <span class="text-zinc-400 font-normal text-xs">(optional,
                             PDF/image, max
                             5MB)</span></flux:label>
-                    <input type="file" wire:model="certificate" accept=".pdf,.jpg,.jpeg,.png" class="block w-full text-sm text-zinc-500 dark:text-zinc-400
+                    <input type="file" wire:model="certificate" wire:key="setup-certificate-file" accept=".pdf,.jpg,.jpeg,.png" class="block w-full text-sm text-zinc-500 dark:text-zinc-400
                                     file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0
                                     file:text-sm file:font-medium file:bg-zinc-100 file:text-zinc-700
                                     dark:file:bg-zinc-800 dark:file:text-zinc-300
                                     hover:file:bg-zinc-200 dark:hover:file:bg-zinc-700" />
+                    <div wire:loading wire:target="certificate" class="mt-2 text-xs text-brand-500">
+                        {{ __('Uploading...') }}
+                    </div>
                     <flux:error name="certificate" />
                 </flux:field>
 
                 <flux:field>
                     <flux:label>{{ __('Paklaring / Reference Letter') }} <span
                             class="text-zinc-400 font-normal text-xs">(optional, PDF/image, max 5MB)</span></flux:label>
-                    <input type="file" wire:model="paklaring" accept=".pdf,.jpg,.jpeg,.png" class="block w-full text-sm text-zinc-500 dark:text-zinc-400
+                    <input type="file" wire:model="paklaring" wire:key="setup-paklaring-file" accept=".pdf,.jpg,.jpeg,.png" class="block w-full text-sm text-zinc-500 dark:text-zinc-400
                                     file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0
                                     file:text-sm file:font-medium file:bg-zinc-100 file:text-zinc-700
                                     dark:file:bg-zinc-800 dark:file:text-zinc-300
                                     hover:file:bg-zinc-200 dark:hover:file:bg-zinc-700" />
+                    <div wire:loading wire:target="paklaring" class="mt-2 text-xs text-brand-500">
+                        {{ __('Uploading...') }}
+                    </div>
                     <flux:error name="paklaring" />
                 </flux:field>
             </div>
@@ -449,11 +464,13 @@
 
         <div>
             @if ($step < $totalSteps)
-                <flux:button wire:click="nextStep" variant="primary" icon-trailing="arrow-right">
+                <flux:button wire:click="nextStep" variant="primary" icon-trailing="arrow-right"
+                    wire:loading.attr="disabled" wire:target="nextStep,photo,ktp_file">
                     {{ __('Next') }}
                 </flux:button>
             @else
-                <flux:button wire:click="save" variant="primary" icon="check" wire:loading.attr="disabled">
+                <flux:button wire:click="save" variant="primary" icon="check" wire:loading.attr="disabled"
+                    wire:target="save,portfolio,certificate,paklaring">
                     <span wire:loading.remove wire:target="save">{{ __('Submit Profile') }}</span>
                     <span wire:loading wire:target="save">{{ __('Saving...') }}</span>
                 </flux:button>

@@ -81,8 +81,10 @@ class NewsManagement extends Component
         $this->showModal = true;
     }
 
-    public function openEdit(Article $article): void
+    public function openEdit(int $articleId): void
     {
+        $article = Article::findOrFail($articleId);
+
         $this->resetForm();
         $this->editingId = $article->id;
         $this->title = $article->title;
@@ -171,8 +173,10 @@ class NewsManagement extends Component
         $image->delete();
     }
 
-    public function delete(Article $article): void
+    public function delete(int $articleId): void
     {
+        $article = Article::with('images')->findOrFail($articleId);
+
         foreach ($article->images as $image) {
             Storage::disk('public')->delete($image->path);
         }

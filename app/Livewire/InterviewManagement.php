@@ -224,8 +224,10 @@ class InterviewManagement extends Component
         $this->dispatch('notify', ['message' => __('Interview status updated successfully.'), 'type' => 'success']);
     }
 
-    public function openEdit(Interview $interview): void
+    public function openEdit(int $interviewId): void
     {
+        $interview = Interview::findOrFail($interviewId);
+
         $this->editingId = $interview->id;
         $this->application_id = $interview->application_id;
         $this->interviewer_id = $interview->interviewer_id;
@@ -256,7 +258,7 @@ class InterviewManagement extends Component
             'scheduled_time' => ['required'],
             'status' => ['required', 'in:scheduled,completed,passed,failed'],
             'hr_notes' => ['nullable', 'string', 'max:2000'],
-            'evaluation_file' => ['nullable', 'file', 'mimes:pdf,docx', 'max:5120'],
+            'evaluation_file' => ['nullable', 'file', 'mimes:pdf,docx,jpg,png,jpeg', 'max:5120'],
         ]);
 
         $scheduledAt = $validated['scheduled_date'].' '.$validated['scheduled_time'].':00';

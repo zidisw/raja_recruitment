@@ -60,7 +60,7 @@ function createRecruitmentWorkflowFixture(RecruitmentStage $stage = RecruitmentS
 test('administrative pass enters on progress and HR interview scheduling advances stage without duplicates', function (): void {
     Notification::fake();
 
-    [$admin, $interviewer, $candidate, , $application] = createRecruitmentWorkflowFixture();
+    [$admin, $interviewer, $candidate, $job, $application] = createRecruitmentWorkflowFixture();
 
     Livewire::actingAs($admin)
         ->test(CandidateManagement::class, ['tab' => 'administrasi'])
@@ -85,6 +85,10 @@ test('administrative pass enters on progress and HR interview scheduling advance
     $application->refresh();
     expect($application->recruitment_stage)->toBe(RecruitmentStage::HR_INTERVIEW)
         ->and(Interview::where('application_id', $application->id)->where('interview_type', 'HR Interview')->count())->toBe(1);
+
+    Livewire::actingAs($admin)
+        ->test(CandidateManagement::class, ['tab' => 'on-progress'])
+        ->assertDontSee('/applications/'.$job->id.'/'.$application->id, false);
 
     Livewire::actingAs($admin)
         ->test(CandidateManagement::class, ['tab' => 'on-progress'])
@@ -123,7 +127,7 @@ test('offering letter waits for signed upload before admin validation advances c
 
     Livewire::actingAs($admin)
         ->test(OfferingLetterManagement::class)
-        ->call('openEdit', $offering)
+        ->call('openEdit', $offering->id)
         ->set('status', 'accepted')
         ->call('save')
         ->assertHasNoErrors();
@@ -143,7 +147,7 @@ test('offering letter waits for signed upload before admin validation advances c
 
     Livewire::actingAs($admin)
         ->test(OfferingLetterManagement::class)
-        ->call('openEdit', $offering)
+        ->call('openEdit', $offering->id)
         ->set('status', 'accepted')
         ->call('save')
         ->assertHasNoErrors();

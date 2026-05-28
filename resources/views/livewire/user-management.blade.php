@@ -50,7 +50,7 @@
                     </thead>
                     <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
                         @foreach ($users as $user)
-                            <tr wire:key="{{ $user->id }}" class="cursor-pointer">
+                            <tr wire:key="user-row-{{ $user->id }}" class="cursor-pointer">
                                 <td class="px-4 py-3 text-center text-zinc-500 font-medium whitespace-nowrap">
                                     {{ ($users->currentPage() - 1) * $users->perPage() + $loop->iteration }}
                                 </td>

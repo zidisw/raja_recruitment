@@ -6,7 +6,7 @@
                 <flux:subheading size="lg">{{ __('Pengecekan berkas dan CV kandidat') }}</flux:subheading>
             @elseif ($tab === 'on-progress')
                 <flux:heading size="xl" level="1">{{ __('Kandidat On Progress') }}</flux:heading>
-                <flux:subheading size="lg">{{ __('Kandidat yang sedang dalam proses rekrutmen') }}</flux:subheading>
+                <flux:subheading size="lg">{{ __('Kandidat lolos administrasi yang menunggu jadwal HR Interview') }}</flux:subheading>
             @else
                 <flux:heading size="xl" level="1">{{ __('Riwayat Kandidat') }}</flux:heading>
                 <flux:subheading size="lg">{{ __('Seluruh riwayat kandidat yang pernah melamar') }}</flux:subheading>

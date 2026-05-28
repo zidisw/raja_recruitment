@@ -60,7 +60,7 @@
                         @php
                             $item = $application->onboarding;
                         @endphp
-                        <tr>
+                        <tr wire:key="onboarding-row-{{ $application->id }}">
                             <td class="px-4 py-4 text-center text-zinc-500 font-medium">
                                 {{ $applicationsPaginated->firstItem() + $loop->index }}
                             </td>

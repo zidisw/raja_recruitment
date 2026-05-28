@@ -65,7 +65,7 @@
                 </thead>
                 <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
                     @forelse ($applications_paginated as $app)
-                        <tr>
+                        <tr wire:key="offering-row-{{ $app->id }}">
                             <td class="px-4 py-3 text-center text-zinc-500 font-medium">
                                 {{ ($applications_paginated->currentPage() - 1) * $applications_paginated->perPage() + $loop->iteration }}
                             </td>
@@ -125,11 +125,13 @@
 
                                         <flux:button size="sm" variant="ghost"
                                             wire:click="openEdit({{ $app->offeringLetter->id }})"
+                                            wire:loading.attr="disabled"
                                             wire:target="openEdit({{ $app->offeringLetter->id }})" icon="pencil"
                                             class="app-action-btn" title="{{ __('Edit Offering') }}">{{ __('Edit') }}
                                         </flux:button>
                                     @else
                                         <flux:button size="sm" variant="primary" wire:click="openCreate({{ $app->id }})"
+                                            wire:loading.attr="disabled"
                                             wire:target="openCreate({{ $app->id }})">
                                             {{ __('Create Offer') }}
                                         </flux:button>
@@ -181,7 +183,7 @@
                             </tr>
                         @endif
                     @empty
-                        <tr wire:key="offering-{{ $app->id }}">
+                        <tr wire:key="offering-empty">
                             <td colspan="7" class="px-6 py-8 text-center text-zinc-400">
                                 {{ __('No candidates in offering stage yet.') }}
                             </td>
@@ -216,8 +218,11 @@
 
                 <flux:field>
                     <flux:label>{{ __('File Offering (PDF)') }}</flux:label>
-                    <input type="file" wire:model="offer_file"
+                    <input type="file" wire:model="offer_file" wire:key="offering-file-{{ $editingId ?? 'new' }}" accept=".pdf"
                         class="block w-full text-sm text-zinc-600 dark:text-zinc-300 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-medium file:bg-zinc-100 file:text-zinc-700 hover:file:bg-zinc-200 dark:file:bg-zinc-800 dark:file:text-zinc-300 dark:hover:file:bg-zinc-700 focus:outline-none cursor-pointer" />
+                    <div wire:loading wire:target="offer_file" class="mt-2 text-sm text-brand-500">
+                        {{ __('Uploading...') }}
+                    </div>
                     <flux:error name="offer_file" />
                     @if($editingId && $app_offering = $this->currentOfferingLetter)
                         @if($app_offering->file_path)
@@ -243,7 +248,11 @@
                 <div class="flex justify-end gap-3">
                     <flux:button type="button" variant="ghost" wire:click="$set('showModal', false)">{{ __('Cancel') }}
                     </flux:button>
-                    <flux:button type="submit" variant="primary">{{ __('Save') }}</flux:button>
+                    <flux:button type="submit" variant="primary" wire:loading.attr="disabled"
+                        wire:target="save,offer_file">
+                        <span wire:loading.remove wire:target="save">{{ __('Save') }}</span>
+                        <span wire:loading wire:target="save">{{ __('Saving...') }}</span>
+                    </flux:button>
                 </div>
             </form>
         </div>

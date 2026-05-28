@@ -50,8 +50,10 @@ class UserManagement extends Component
         $this->showModal = true;
     }
 
-    public function openEdit(User $user): void
+    public function openEdit(int $userId): void
     {
+        $user = User::findOrFail($userId);
+
         $this->reset(['password']);
         $this->editingId = $user->id;
         $this->name = $user->name;

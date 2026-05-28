@@ -114,8 +114,10 @@ class PsychotestManagement extends Component
         $this->showModal = true;
     }
 
-    public function openEdit(Psychotest $psychotest): void
+    public function openEdit(int $psychotestId): void
     {
+        $psychotest = Psychotest::findOrFail($psychotestId);
+
         $this->editingId = $psychotest->id;
         $this->application_id = $psychotest->application_id;
         $this->test_date = $psychotest->test_date ? Carbon::parse($psychotest->test_date)->format('Y-m-d') : '';

@@ -592,13 +592,9 @@ class CandidateManagement extends Component
             $query->where('recruitment_stage', RecruitmentStage::APPLIED);
         }
 
-        // On Progress: candidates actively progressing through the pipeline.
+        // On Progress: candidates who passed administration and are waiting for HR interview scheduling.
         if ($this->tab === 'on-progress') {
-            $query->whereNotIn('recruitment_stage', [
-                RecruitmentStage::APPLIED,
-                RecruitmentStage::HIRED,
-                RecruitmentStage::REJECTED,
-            ]);
+            $query->where('recruitment_stage', RecruitmentStage::ADMINISTRASI);
         }
 
         return $query;
