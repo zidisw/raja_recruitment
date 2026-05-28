@@ -235,7 +235,7 @@
         </div>
 
         <div class="flex gap-3">
-            <flux:button variant="primary" href="{{ route('applications.index') }}" wire:navigate icon="document-text">
+            <flux:button variant="primary" href="{{ route('candidates.administrasi') }}" wire:navigate icon="document-text">
                 {{ __('Review Applications') }}
             </flux:button>
             <flux:button variant="ghost" href="{{ route('jobs.index') }}" wire:navigate icon="briefcase">

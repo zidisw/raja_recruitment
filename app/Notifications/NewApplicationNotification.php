@@ -36,7 +36,7 @@ class NewApplicationNotification extends Notification implements ShouldQueue
                 ->subject('Lamaran Baru - '.$this->application->job->title)
                 ->line('Terdapat lamaran baru untuk posisi '.$this->application->job->title.'.')
                 ->line('Kandidat: '.$this->application->candidate->name)
-                ->action('Tinjau Lamaran', url(route('applications.job', $this->application->job_id)))
+                ->action('Tinjau Lamaran', url(route('candidates.administrasi')))
                 ->line('Silakan tinjau lamaran tersebut melalui portal rekrutmen.');
         }
 

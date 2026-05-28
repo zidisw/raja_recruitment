@@ -22,6 +22,10 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->trustProxies(at: '*');
 
+        $middleware->web(append: [
+            \App\Http\Middleware\DisableCache::class,
+        ]);
+
         $middleware->alias([
             'candidate.profile.complete' => \App\Http\Middleware\EnsureCandidateProfileComplete::class,
         ]);

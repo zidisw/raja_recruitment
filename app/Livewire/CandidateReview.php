@@ -91,6 +91,25 @@ class CandidateReview extends Component
         $this->dispatch('notify', ['message' => __('Candidate marked as Not Selected.'), 'type' => 'success']);
     }
 
+    public function getBackUrl(): string
+    {
+        $previous = url()->previous();
+
+        if ($previous && $previous !== url()->current() && str_contains($previous, '/kandidat/')) {
+            return $previous;
+        }
+
+        if ($this->application->recruitment_stage === \App\Enums\RecruitmentStage::APPLIED) {
+            return route('candidates.administrasi');
+        }
+
+        if ($this->application->recruitment_stage->isTerminal()) {
+            return route('candidates.riwayat');
+        }
+
+        return route('candidates.on-progress');
+    }
+
     public function render(): \Illuminate\View\View
     {
         return view('livewire.candidate-review');

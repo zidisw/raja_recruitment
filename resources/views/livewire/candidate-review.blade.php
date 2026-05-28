@@ -9,7 +9,7 @@
             @if(in_array($application->recruitment_stage, [\App\Enums\RecruitmentStage::HR_INTERVIEW, \App\Enums\RecruitmentStage::USER_INTERVIEW]))
                 @livewire('interview-scheduler', ['application' => $application])
             @endif
-            <flux:button href="{{ route('applications.job', $job) }}" wire:navigate variant="ghost" icon="arrow-left"
+            <flux:button href="{{ $this->getBackUrl() }}" wire:navigate variant="ghost" icon="arrow-left"
                 size="sm">
                 {{ __('Back to Applicants') }}
             </flux:button>
