@@ -36,7 +36,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 \Illuminate\Support\Facades\Log::build([
                     'driver' => 'single',
                     'path' => storage_path('logs/csrf_debug.log'),
-                ])->error('Exception caught in handler: ' . get_class($e), [
+                ])->error('Exception caught in handler: '.get_class($e), [
                     'message' => $e->getMessage(),
                     'file' => $e->getFile(),
                     'line' => $e->getLine(),
