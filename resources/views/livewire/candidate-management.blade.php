@@ -73,7 +73,7 @@
             @if ($tab === 'administrasi')
                 <flux:button size="sm" variant="primary" @click="$dispatch('confirm-action', {
                                                 title: 'Loloskan Kandidat Terpilih?',
-                                                description: '{{ count($selectedIds) }} kandidat akan dipindahkan ke tahap On Progress (Interview HR).',
+                                                description: '{{ count($selectedIds) }} kandidat akan dipindahkan ke On Progress dan menunggu jadwal HR Interview.',
                                                 variant: 'info',
                                                 method: 'bulkPassAdministrative',
                                                 confirmLabel: 'Ya, Loloskan Semua'
@@ -146,7 +146,7 @@
                             $isExpanded = $expandedRow === $application->id;
                             $isTerminal = $application->recruitment_stage->isTerminal();
                         @endphp
-                        <tr class="cursor-pointer">
+                        <tr wire:key="candidate-{{ $application->id }}" class="cursor-pointer">
                             @if ($selectionMode)
                                 <td class="w-12 px-4 py-3 text-center" @click.stop>
                                     <flux:checkbox wire:model.live="selectedIds" value="{{ $application->id }}" />
@@ -272,7 +272,7 @@
                                     @if ($tab === 'administrasi')
                                         <flux:button size="sm" variant="ghost" @click="$dispatch('confirm-action', {
                                                                     title: 'Loloskan Kandidat?',
-                                                                    description: 'Kandidat akan masuk ke tahap On Progress (Interview HR).',
+                                                                    description: 'Kandidat akan masuk ke On Progress dan menunggu jadwal HR Interview.',
                                                                     variant: 'info',
                                                                     method: 'passAdministrative',
                                                                     args: [{{ $application->id }}],

@@ -6,8 +6,8 @@ use App\Enums\UserRole;
 use App\Models\Application;
 use App\Models\ApplicationStageLog;
 use App\Models\User;
-use App\Notifications\ApplicationStatusUpdatedNotification;
 use App\Notifications\NewApplicationNotification;
+use App\Services\RecruitmentNotificationService;
 
 class ApplicationObserver
 {
@@ -56,9 +56,9 @@ class ApplicationObserver
     public function updated(Application $application): void
     {
         if ($application->wasChanged('recruitment_stage')) {
-            if ($application->candidate) {
-                $application->candidate->notify(new ApplicationStatusUpdatedNotification($application));
-            }
+            app(RecruitmentNotificationService::class)->notifyStageChanged(
+                $application->fresh(['candidate', 'job']) ?? $application
+            );
         }
     }
 

@@ -71,7 +71,7 @@
                 </thead>
                 <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800 bg-white dark:bg-zinc-900">
                     @forelse ($interviews as $interview)
-                        <tr>
+                        <tr wire:key="interview-{{ $interview->id }}">
                             <td class="px-4 py-3 text-center text-zinc-500 font-medium">
                                 {{ ($interviews->currentPage() - 1) * $interviews->perPage() + $loop->iteration }}
                             </td>

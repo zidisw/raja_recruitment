@@ -16,6 +16,7 @@ use App\Models\Onboarding;
 use App\Models\Psychotest;
 use App\Models\Site;
 use App\Models\User;
+use App\Services\RecruitmentNotificationService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -124,27 +125,19 @@ class CandidateManagement extends Component
     {
         $application = Application::findOrFail($applicationId);
 
-        $oldStage = $application->recruitment_stage->value;
+        $oldStage = $application->recruitment_stage;
 
-        $application->update([
-            'recruitment_stage' => RecruitmentStage::HR_INTERVIEW,
-            'stage_updated_at' => now(),
-        ]);
+        if ($oldStage !== RecruitmentStage::ADMINISTRASI) {
+            $application->update([
+                'recruitment_stage' => RecruitmentStage::ADMINISTRASI,
+                'stage_updated_at' => now(),
+            ]);
 
-        \App\Models\ApplicationStageLog::create([
-            'application_id' => $application->id,
-            'stage' => $oldStage,
-            'decision' => 'passed',
-            'notes' => 'Lolos administrasi',
-            'decided_by' => Auth::id(),
-        ]);
-
-        if ($oldStage !== RecruitmentStage::ADMINISTRASI->value) {
             \App\Models\ApplicationStageLog::create([
                 'application_id' => $application->id,
-                'stage' => RecruitmentStage::ADMINISTRASI->value,
+                'stage' => $oldStage->value,
                 'decision' => 'passed',
-                'notes' => 'Lolos ke tahap HR Interview',
+                'notes' => 'Lolos administrasi',
                 'decided_by' => Auth::id(),
             ]);
         }
@@ -315,18 +308,20 @@ class CandidateManagement extends Component
 
         $nextStage = RecruitmentStage::from($this->bulkStage);
 
-        Application::whereIn('id', $this->selectedIds)->update([
-            'recruitment_stage' => $nextStage,
-            'stage_updated_at' => now(),
-        ]);
-
         $logs = [];
         $now = now();
         $adminId = Auth::id();
         foreach ($applications as $app) {
+            $oldStage = $app->recruitment_stage;
+
+            $app->update([
+                'recruitment_stage' => $nextStage,
+                'stage_updated_at' => $now,
+            ]);
+
             $logs[] = [
                 'application_id' => $app->id,
-                'stage' => $app->recruitment_stage->value,
+                'stage' => $oldStage->value,
                 'decision' => $nextStage === RecruitmentStage::REJECTED ? 'rejected' : 'passed',
                 'notes' => 'Status diubah secara massal via bulk action',
                 'decided_by' => $adminId,
@@ -350,34 +345,25 @@ class CandidateManagement extends Component
         // Pre-fetch old stages so we log the correct stage they passed
         $applications = Application::whereIn('id', $this->selectedIds)->get(['id', 'recruitment_stage']);
 
-        Application::whereIn('id', $this->selectedIds)->update([
-            'recruitment_stage' => RecruitmentStage::HR_INTERVIEW,
-            'stage_updated_at' => now(),
-        ]);
-
         $logs = [];
         $now = now();
         $adminId = Auth::id();
         foreach ($applications as $app) {
+            $oldStage = $app->recruitment_stage;
+
+            $app->update([
+                'recruitment_stage' => RecruitmentStage::ADMINISTRASI,
+                'stage_updated_at' => $now,
+            ]);
+
             $logs[] = [
                 'application_id' => $app->id,
-                'stage' => $app->recruitment_stage->value,
+                'stage' => $oldStage->value,
                 'decision' => 'passed',
                 'notes' => 'Lolos administrasi (massal)',
                 'decided_by' => $adminId,
                 'created_at' => $now,
             ];
-
-            if ($app->recruitment_stage->value !== RecruitmentStage::ADMINISTRASI->value) {
-                $logs[] = [
-                    'application_id' => $app->id,
-                    'stage' => RecruitmentStage::ADMINISTRASI->value,
-                    'decision' => 'passed',
-                    'notes' => 'Lolos masal ke tahap HR Interview',
-                    'decided_by' => $adminId,
-                    'created_at' => $now,
-                ];
-            }
         }
         \App\Models\ApplicationStageLog::insert($logs);
 
@@ -399,18 +385,20 @@ class CandidateManagement extends Component
             return;
         }
 
-        Application::whereIn('id', $this->selectedIds)->update([
-            'recruitment_stage' => RecruitmentStage::REJECTED,
-            'stage_updated_at' => now(),
-        ]);
-
         $logs = [];
         $now = now();
         $adminId = Auth::id();
         foreach ($applications as $app) {
+            $oldStage = $app->recruitment_stage;
+
+            $app->update([
+                'recruitment_stage' => RecruitmentStage::REJECTED,
+                'stage_updated_at' => $now,
+            ]);
+
             $logs[] = [
                 'application_id' => $app->id,
-                'stage' => $app->recruitment_stage->value,
+                'stage' => $oldStage->value,
                 'decision' => 'rejected',
                 'notes' => 'Ditolak masal',
                 'decided_by' => $adminId,
@@ -481,10 +469,14 @@ class CandidateManagement extends Component
     public function openScheduleInterview(int $applicationId): void
     {
         $this->schedulingApplicationId = $applicationId;
-        $this->interviewer_id = null;
-        $this->scheduled_date = '';
-        $this->scheduled_time = '';
-        $this->hr_notes = '';
+        $interview = Interview::where('application_id', $applicationId)
+            ->where('interview_type', 'HR Interview')
+            ->first();
+
+        $this->interviewer_id = $interview?->interviewer_id;
+        $this->scheduled_date = $interview?->scheduled_at?->format('Y-m-d') ?? '';
+        $this->scheduled_time = $interview?->scheduled_at?->format('H:i') ?? '';
+        $this->hr_notes = (string) ($interview?->hr_notes ?? '');
         $this->showScheduleModal = true;
     }
 
@@ -499,15 +491,66 @@ class CandidateManagement extends Component
         ]);
 
         $scheduledAt = Carbon::parse($validated['scheduled_date'].' '.$validated['scheduled_time']);
+        $application = Application::with(['candidate', 'job.department'])->findOrFail($validated['schedulingApplicationId']);
 
-        Interview::create([
-            'application_id' => $validated['schedulingApplicationId'],
-            'interviewer_id' => $validated['interviewer_id'],
-            'interview_type' => 'HR Interview',
-            'status' => 'scheduled',
-            'scheduled_at' => $scheduledAt,
-            'hr_notes' => $validated['hr_notes'],
-        ]);
+        if (! in_array($application->recruitment_stage, [RecruitmentStage::ADMINISTRASI, RecruitmentStage::HR_INTERVIEW], true)) {
+            $this->dispatch('notify', ['message' => __('Kandidat harus sudah lolos administrasi sebelum dijadwalkan HR Interview.'), 'type' => 'error']);
+
+            return;
+        }
+
+        $interview = Interview::updateOrCreate(
+            [
+                'application_id' => $application->id,
+                'interview_type' => 'HR Interview',
+            ],
+            [
+                'interviewer_id' => $validated['interviewer_id'],
+                'status' => 'scheduled',
+                'scheduled_at' => $scheduledAt,
+                'hr_notes' => $validated['hr_notes'],
+            ]
+        );
+
+        if ($application->recruitment_stage !== RecruitmentStage::HR_INTERVIEW) {
+            $oldStage = $application->recruitment_stage;
+
+            $application->update([
+                'recruitment_stage' => RecruitmentStage::HR_INTERVIEW,
+                'stage_updated_at' => now(),
+            ]);
+
+            ApplicationStageLog::create([
+                'application_id' => $application->id,
+                'stage' => $oldStage->value,
+                'decision' => 'passed',
+                'notes' => 'HR Interview dijadwalkan',
+                'decided_by' => Auth::id(),
+            ]);
+        }
+
+        app(RecruitmentNotificationService::class)->notifyDatabaseAndMail(
+            $application->candidate,
+            __('Jadwal Interview HR'),
+            __('Interview HR untuk posisi :job dijadwalkan pada :date.', [
+                'job' => $application->job->title,
+                'date' => $scheduledAt->format('d M Y H:i'),
+            ]),
+            route('candidate.applications'),
+            'interview_scheduled'
+        );
+
+        app(RecruitmentNotificationService::class)->notifyDatabaseAndMail(
+            $interview->interviewer,
+            __('Jadwal Interview HR'),
+            __('Anda ditugaskan mewawancarai :candidate untuk posisi :job pada :date.', [
+                'candidate' => $application->candidate->name,
+                'job' => $application->job->title,
+                'date' => $scheduledAt->format('d M Y H:i'),
+            ]),
+            route('interviews.hr'),
+            'interview_scheduled'
+        );
 
         $this->showScheduleModal = false;
         $this->dispatch('notify', ['message' => __('HR Interview scheduled successfully.'), 'type' => 'success']);
@@ -546,10 +589,7 @@ class CandidateManagement extends Component
 
         // Administrasi: candidates still in admin screening (already applied).
         if ($this->tab === 'administrasi') {
-            $query->whereIn('recruitment_stage', [
-                RecruitmentStage::APPLIED,
-                RecruitmentStage::ADMINISTRASI,
-            ]);
+            $query->where('recruitment_stage', RecruitmentStage::APPLIED);
         }
 
         // On Progress: candidates actively progressing through the pipeline.

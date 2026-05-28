@@ -3,15 +3,11 @@
 namespace App\Notifications;
 
 use App\Models\Application;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class ApplicationStatusUpdatedNotification extends Notification implements ShouldQueue
+class ApplicationStatusUpdatedNotification extends Notification
 {
-    use Queueable;
-
     public $application;
 
     public function __construct(Application $application)
@@ -21,8 +17,7 @@ class ApplicationStatusUpdatedNotification extends Notification implements Shoul
 
     public function via(object $notifiable): array
     {
-        // Mail is sent explicitly in CandidateReview via ApplicationStatusChanged (supports templates).
-        // Only persist to the database here for the in-app notification bell.
+        // Mail is sent by ApplicationStatusChanged so custom email templates stay supported.
         return ['database'];
     }
 

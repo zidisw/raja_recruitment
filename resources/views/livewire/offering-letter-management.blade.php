@@ -36,7 +36,8 @@
         '' => __('All status'),
         'none' => __('No offering yet'),
         'waiting_response' => __('Waiting Response'),
-        'accepted' => __('Accepted'),
+        'signed' => __('Signed by Candidate'),
+        'accepted' => __('Accepted / Validated'),
         'rejected' => __('Rejected'),
     ]" />
             </flux:field>
@@ -87,6 +88,7 @@
                                     @php
                                         $statusColors = [
                                             'waiting_response' => 'text-amber-600 bg-amber-50 border-amber-200 dark:bg-amber-900/20 dark:border-amber-800/50 dark:text-amber-400',
+                                            'signed' => 'text-blue-600 bg-blue-50 border-blue-200 dark:bg-blue-900/20 dark:border-blue-800/50 dark:text-blue-400',
                                             'accepted' => 'text-emerald-600 bg-emerald-50 border-emerald-200 dark:bg-emerald-900/20 dark:border-emerald-800/50 dark:text-emerald-400',
                                             'rejected' => 'text-red-600 bg-red-50 border-red-200 dark:bg-red-900/20 dark:border-red-800/50 dark:text-red-400',
                                         ];
@@ -107,9 +109,17 @@
                                         @if($app->offeringLetter->file_path)
                                             <a href="{{ Storage::url($app->offeringLetter->file_path) }}" target="_blank"
                                                 class="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm text-zinc-500 hover:text-brand-500 transition-colors"
-                                                title="{{ __('Lihat File OL') }}">
+                                               title="{{ __('Lihat File OL') }}">
                                                 <flux:icon.document-text class="size-4" />
-                                                {{ __('Lihat File') }}
+                                                {{ __('File OL Admin') }}
+                                            </a>
+                                        @endif
+                                        @if($app->offeringLetter->signed_file_path)
+                                            <a href="{{ Storage::url($app->offeringLetter->signed_file_path) }}" target="_blank"
+                                                class="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-sm text-emerald-600 hover:text-emerald-700 transition-colors"
+                                                title="{{ __('Lihat OL Tertandatangan') }}">
+                                                <flux:icon.document-text class="size-4" />
+                                                {{ __('File Signed') }}
                                             </a>
                                         @endif
 
@@ -130,14 +140,49 @@
                         @if ($expandedRow === $app->id)
                             <tr wire:key="offering-candidate-{{ $app->id }}-expanded" wire:transition.opacity.duration.200ms
                                 class="bg-zinc-50/50 dark:bg-zinc-800/30">
-                                <td colspan="6" class="px-6 py-4">
+                                <td colspan="7" class="px-6 py-4">
                                     <x-candidate-expanded-row :application="$app" />
+                                    @if($app->offeringLetter)
+                                        <div class="mt-4 grid gap-3 border-t border-zinc-200 pt-4 text-sm dark:border-zinc-700 sm:grid-cols-2">
+                                            <div>
+                                                <p class="text-xs font-medium uppercase tracking-wide text-zinc-400">
+                                                    {{ __('File Offering dari Admin') }}
+                                                </p>
+                                                @if($app->offeringLetter->file_path)
+                                                    <a href="{{ Storage::url($app->offeringLetter->file_path) }}" target="_blank"
+                                                        class="mt-1 inline-flex items-center gap-1 text-brand-500 hover:underline">
+                                                        <flux:icon.document-text class="size-4" />
+                                                        {{ __('Buka file OL awal') }}
+                                                    </a>
+                                                @else
+                                                    <p class="mt-1 text-zinc-400">{{ __('Belum ada file') }}</p>
+                                                @endif
+                                            </div>
+                                            <div>
+                                                <p class="text-xs font-medium uppercase tracking-wide text-zinc-400">
+                                                    {{ __('File OL Tertandatangan Kandidat') }}
+                                                </p>
+                                                @if($app->offeringLetter->signed_file_path)
+                                                    <a href="{{ Storage::url($app->offeringLetter->signed_file_path) }}" target="_blank"
+                                                        class="mt-1 inline-flex items-center gap-1 text-emerald-600 hover:underline">
+                                                        <flux:icon.document-text class="size-4" />
+                                                        {{ __('Buka file signed') }}
+                                                    </a>
+                                                    <p class="mt-1 text-xs text-zinc-400">
+                                                        {{ __('Diunggah:') }} {{ $app->offeringLetter->signed_at?->format('d M Y H:i') ?? '-' }}
+                                                    </p>
+                                                @else
+                                                    <p class="mt-1 text-zinc-400">{{ __('Belum diunggah kandidat') }}</p>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @endif
                                 </td>
                             </tr>
                         @endif
                     @empty
-                        <tr>
-                            <td colspan="6" class="px-6 py-8 text-center text-zinc-400">
+                        <tr wire:key="offering-{{ $app->id }}">
+                            <td colspan="7" class="px-6 py-8 text-center text-zinc-400">
                                 {{ __('No candidates in offering stage yet.') }}
                             </td>
                         </tr>
@@ -180,7 +225,16 @@
                                 <a href="{{ Storage::url($app_offering->file_path) }}" target="_blank"
                                     class="text-brand-500 hover:underline inline-flex items-center gap-1">
                                     <flux:icon.document-text class="size-3" />
-                                    {{ __('Lihat file saat ini') }}
+                                    {{ __('Lihat file OL awal dari admin') }}
+                                </a>
+                            </div>
+                        @endif
+                        @if($app_offering->signed_file_path)
+                            <div class="mt-2 text-xs">
+                                <a href="{{ Storage::url($app_offering->signed_file_path) }}" target="_blank"
+                                    class="text-emerald-600 hover:underline inline-flex items-center gap-1">
+                                    <flux:icon.document-text class="size-3" />
+                                    {{ __('Lihat file OL tertandatangan kandidat') }}
                                 </a>
                             </div>
                         @endif

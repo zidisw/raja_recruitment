@@ -3,6 +3,7 @@
 use App\Enums\RecruitmentStage;
 use App\Enums\UserRole;
 use App\Livewire\Candidate\JobPortal;
+use App\Livewire\Candidate\MyApplications;
 use App\Livewire\Candidate\ProfileSetup;
 use App\Livewire\CandidateManagement;
 use App\Livewire\InterviewManagement;
@@ -141,7 +142,7 @@ test('candidate can move end to end from profile setup to hired', function () {
         ->assertHasNoErrors();
 
     $application->refresh();
-    expect($application->recruitment_stage)->toBe(RecruitmentStage::HR_INTERVIEW);
+    expect($application->recruitment_stage)->toBe(RecruitmentStage::ADMINISTRASI);
 
     Livewire::actingAs($admin)
         ->test(CandidateManagement::class, ['tab' => 'on-progress'])
@@ -156,6 +157,9 @@ test('candidate can move end to end from profile setup to hired', function () {
     $hrInterview = Interview::where('application_id', $application->id)
         ->where('interview_type', 'HR Interview')
         ->firstOrFail();
+
+    $application->refresh();
+    expect($application->recruitment_stage)->toBe(RecruitmentStage::HR_INTERVIEW);
 
     Livewire::actingAs($admin)
         ->test(InterviewManagement::class, ['tab' => 'hr'])
@@ -198,14 +202,34 @@ test('candidate can move end to end from profile setup to hired', function () {
         ->test(OfferingLetterManagement::class)
         ->call('openCreate', $application->id)
         ->set('offer_date', now()->toDateString())
-        ->set('status', 'accepted')
+        ->set('status', 'waiting_response')
         ->set('offer_file', UploadedFile::fake()->create('offering.pdf', 80, 'application/pdf'))
         ->call('save')
         ->assertHasNoErrors();
 
     $application->refresh();
-    expect($application->recruitment_stage)->toBe(RecruitmentStage::PSYCHOTEST);
+    expect($application->recruitment_stage)->toBe(RecruitmentStage::OFFERING);
     expect(OfferingLetter::where('application_id', $application->id)->exists())->toBeTrue();
+
+    Livewire::actingAs($candidate)
+        ->test(MyApplications::class)
+        ->set('signed_ol_file', UploadedFile::fake()->create('offering-signed.pdf', 80, 'application/pdf'))
+        ->call('uploadSignedOL', $application->id)
+        ->assertHasNoErrors();
+
+    $offering = OfferingLetter::where('application_id', $application->id)->firstOrFail();
+    expect($offering->signed_file_path)->not->toBeNull()
+        ->and($offering->status)->toBe('signed');
+
+    Livewire::actingAs($admin)
+        ->test(OfferingLetterManagement::class)
+        ->call('openEdit', $offering)
+        ->set('status', 'accepted')
+        ->call('save')
+        ->assertHasNoErrors();
+
+    $application->refresh();
+    expect($application->recruitment_stage)->toBe(RecruitmentStage::PSYCHOTEST);
 
     Livewire::actingAs($admin)
         ->test(PsychotestManagement::class)

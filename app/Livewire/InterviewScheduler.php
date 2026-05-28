@@ -6,11 +6,11 @@ namespace App\Livewire;
 
 use App\Enums\RecruitmentStage;
 use App\Enums\UserRole;
-use App\Mail\InterviewInvitationMail;
 use App\Models\Application;
+use App\Models\ApplicationStageLog;
 use App\Models\Interview;
 use App\Models\User;
-use Illuminate\Support\Facades\Mail;
+use App\Services\RecruitmentNotificationService;
 use Illuminate\Validation\Rule;
 use Livewire\Component;
 
@@ -31,11 +31,13 @@ class InterviewScheduler extends Component
     public function mount(Application $application)
     {
         $this->application = $application;
-        if ($this->application->interview) {
-            $this->interviewer_id = $this->application->interview->interviewer_id;
-            $this->scheduled_date = $this->application->interview->scheduled_at->format('Y-m-d');
-            $this->scheduled_time = $this->application->interview->scheduled_at->format('H:i');
-            $this->meeting_link = $this->application->interview->meeting_link;
+        $interview = $this->currentInterview();
+
+        if ($interview) {
+            $this->interviewer_id = $interview->interviewer_id;
+            $this->scheduled_date = $interview->scheduled_at->format('Y-m-d');
+            $this->scheduled_time = $interview->scheduled_at->format('H:i');
+            $this->meeting_link = $interview->meeting_link;
         }
     }
 
@@ -52,9 +54,10 @@ class InterviewScheduler extends Component
     private function isValidInterviewStatus(): bool
     {
         return in_array($this->application->recruitment_stage, [
+            RecruitmentStage::ADMINISTRASI,
             RecruitmentStage::HR_INTERVIEW,
             RecruitmentStage::USER_INTERVIEW,
-        ]);
+        ], true);
     }
 
     public function saveSchedule()
@@ -81,10 +84,15 @@ class InterviewScheduler extends Component
         ]);
 
         $scheduledAt = $this->scheduled_date.' '.$this->scheduled_time.':00';
+        $interviewType = $this->targetInterviewType();
 
         $interview = Interview::updateOrCreate(
-            ['application_id' => $this->application->id],
             [
+                'application_id' => $this->application->id,
+                'interview_type' => $interviewType,
+            ],
+            [
+                'interview_type' => $interviewType,
                 'interviewer_id' => $this->interviewer_id,
                 'scheduled_at' => $scheduledAt,
                 'meeting_link' => $this->meeting_link,
@@ -92,22 +100,76 @@ class InterviewScheduler extends Component
             ]
         );
 
-        // Send Email to Candidate and Interviewer
-        try {
-            Mail::to($this->application->candidate->email)->send(
-                new InterviewInvitationMail($interview, 'candidate')
-            );
-            Mail::to($interview->interviewer->email)->send(
-                new InterviewInvitationMail($interview, 'interviewer')
-            );
-            $this->dispatch('notify', ['message' => __('Interview scheduled and invitation emails sent!'), 'type' => 'success']);
-        } catch (\Throwable $e) {
-            $this->dispatch('notify', ['message' => __('Interview scheduled, but failed to send email.'), 'type' => 'error']);
+        if ($interviewType === 'HR Interview' && $this->application->recruitment_stage !== RecruitmentStage::HR_INTERVIEW) {
+            $oldStage = $this->application->recruitment_stage;
+            $this->application->update([
+                'recruitment_stage' => RecruitmentStage::HR_INTERVIEW,
+                'stage_updated_at' => now(),
+            ]);
+
+            ApplicationStageLog::create([
+                'application_id' => $this->application->id,
+                'stage' => $oldStage->value,
+                'decision' => 'passed',
+                'notes' => 'HR Interview dijadwalkan',
+                'decided_by' => auth()->id() ?? $this->application->user_id,
+            ]);
         }
+
+        $this->notifyInterviewScheduled($interview);
 
         $this->application->refresh();
         $this->showModal = false;
         $this->dispatch('interview-scheduled');
+        $this->dispatch('notify', ['message' => __('Interview scheduled and invitations sent.'), 'type' => 'success']);
+    }
+
+    private function currentInterview(): ?Interview
+    {
+        return $this->application->interviews()
+            ->where('interview_type', $this->targetInterviewType())
+            ->first();
+    }
+
+    private function targetInterviewType(): string
+    {
+        return $this->application->recruitment_stage === RecruitmentStage::USER_INTERVIEW
+            ? 'User Interview'
+            : 'HR Interview';
+    }
+
+    private function notifyInterviewScheduled(Interview $interview): void
+    {
+        $interview->loadMissing(['application.candidate', 'application.job', 'interviewer']);
+        $application = $interview->application;
+        $type = $interview->interview_type === 'User Interview' ? __('Interview User') : __('Interview HR');
+        $route = $interview->interview_type === 'User Interview' ? route('interviews.user') : route('interviews.hr');
+
+        app(RecruitmentNotificationService::class)->notifyDatabaseAndMail(
+            $application->candidate,
+            __('Jadwal :type', ['type' => $type]),
+            __(':type untuk posisi :job dijadwalkan pada :date.', [
+                'type' => $type,
+                'job' => $application->job->title,
+                'date' => $interview->scheduled_at?->format('d M Y H:i'),
+            ]),
+            route('candidate.applications'),
+            'interview_scheduled'
+        );
+
+        if ($interview->interviewer) {
+            app(RecruitmentNotificationService::class)->notifyDatabaseAndMail(
+                $interview->interviewer,
+                __('Jadwal :type', ['type' => $type]),
+                __('Anda ditugaskan mewawancarai :candidate untuk posisi :job pada :date.', [
+                    'candidate' => $application->candidate->name,
+                    'job' => $application->job->title,
+                    'date' => $interview->scheduled_at?->format('d M Y H:i'),
+                ]),
+                $route,
+                'interview_scheduled'
+            );
+        }
     }
 
     public function render()

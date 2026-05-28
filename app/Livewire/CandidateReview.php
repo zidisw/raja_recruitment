@@ -8,7 +8,6 @@ use App\Enums\RecruitmentStage;
 use App\Models\Application;
 use App\Models\ApplicationStageLog;
 use App\Models\Job;
-use App\Notifications\ApplicationStatusChanged;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
@@ -58,14 +57,6 @@ class CandidateReview extends Component
             'recruitment_stage' => $nextStage,
             'stage_updated_at' => now(),
         ]);
-
-        try {
-            $this->application->candidate->notify(
-                new ApplicationStatusChanged($this->application->fresh(['job']))
-            );
-        } catch (\Throwable) {
-            // Notification failure should not block the decision
-        }
 
         $this->notes = '';
         $this->application->refresh()->load(['candidate.profile', 'candidate.education', 'candidate.experiences', 'candidate.organizations', 'job', 'stageLogs.decidedBy', 'psychotest', 'mcu']);

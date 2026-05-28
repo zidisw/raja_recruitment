@@ -229,6 +229,7 @@
                             @php
                                 $stageColors = [
                                     'APPLIED' => 'zinc',
+                                    'ADMINISTRASI' => 'sky',
                                     'HR_INTERVIEW' => 'yellow',
                                     'USER_INTERVIEW' => 'orange',
                                     'PSYCHOTEST' => 'purple',

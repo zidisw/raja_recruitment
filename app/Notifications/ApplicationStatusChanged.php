@@ -24,7 +24,9 @@ class ApplicationStatusChanged extends Notification
         $stage = $this->application->recruitment_stage;
 
         // Try to use a custom email template for this stage and job level
-        $jobLevel = $job->level->value ?? 'staff'; // e.g. 'staff' or 'non_staff'
+        $jobLevel = is_object($job->level ?? null)
+            ? ($job->level->value ?? 'staff')
+            : (string) ($job->level ?? 'staff');
         $template = EmailTemplate::where('stage', $stage->value)
             ->where('job_level', $jobLevel)
             ->first()

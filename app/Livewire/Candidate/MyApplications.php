@@ -7,6 +7,8 @@ namespace App\Livewire\Candidate;
 use App\Enums\OfferingStatus;
 use App\Enums\RecruitmentStage;
 use App\Models\Application;
+use App\Models\ApplicationStageLog;
+use App\Services\RecruitmentNotificationService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
@@ -67,13 +69,20 @@ class MyApplications extends Component
             return;
         }
 
-        $offering->update(['status' => OfferingStatus::ACCEPTED->value]);
-        $application->update([
-            'recruitment_stage' => RecruitmentStage::PSYCHOTEST,
-            'stage_updated_at' => now(),
-        ]);
+        $offering->update(['status' => OfferingStatus::SIGNED->value]);
 
-        $this->dispatch('notify', ['message' => __('Selamat! Anda telah menerima penawaran pekerjaan ini.'), 'type' => 'success']);
+        app(RecruitmentNotificationService::class)->notifyDatabaseAndMail(
+            app(RecruitmentNotificationService::class)->recruitmentManagers($application->job?->department_id),
+            __('Offering Letter Menunggu Validasi'),
+            __(':candidate sudah mengonfirmasi Offering Letter untuk posisi :job. Silakan validasi dari menu Offering Letter.', [
+                'candidate' => $application->candidate->name,
+                'job' => $application->job->title,
+            ]),
+            route('offering.index'),
+            'offering_letter_signed'
+        );
+
+        $this->dispatch('notify', ['message' => __('Offering Letter sudah dikirim ke admin untuk validasi.'), 'type' => 'success']);
     }
 
     public function rejectOffer(int $applicationId): void
@@ -94,10 +103,31 @@ class MyApplications extends Component
         }
 
         $offering->update(['status' => OfferingStatus::REJECTED->value]);
+        $oldStage = $application->recruitment_stage;
+
         $application->update([
             'recruitment_stage' => RecruitmentStage::REJECTED,
             'stage_updated_at' => now(),
         ]);
+
+        ApplicationStageLog::create([
+            'application_id' => $application->id,
+            'stage' => $oldStage->value,
+            'decision' => 'rejected',
+            'notes' => 'Kandidat menolak Offering Letter',
+            'decided_by' => Auth::id(),
+        ]);
+
+        app(RecruitmentNotificationService::class)->notifyDatabaseAndMail(
+            app(RecruitmentNotificationService::class)->recruitmentManagers($application->job?->department_id),
+            __('Offering Letter Ditolak'),
+            __(':candidate menolak Offering Letter untuk posisi :job.', [
+                'candidate' => $application->candidate->name,
+                'job' => $application->job->title,
+            ]),
+            route('offering.index'),
+            'offering_letter_rejected'
+        );
 
         $this->dispatch('notify', ['message' => __('Anda telah menolak penawaran pekerjaan ini.'), 'type' => 'info']);
     }
@@ -124,8 +154,20 @@ class MyApplications extends Component
             $offering->update([
                 'signed_file_path' => $signed_path,
                 'signed_at' => now(),
+                'status' => OfferingStatus::SIGNED->value,
             ]);
         }
+
+        app(RecruitmentNotificationService::class)->notifyDatabaseAndMail(
+            app(RecruitmentNotificationService::class)->recruitmentManagers($application->job?->department_id),
+            __('Offering Letter Sudah Ditandatangani'),
+            __(':candidate mengunggah Offering Letter tertandatangan untuk posisi :job.', [
+                'candidate' => $application->candidate->name,
+                'job' => $application->job->title,
+            ]),
+            route('offering.index'),
+            'offering_letter_signed'
+        );
 
         $this->signed_ol_file = null;
         $this->uploadingForApplicationId = null;

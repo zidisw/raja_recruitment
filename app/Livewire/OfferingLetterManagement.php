@@ -11,6 +11,7 @@ use App\Models\ApplicationStageLog;
 use App\Models\Department;
 use App\Models\OfferingLetter;
 use App\Models\Site;
+use App\Services\RecruitmentNotificationService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -117,11 +118,21 @@ class OfferingLetterManagement extends Component
         $rules = [
             'application_id' => ['required', 'exists:applications,id'],
             'offer_date' => ['required', 'date'],
-            'status' => ['required', 'in:waiting_response,accepted,rejected'],
+            'status' => ['required', 'in:waiting_response,signed,accepted,rejected'],
             'offer_file' => [$this->editingId ? 'nullable' : 'required', 'file', 'mimes:pdf', 'max:5120'],
         ];
 
         $validated = $this->validate($rules);
+        $existingOffering = OfferingLetter::where('application_id', $validated['application_id'])->first();
+
+        if (
+            $validated['status'] === OfferingStatus::ACCEPTED->value
+            && ! $existingOffering?->signed_file_path
+        ) {
+            $this->dispatch('notify', ['message' => __('Kandidat harus mengunggah OL tertandatangan sebelum admin memvalidasi penawaran.'), 'type' => 'error']);
+
+            return;
+        }
 
         $data = [
             'application_id' => $validated['application_id'],
@@ -147,7 +158,6 @@ class OfferingLetterManagement extends Component
         } elseif ($validated['status'] === OfferingStatus::REJECTED->value) {
             $targetStage = RecruitmentStage::REJECTED;
         } else {
-            // waiting_response
             $targetStage = RecruitmentStage::OFFERING;
         }
 
@@ -164,6 +174,18 @@ class OfferingLetterManagement extends Component
                 'notes' => 'Offering status: '.str_replace('_', ' ', $validated['status']),
                 'decided_by' => Auth::id() ?? $application->user_id,
             ]);
+        }
+
+        if ($offering->wasRecentlyCreated || $this->offer_file) {
+            app(RecruitmentNotificationService::class)->notifyDatabaseAndMail(
+                $application->candidate,
+                __('Offering Letter Tersedia'),
+                __('Offering Letter untuk posisi :job sudah tersedia. Silakan buka portal kandidat untuk membaca dan mengunggah dokumen yang sudah ditandatangani.', [
+                    'job' => $application->job->title,
+                ]),
+                route('candidate.applications'),
+                'offering_letter_sent'
+            );
         }
 
         $this->showModal = false;
@@ -210,8 +232,10 @@ class OfferingLetterManagement extends Component
         return view('livewire.offering-letter-management', [
             'applications_paginated' => $query->paginate($this->perPage),
             'applications' => Application::with(['candidate', 'job'])
-                ->whereIn('recruitment_stage', [RecruitmentStage::OFFERING, RecruitmentStage::PSYCHOTEST])
-                ->orWhereHas('offeringLetter')
+                ->where(function ($query): void {
+                    $query->whereIn('recruitment_stage', [RecruitmentStage::OFFERING, RecruitmentStage::PSYCHOTEST])
+                        ->orWhereHas('offeringLetter');
+                })
                 ->get(),
             'statuses' => OfferingStatus::cases(),
             'departments' => Cache::remember('ref.departments', 300, fn () => Department::query()->orderBy('name')->get(['id', 'name'])),

@@ -12,6 +12,7 @@ use App\Models\Department;
 use App\Models\Interview;
 use App\Models\Site;
 use App\Models\User;
+use App\Services\RecruitmentNotificationService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
@@ -288,7 +289,13 @@ class InterviewManagement extends Component
                 return;
             }
 
-            $interview = Interview::create($payload);
+            $interview = Interview::updateOrCreate(
+                [
+                    'application_id' => $validated['application_id'],
+                    'interview_type' => $validated['interview_type'],
+                ],
+                $payload
+            );
         }
 
         if ($this->evaluation_file) {
@@ -302,6 +309,7 @@ class InterviewManagement extends Component
         }
 
         $this->syncApplicationStage($interview);
+        $this->notifyInterviewScheduled($interview);
 
         $this->showModal = false;
         $this->resetForm();
@@ -416,6 +424,44 @@ class InterviewManagement extends Component
                     );
                 }
             }
+        }
+    }
+
+    private function notifyInterviewScheduled(Interview $interview): void
+    {
+        if ($interview->status !== 'scheduled') {
+            return;
+        }
+
+        $interview->loadMissing(['application.candidate', 'application.job', 'interviewer']);
+        $application = $interview->application;
+        $type = $interview->interview_type === 'User Interview' ? __('Interview User') : __('Interview HR');
+        $route = $interview->interview_type === 'User Interview' ? route('interviews.user') : route('interviews.hr');
+
+        app(RecruitmentNotificationService::class)->notifyDatabaseAndMail(
+            $application->candidate,
+            __('Jadwal :type', ['type' => $type]),
+            __(':type untuk posisi :job dijadwalkan pada :date.', [
+                'type' => $type,
+                'job' => $application->job->title,
+                'date' => $interview->scheduled_at?->format('d M Y H:i'),
+            ]),
+            route('candidate.applications'),
+            'interview_scheduled'
+        );
+
+        if ($interview->interviewer) {
+            app(RecruitmentNotificationService::class)->notifyDatabaseAndMail(
+                $interview->interviewer,
+                __('Jadwal :type', ['type' => $type]),
+                __('Anda ditugaskan mewawancarai :candidate untuk posisi :job pada :date.', [
+                    'candidate' => $application->candidate->name,
+                    'job' => $application->job->title,
+                    'date' => $interview->scheduled_at?->format('d M Y H:i'),
+                ]),
+                $route,
+                'interview_scheduled'
+            );
         }
     }
 

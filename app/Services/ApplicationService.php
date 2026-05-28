@@ -43,11 +43,11 @@ class ApplicationService
             ApplicationStageLog::insert($chunk);
         }
 
-        // Batch update applications
-        Application::whereIn('id', $applicationIds)->update([
-            'recruitment_stage' => RecruitmentStage::REJECTED,
-            'status' => RecruitmentStage::REJECTED->toInt(),
-            'stage_updated_at' => $now,
-        ]);
+        foreach ($applications as $application) {
+            $application->update([
+                'recruitment_stage' => RecruitmentStage::REJECTED,
+                'stage_updated_at' => $now,
+            ]);
+        }
     }
 }

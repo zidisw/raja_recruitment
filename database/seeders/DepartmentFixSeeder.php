@@ -54,14 +54,14 @@ class DepartmentFixSeeder extends Seeder
             ->whereNotIn('department', $allowedNames)
             ->update(['department' => 'HRGA']);
 
-        // 3. Move ADMIN_REVIEW to HR_INTERVIEW
+        // 3. Normalize legacy ADMIN_REVIEW to ADMINISTRASI
         try {
-            DB::table('applications')->where('recruitment_stage', 'ADMIN_REVIEW')->update(['recruitment_stage' => 'HR_INTERVIEW']);
+            DB::table('applications')->where('recruitment_stage', 'ADMIN_REVIEW')->update(['recruitment_stage' => 'ADMINISTRASI']);
         } catch (\Exception $e) {
         }
 
         try {
-            DB::statement("UPDATE application_stage_logs SET stage = 'HR_INTERVIEW' WHERE stage = 'ADMIN_REVIEW'");
+            DB::statement("UPDATE application_stage_logs SET stage = 'ADMINISTRASI' WHERE stage = 'ADMIN_REVIEW'");
         } catch (\Exception $e) {
         }
     }

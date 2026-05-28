@@ -231,21 +231,6 @@
                                     @else
                                         <span class="text-sm text-zinc-500 italic">{{ __('Dokumen sedang disiapkan...') }}</span>
                                     @endif
-
-                                    <div class="flex items-center gap-2">
-                                        <flux:modal.trigger name="reject-offer-{{ $application->id }}">
-                                            <flux:button variant="ghost" size="sm"
-                                                class="text-red-600 hover:text-red-700 hover:bg-red-50">
-                                                {{ __('Tolak') }}
-                                            </flux:button>
-                                        </flux:modal.trigger>
-
-                                        <flux:modal.trigger name="accept-offer-{{ $application->id }}">
-                                            <flux:button variant="primary" size="sm" class="bg-emerald-600 hover:bg-emerald-700">
-                                                {{ __('Terima Penawaran') }}
-                                            </flux:button>
-                                        </flux:modal.trigger>
-                                    </div>
                                 </div>
                                 <div class="flex flex-col gap-4">
                                     {{-- Original OL Download --}}
@@ -274,6 +259,9 @@
                                                 <flux:icon.check-circle class="size-4" />
                                                 <span>{{ __('OL yang sudah ditandatangani telah diunggah') }}</span>
                                             </div>
+                                            <p class="mt-1 text-xs text-zinc-500 dark:text-zinc-400">
+                                                {{ __('Menunggu validasi admin.') }}
+                                            </p>
                                             <a href="{{ Storage::url($application->offeringLetter->signed_file_path) }}" target="_blank"
                                                 class="inline-flex items-center gap-1 mt-2 text-xs text-green-600 dark:text-green-400 hover:underline">
                                                 <flux:icon.document-text class="size-3" />
@@ -327,14 +315,13 @@
                                         </flux:modal.trigger>
 
                                         @if($application->offeringLetter->signed_file_path)
-                                            <flux:modal.trigger name="accept-offer-{{ $application->id }}">
-                                                <flux:button variant="primary" size="sm" class="bg-emerald-600 hover:bg-emerald-700">
-                                                    {{ __('Terima Penawaran') }}
-                                                </flux:button>
-                                            </flux:modal.trigger>
+                                            <span
+                                                class="inline-flex items-center rounded-lg bg-emerald-50 px-3 py-1.5 text-sm font-medium text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-300">
+                                                {{ __('Menunggu Validasi Admin') }}
+                                            </span>
                                         @else
                                             <flux:button variant="primary" size="sm" disabled class="opacity-50 cursor-not-allowed">
-                                                {{ __('Terima Penawaran') }}
+                                                {{ __('Upload Signed OL Dulu') }}
                                             </flux:button>
                                         @endif
                                     </div>

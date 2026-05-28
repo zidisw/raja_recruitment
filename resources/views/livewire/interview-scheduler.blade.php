@@ -2,7 +2,7 @@
     <flux:dropdown position="bottom" align="end">
         <button class="px-4 py-2 bg-linear-to-r from-brand-500 to-brand-600 text-white rounded-xl shadow-[0_8px_30px_rgba(245,166,35,0.3)] hover:shadow-[0_8px_30px_rgba(245,166,35,0.5)] transition-all font-semibold flex items-center gap-2 cursor-pointer border-none outline-none">
             <flux:icon.calendar class="size-4" />
-            {{ $application->interview ? __('Reschedule Interview') : __('Schedule Interview') }}
+            {{ $application->interviews()->exists() ? __('Reschedule Interview') : __('Schedule Interview') }}
         </button>
 
         <flux:menu class="w-80" style="display: none;">
