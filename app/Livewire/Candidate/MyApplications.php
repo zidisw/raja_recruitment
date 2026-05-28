@@ -8,11 +8,13 @@ use App\Enums\OfferingStatus;
 use App\Enums\RecruitmentStage;
 use App\Models\Application;
 use App\Models\ApplicationStageLog;
+use App\Models\User;
 use App\Services\RecruitmentNotificationService;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Url;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
@@ -28,11 +30,13 @@ class MyApplications extends Component
 
     public ?int $uploadingForApplicationId = null;
 
-    public $signed_ol_file = null;
+    public ?TemporaryUploadedFile $signed_ol_file = null;
 
     public function mount(): void
     {
-        abort_unless(Auth::user()?->hasUserRole(), 403);
+        $user = Auth::user();
+
+        abort_unless($user instanceof User && $user->hasUserRole(), 403);
     }
 
     public function updatingSearch(): void

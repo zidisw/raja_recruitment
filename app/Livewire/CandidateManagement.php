@@ -72,7 +72,7 @@ class CandidateManagement extends Component
 
     public function mount(string $tab = 'administrasi'): void
     {
-        abort_unless(Auth::user()?->canAccessRecruitment(), 403);
+        abort_unless($this->currentUser()->canAccessRecruitment(), 403);
 
         if (in_array($tab, ['administrasi', 'on-progress', 'riwayat'])) {
             $this->tab = $tab;
@@ -149,7 +149,7 @@ class CandidateManagement extends Component
     {
         $application = Application::findOrFail($applicationId);
 
-        if ($application->recruitment_stage->isTerminal() && ! Auth::user()->isSuperAdmin()) {
+        if ($application->recruitment_stage->isTerminal() && ! $this->currentUser()->isSuperAdmin()) {
             abort(403, 'Hanya superadmin yang dapat mengubah status untuk kandidat yang sudah berada di log terminal (Rejected/Hired).');
         }
 
@@ -173,7 +173,7 @@ class CandidateManagement extends Component
 
     public function deleteApplication(int $applicationId): void
     {
-        if (! Auth::user()?->isSuperAdmin()) {
+        if (! $this->currentUser()->isSuperAdmin()) {
             abort(403, 'Hanya superadmin yang dapat menghapus data kandidat dari riwayat.');
         }
 
@@ -198,7 +198,7 @@ class CandidateManagement extends Component
     {
         $application = Application::findOrFail($applicationId);
 
-        if ($application->recruitment_stage->isTerminal() && ! Auth::user()->isSuperAdmin()) {
+        if ($application->recruitment_stage->isTerminal() && ! $this->currentUser()->isSuperAdmin()) {
             abort(403, 'Hanya superadmin yang dapat mengubah status untuk kandidat yang sudah berada di log terminal (Rejected/Hired).');
         }
 
@@ -300,7 +300,7 @@ class CandidateManagement extends Component
 
         $applications = Application::whereIn('id', $this->selectedIds)->get(['id', 'recruitment_stage']);
 
-        if (! Auth::user()->isSuperAdmin() && $applications->contains(fn (Application $a) => $a->recruitment_stage->isTerminal())) {
+        if (! $this->currentUser()->isSuperAdmin() && $applications->contains(fn (Application $a) => $a->recruitment_stage->isTerminal())) {
             $this->dispatch('notify', ['message' => __('Sebagian kandidat terpilih sudah berada di status terminal (Rejected/Hired). Hanya superadmin yang dapat mengubahnya.'), 'type' => 'error']);
 
             return;
@@ -379,7 +379,7 @@ class CandidateManagement extends Component
 
         $applications = Application::whereIn('id', $this->selectedIds)->get(['id', 'recruitment_stage']);
 
-        if (! Auth::user()->isSuperAdmin() && $applications->contains(fn (Application $a) => $a->recruitment_stage->isTerminal())) {
+        if (! $this->currentUser()->isSuperAdmin() && $applications->contains(fn (Application $a) => $a->recruitment_stage->isTerminal())) {
             $this->dispatch('notify', ['message' => __('Sebagian kandidat terpilih sudah berada di status terminal (Rejected/Hired). Hanya superadmin yang dapat mengubahnya.'), 'type' => 'error']);
 
             return;
@@ -413,7 +413,7 @@ class CandidateManagement extends Component
 
     public function bulkDeleteApplications(): void
     {
-        if (! Auth::user()?->isSuperAdmin()) {
+        if (! $this->currentUser()->isSuperAdmin()) {
             abort(403, 'Hanya superadmin yang dapat menghapus data kandidat dari riwayat.');
         }
 
@@ -598,6 +598,15 @@ class CandidateManagement extends Component
         }
 
         return $query;
+    }
+
+    private function currentUser(): User
+    {
+        $user = Auth::user();
+
+        abort_unless($user instanceof User, 403);
+
+        return $user;
     }
 
     public function render(): \Illuminate\View\View

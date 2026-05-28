@@ -26,11 +26,12 @@ class ApplicationReceived extends Notification implements ShouldQueue
         $job = $this->application->job;
 
         return (new MailMessage)
-            ->subject(__('Application Received — :job', ['job' => $job->title]))
-            ->greeting(__('Hello, :name!', ['name' => $notifiable->name]))
-            ->line(__('Thank you for applying for the position of **:job** at PT. Roda Jaya Sakti.', ['job' => $job->title]))
-            ->line(__('Your application has been received and is currently under review. We will notify you of any updates.'))
-            ->action(__('Track Your Application'), url(route('candidate.applications')))
-            ->line(__('Thank you for your interest in joining our team.'));
+            ->subject('Lamaran Diterima - '.$job->title)
+            ->greeting('Yth. '.$notifiable->name.',')
+            ->line('Terima kasih telah melamar untuk posisi **'.$job->title.'** di PT Roda Jaya Sakti.')
+            ->line('Lamaran Anda telah kami terima dan akan ditinjau oleh Tim Rekrutmen.')
+            ->line('Kami akan mengirimkan pemberitahuan apabila terdapat pembaruan pada proses seleksi Anda.')
+            ->action('Lihat Lamaran Saya', url(route('candidate.applications')))
+            ->line('Terima kasih atas minat Anda untuk bergabung dengan PT Roda Jaya Sakti.');
     }
 }

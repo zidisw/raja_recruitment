@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace App\Livewire;
 
-use App\Enums\UserRole;
 use App\Models\Site;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -24,7 +25,9 @@ class SiteManagement extends Component
 
     public function mount(): void
     {
-        abort_unless(auth()->user()->role === UserRole::SuperAdmin, 403);
+        $user = Auth::user();
+
+        abort_unless($user instanceof User && $user->isSuperAdmin(), 403);
     }
 
     public function openCreate(): void

@@ -23,15 +23,15 @@ class ApplicationStatusUpdatedNotification extends Notification
 
     public function toMail(object $notifiable): MailMessage
     {
-        $statusLabel = $this->application->recruitment_stage->label();
+        $statusLabel = $this->application->recruitment_stage->notificationLabel();
 
         return (new MailMessage)
-            ->subject('Application Status Update')
-            ->line('Hello '.$this->application->candidate->name.',')
-            ->line('Your application for the '.$this->application->job->title.' position has been updated.')
-            ->line('Current Status: **'.$statusLabel.'**')
-            ->action('View Application', url('/portal/applications'))
-            ->line('Thank you for using our portal.');
+            ->subject('Pembaruan Status Lamaran')
+            ->greeting('Yth. '.$this->application->candidate->name.',')
+            ->line('Status lamaran Anda untuk posisi '.$this->application->job->title.' telah diperbarui.')
+            ->line('Status saat ini: **'.$statusLabel.'**')
+            ->action('Lihat Lamaran Saya', url(route('candidate.applications')))
+            ->line('Terima kasih telah menggunakan portal rekrutmen kami.');
     }
 
     public function toArray(object $notifiable): array
@@ -40,7 +40,7 @@ class ApplicationStatusUpdatedNotification extends Notification
             'application_id' => $this->application->id,
             'job_title' => $this->application->job->title,
             'status' => $this->application->recruitment_stage->value,
-            'message' => 'Your application status for '.$this->application->job->title.' changed to '.$this->application->recruitment_stage->label(),
+            'message' => 'Status lamaran Anda untuk '.$this->application->job->title.' berubah menjadi '.$this->application->recruitment_stage->notificationLabel().'.',
             'type' => 'status_update',
         ];
     }

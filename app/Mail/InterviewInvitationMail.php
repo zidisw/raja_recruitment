@@ -31,8 +31,12 @@ class InterviewInvitationMail extends Mailable
      */
     public function envelope(): Envelope
     {
+        $prefix = $this->roleType === 'candidate'
+            ? 'Undangan Interview'
+            : 'Jadwal Interview Kandidat';
+
         return new Envelope(
-            subject: 'Undangan Wawancara - '.$this->interview->application->job->title,
+            subject: $prefix.' - '.$this->interview->application->job->title,
         );
     }
 

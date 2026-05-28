@@ -10,6 +10,7 @@ use App\Models\ApplicationStageLog;
 use App\Models\Department;
 use App\Models\Onboarding;
 use App\Models\Site;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
@@ -56,7 +57,9 @@ class OnboardingManagement extends Component
 
     public function mount(): void
     {
-        abort_unless(Auth::user()->canAccessRecruitment(), 403);
+        $user = Auth::user();
+
+        abort_unless($user instanceof User && $user->canAccessRecruitment(), 403);
     }
 
     public function updatingSearch(): void

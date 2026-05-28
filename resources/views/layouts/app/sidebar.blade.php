@@ -173,7 +173,7 @@
                     @if ($role->isAdmin() || $role->isSuperAdmin())
                         <flux:sidebar.item icon="envelope-open" :href="route('email-templates.index')"
                             :current="request()->routeIs('email-templates.index')" wire:navigate>
-                            {{ __('Email Templates') }}
+                            Template Email
                         </flux:sidebar.item>
                     @endif
                 </flux:sidebar.group>

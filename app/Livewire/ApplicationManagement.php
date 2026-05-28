@@ -211,7 +211,7 @@ class ApplicationManagement extends Component
 
         $this->showBulkEmailModal = false;
         $this->bulkEmailStep = 1;
-        $this->dispatch('notify', ['message' => __('Bulk email process started in the background.'), 'type' => 'success']);
+        $this->dispatch('notify', ['message' => 'Proses pengiriman email massal dimulai di background.', 'type' => 'success']);
     }
 
     // ─── Bulk Reject ──────────────────────────────────────────────────────────

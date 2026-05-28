@@ -16,7 +16,7 @@
             </flux:button>
             <flux:button wire:click="openBulkEmail" variant="primary" icon="paper-airplane" size="sm"
                 class="bg-brand-600! hover:bg-brand-700! text-white! dark:bg-brand-500! dark:hover:bg-brand-600!">
-                {{ __('Bulk Send Email') }}
+                Kirim Email Massal
             </flux:button>
             <flux:button wire:click="openBulkReject" variant="primary" icon="x-mark" size="sm"
                 class="bg-rose-600! hover:bg-rose-700! text-white! dark:bg-rose-500! dark:hover:bg-rose-600!">
@@ -433,7 +433,7 @@
     <flux:modal wire:model="showBulkEmailModal" class="w-full max-w-2xl">
         <div class="space-y-5">
             <div>
-                <flux:heading size="lg">{{ __('Bulk Send Email') }}</flux:heading>
+                <flux:heading size="lg">Kirim Email Massal</flux:heading>
                 <flux:text class="mt-1 text-sm text-zinc-500">{{ $job->title }}</flux:text>
             </div>
 
@@ -442,9 +442,9 @@
                 <div class="flex flex-col gap-4">
                     <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
                         <flux:field class="flex-1">
-                            <flux:label>{{ __('Target Stage') }}</flux:label>
+                            <flux:label>Target Tahap</flux:label>
                             @php
-                                $bulkEmailStageOptions = ['' => __('All stages')];
+                                $bulkEmailStageOptions = ['' => 'Semua tahap'];
                                 foreach ($statuses as $stageStatus) {
                                     if ($stageStatus === \App\Enums\RecruitmentStage::REJECTED) {
                                         continue;
@@ -452,63 +452,63 @@
                                     $bulkEmailStageOptions[$stageStatus->value] = $stageStatus->label();
                                 }
                             @endphp
-                            <x-custom-select wire:model.live="bulkEmailStage" placeholder="{{ __('All stages') }}"
+                            <x-custom-select wire:model.live="bulkEmailStage" placeholder="Semua tahap"
                                 :options="$bulkEmailStageOptions" />
                         </flux:field>
                         <flux:field>
                             <label class="flex cursor-pointer items-center gap-2 text-sm">
                                 <flux:checkbox wire:model.live="bulkEmailActiveOnly" />
-                                {{ __('Active only (exclude Rejected/Hired)') }}
+                                Hanya kandidat aktif (tidak termasuk Tidak Lolos/Diterima)
                             </label>
                         </flux:field>
                     </div>
 
                     <div
                         class="rounded-lg bg-blue-50 px-4 py-2 text-sm text-blue-700 dark:bg-blue-900/20 dark:text-blue-300">
-                        {{ __(':count recipients match these criteria.', ['count' => $bulkEmailCount]) }}
+                        {{ $bulkEmailCount }} penerima sesuai dengan kriteria ini.
                     </div>
 
                     <flux:field>
-                        <flux:label>{{ __('Subject') }} *</flux:label>
+                        <flux:label>Subjek *</flux:label>
                         <flux:input wire:model="bulkEmailSubject"
-                            placeholder="{{ __('e.g. Undangan Psikotes — {job}') }}" />
+                            placeholder="Contoh: Undangan Psikotes - {job}" />
                         <flux:error name="bulkEmailSubject" />
-                        <flux:description>{{ __('Use {name} for candidate name, {job} for job title.') }}</flux:description>
+                        <flux:description>Gunakan {name} untuk nama kandidat dan {job} untuk nama posisi.</flux:description>
                     </flux:field>
 
                     <flux:field>
-                        <flux:label>{{ __('Email Body') }} *</flux:label>
+                        <flux:label>Isi Email *</flux:label>
                         <flux:textarea wire:model="bulkEmailBody" rows="8"
-                            placeholder="{{ __('Dear {name},\n\nYou are invited to...') }}" />
+                            placeholder="Yth. {name},&#10;&#10;Kami informasikan bahwa..." />
                         <flux:error name="bulkEmailBody" />
                     </flux:field>
                 </div>
 
                 <div class="flex items-center justify-end gap-3">
                     <flux:button type="button" variant="ghost" wire:click="$set('showBulkEmailModal', false)">
-                        {{ __('Cancel') }}
+                        Batal
                     </flux:button>
                     <flux:button type="button" wire:click="proceedBulkEmail" variant="primary" icon="arrow-right"
                         :disabled="$bulkEmailCount === 0">
-                        {{ __('Preview & Confirm (:count)', ['count' => $bulkEmailCount]) }}
+                        Pratinjau & Konfirmasi ({{ $bulkEmailCount }})
                     </flux:button>
                 </div>
 
             @else
                 {{-- Step 2: Confirm --}}
                 <flux:callout variant="info" icon="information-circle">
-                    <flux:callout.heading>{{ __('Sending to :count recipients', ['count' => $bulkEmailPreview->count()]) }}
+                    <flux:callout.heading>Mengirim ke {{ $bulkEmailPreview->count() }} penerima
                     </flux:callout.heading>
-                    <flux:callout.text>{{ __('Subject:') }} {{ $bulkEmailSubject }}</flux:callout.text>
+                    <flux:callout.text>Subjek: {{ $bulkEmailSubject }}</flux:callout.text>
                 </flux:callout>
 
                 <div class="max-h-60 overflow-y-auto rounded-lg border border-zinc-200 dark:border-zinc-700">
                     <table class="w-full text-xs">
                         <thead class="sticky top-0 bg-zinc-50 dark:bg-zinc-800">
                             <tr>
-                                <th class="px-3 py-2 text-left font-medium text-zinc-500">{{ __('Name') }}</th>
+                                <th class="px-3 py-2 text-left font-medium text-zinc-500">Nama</th>
                                 <th class="px-3 py-2 text-left font-medium text-zinc-500">{{ __('Email') }}</th>
-                                <th class="px-3 py-2 text-left font-medium text-zinc-500">{{ __('Stage') }}</th>
+                                <th class="px-3 py-2 text-left font-medium text-zinc-500">Tahap</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-zinc-100 dark:divide-zinc-800">
@@ -525,19 +525,19 @@
 
                 @if ($bulkEmailCount > 200)
                     <p class="text-xs text-zinc-400">
-                        {{ __('...and :more more recipients not shown.', ['more' => $bulkEmailCount - 200]) }}
+                        ...dan {{ $bulkEmailCount - 200 }} penerima lainnya tidak ditampilkan.
                     </p>
                 @endif
 
                 <div class="flex items-center justify-end gap-3">
                     <flux:button type="button" variant="ghost" wire:click="$set('bulkEmailStep', 1)">
-                        {{ __('Back') }}
+                        Kembali
                     </flux:button>
                     <flux:button type="button" wire:click="sendBulkEmail" variant="primary" icon="paper-airplane"
                         wire:loading.attr="disabled" wire:target="sendBulkEmail">
                         <span wire:loading.remove
-                            wire:target="sendBulkEmail">{{ __('Send to :count Recipients', ['count' => $bulkEmailCount]) }}</span>
-                        <span wire:loading wire:target="sendBulkEmail">{{ __('Sending...') }}</span>
+                            wire:target="sendBulkEmail">Kirim ke {{ $bulkEmailCount }} Penerima</span>
+                        <span wire:loading wire:target="sendBulkEmail">Mengirim...</span>
                     </flux:button>
                 </div>
             @endif

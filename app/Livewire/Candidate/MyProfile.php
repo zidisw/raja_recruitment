@@ -10,11 +10,13 @@ use App\Models\CandidateEducation;
 use App\Models\CandidateExperience;
 use App\Models\CandidateOrganization;
 use App\Models\CandidateProfile;
+use App\Models\User;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 
 #[Layout('layouts.app')]
@@ -58,20 +60,15 @@ class MyProfile extends Component
 
     public string $linkedin_url = '';
 
-    /** @var \Illuminate\Http\UploadedFile|null */
-    public $photo = null;
+    public ?TemporaryUploadedFile $photo = null;
 
-    /** @var \Illuminate\Http\UploadedFile|null */
-    public $ktp_file = null;
+    public ?TemporaryUploadedFile $ktp_file = null;
 
-    /** @var \Illuminate\Http\UploadedFile|null */
-    public $portfolio = null;
+    public ?TemporaryUploadedFile $portfolio = null;
 
-    /** @var \Illuminate\Http\UploadedFile|null */
-    public $certificate = null;
+    public ?TemporaryUploadedFile $certificate = null;
 
-    /** @var \Illuminate\Http\UploadedFile|null */
-    public $paklaring = null;
+    public ?TemporaryUploadedFile $paklaring = null;
 
     // Education
     public array $educations = [];
@@ -84,9 +81,9 @@ class MyProfile extends Component
 
     public function mount(): void
     {
-        abort_unless(Auth::user()?->hasUserRole(), 403);
+        $user = $this->currentUser();
 
-        $user = Auth::user();
+        abort_unless($user->hasUserRole(), 403);
 
         $this->name = $user->name;
         $this->email = $user->email;
@@ -142,7 +139,7 @@ class MyProfile extends Component
 
     public function updateAccount(): void
     {
-        $user = Auth::user();
+        $user = $this->currentUser();
 
         $validated = $this->validate($this->profileRules($user->id));
 
@@ -171,7 +168,7 @@ class MyProfile extends Component
             throw $e;
         }
 
-        Auth::user()->update([
+        $this->currentUser()->update([
             'password' => $validated['password'],
         ]);
 
@@ -265,7 +262,7 @@ class MyProfile extends Component
             'educations.*.gpa' => ['nullable', 'numeric', 'min:0', 'max:4'],
         ]);
 
-        $user = Auth::user();
+        $user = $this->currentUser();
         $user->education()->delete();
         foreach ($this->educations as $edu) {
             CandidateEducation::create([
@@ -295,7 +292,7 @@ class MyProfile extends Component
             'experiences.*.job_description' => ['nullable', 'string', 'max:2000'],
         ]);
 
-        $user = Auth::user();
+        $user = $this->currentUser();
         $user->experiences()->delete();
         foreach ($this->experiences as $exp) {
             CandidateExperience::create([
@@ -324,7 +321,7 @@ class MyProfile extends Component
             'organizations.*.is_current' => ['boolean'],
         ]);
 
-        $user = Auth::user();
+        $user = $this->currentUser();
         $user->organizations()->delete();
         foreach ($this->organizations as $org) {
             CandidateOrganization::create([
@@ -393,13 +390,24 @@ class MyProfile extends Component
 
     public function hasUnverifiedEmail(): bool
     {
-        return Auth::user() instanceof MustVerifyEmail && ! Auth::user()->hasVerifiedEmail();
+        $user = $this->currentUser();
+
+        return $user instanceof MustVerifyEmail && ! $user->hasVerifiedEmail();
     }
 
     public function render(): \Illuminate\View\View
     {
         return view('livewire.candidate.my-profile', [
-            'profile' => Auth::user()->profile,
+            'profile' => $this->currentUser()->profile,
         ]);
+    }
+
+    private function currentUser(): User
+    {
+        $user = Auth::user();
+
+        abort_unless($user instanceof User, 403);
+
+        return $user;
     }
 }

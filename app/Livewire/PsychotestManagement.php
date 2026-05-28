@@ -9,12 +9,14 @@ use App\Models\Application;
 use App\Models\Department;
 use App\Models\Psychotest;
 use App\Models\Site;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
@@ -37,7 +39,7 @@ class PsychotestManagement extends Component
 
     public string $notes = '';
 
-    public $psychotest_file;
+    public ?TemporaryUploadedFile $psychotest_file = null;
 
     public string $search = '';
 
@@ -76,7 +78,9 @@ class PsychotestManagement extends Component
 
     public function mount(): void
     {
-        abort_unless(Auth::user()->canAccessRecruitment(), 403);
+        $user = Auth::user();
+
+        abort_unless($user instanceof User && $user->canAccessRecruitment(), 403);
     }
 
     public function updatingSearch(): void

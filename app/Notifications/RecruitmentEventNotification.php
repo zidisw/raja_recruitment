@@ -30,11 +30,11 @@ class RecruitmentEventNotification extends Notification
     {
         $mail = (new MailMessage)
             ->subject($this->mailSubject ?? $this->title)
-            ->greeting(__('Hello, :name!', ['name' => $notifiable->name]))
+            ->greeting('Yth. '.$notifiable->name.',')
             ->line($this->message);
 
         if ($this->actionUrl) {
-            $mail->action(__('Open Recruitment Portal'), $this->actionUrl);
+            $mail->action('Buka Portal Rekrutmen', $this->actionUrl);
         }
 
         return $mail;

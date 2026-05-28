@@ -11,6 +11,7 @@ use App\Models\Job;
 use App\Models\JobImage;
 use App\Models\Ptk;
 use App\Models\Site;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Layout;
@@ -68,7 +69,8 @@ class JobManagement extends Component
     public function mount(): void
     {
         $user = Auth::user();
-        abort_unless($user->canAccessRecruitment(), 403);
+
+        abort_unless($user instanceof User && $user->canAccessRecruitment(), 403);
     }
 
     public function openCreate(): void

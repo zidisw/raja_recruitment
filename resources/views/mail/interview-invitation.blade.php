@@ -1,25 +1,29 @@
 <x-mail::message>
-# Undangan Wawancara: {{ $interview->application->job->title }}
+# {{ $roleType === 'candidate' ? 'Undangan Interview' : 'Jadwal Interview Kandidat' }}: {{ $interview->application->job->title }}
 
-Halo {{ $roleType === 'candidate' ? $interview->application->candidate->name : $interview->interviewer->name }},
+Yth. {{ $roleType === 'candidate' ? $interview->application->candidate->name : $interview->interviewer->name }},
 
-Anda memiliki jadwal wawancara untuk posisi **{{ $interview->application->job->title }}**.
-Berikut adalah rincian jadwal yang telah diatur:
+@if($roleType === 'candidate')
+Kami informasikan bahwa Anda dijadwalkan mengikuti interview untuk posisi **{{ $interview->application->job->title }}**.
+@else
+Kami informasikan bahwa Anda dijadwalkan sebagai interviewer untuk kandidat **{{ $interview->application->candidate->name }}** pada posisi **{{ $interview->application->job->title }}**.
+@endif
+
+Berikut detail jadwal yang telah ditetapkan:
 
 <x-mail::panel>
 **Tanggal:** {{ $interview->scheduled_at->format('d F Y') }}<br>
-**Waktu:** {{ $interview->scheduled_at->format('H:i') }} WIB<br>
+**Waktu:** {{ $interview->scheduled_at->format('H:i') }}<br>
 **Interviewer:** {{ $interview->interviewer->name }}<br>
 @if($interview->meeting_link)
-**Meeting Link:** [Klik di sini untuk bergabung]({{ $interview->meeting_link }})
+**Tautan Meeting:** [Klik di sini untuk bergabung]({{ $interview->meeting_link }})
 @else
-**Lokasi/Link:** *Akan diinformasikan lebih lanjut.*
+**Lokasi/Tautan:** *Akan diinformasikan lebih lanjut.*
 @endif
 </x-mail::panel>
 
-Harap bersiap 5 menit sebelum jadwal wawancara dimulai. 
-Jika ada kendala terkait waktu wawancara, harap segera informasikan kepada kami.
+Mohon hadir sesuai jadwal dan mempersiapkan hal-hal yang diperlukan sebelum interview dimulai.
 
 Terima kasih,<br>
-{{ config('app.name') }}
+Tim Rekrutmen PT Roda Jaya Sakti
 </x-mail::message>

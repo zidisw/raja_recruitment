@@ -3,7 +3,7 @@
 {!! nl2br(e($body)) !!}
 
 <x-mail::button :url="url(route('candidate.applications'))">
-{{ __('Track Your Application') }}
+Lihat Lamaran Saya
 </x-mail::button>
 
 </x-mail::message>

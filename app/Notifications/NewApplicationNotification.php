@@ -33,19 +33,20 @@ class NewApplicationNotification extends Notification implements ShouldQueue
     {
         if ($this->isForHR) {
             return (new MailMessage)
-                ->subject('New Job Application')
-                ->line('A new application has been submitted for '.$this->application->job->title)
-                ->action('Review Applications', url(route('applications.job', $this->application->job_id)))
-                ->line('Please review it in the Recruitment Portal.');
+                ->subject('Lamaran Baru - '.$this->application->job->title)
+                ->line('Terdapat lamaran baru untuk posisi '.$this->application->job->title.'.')
+                ->line('Kandidat: '.$this->application->candidate->name)
+                ->action('Tinjau Lamaran', url(route('applications.job', $this->application->job_id)))
+                ->line('Silakan tinjau lamaran tersebut melalui portal rekrutmen.');
         }
 
         return (new MailMessage)
-            ->subject('Application Received: '.$this->application->job->title)
-            ->line('Hello '.$this->application->candidate->name.',')
-            ->line('Thank you for applying for the '.$this->application->job->title.' position.')
-            ->line('We have successfully received your application. We will review it and get back to you soon.')
-            ->action('View My Applications', url(route('candidate.applications')))
-            ->line('Thank you for your interest in joining our team!');
+            ->subject('Lamaran Diterima - '.$this->application->job->title)
+            ->greeting('Yth. '.$this->application->candidate->name.',')
+            ->line('Terima kasih telah melamar untuk posisi '.$this->application->job->title.'.')
+            ->line('Lamaran Anda telah kami terima dan akan ditinjau oleh Tim Rekrutmen.')
+            ->action('Lihat Lamaran Saya', url(route('candidate.applications')))
+            ->line('Terima kasih atas minat Anda untuk bergabung dengan PT Roda Jaya Sakti.');
     }
 
     public function toArray(object $notifiable): array
@@ -54,8 +55,8 @@ class NewApplicationNotification extends Notification implements ShouldQueue
             'application_id' => $this->application->id,
             'job_title' => $this->application->job->title,
             'message' => $this->isForHR
-                ? 'New application submitted by '.$this->application->candidate->name
-                : 'Your application has been received!',
+                ? 'Lamaran baru diterima dari '.$this->application->candidate->name
+                : 'Lamaran Anda telah diterima.',
             'type' => 'new_application',
         ];
     }

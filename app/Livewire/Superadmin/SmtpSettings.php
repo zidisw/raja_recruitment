@@ -6,6 +6,8 @@ namespace App\Livewire\Superadmin;
 
 use App\Enums\UserRole;
 use App\Models\SmtpSetting;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Mail;
 use Livewire\Attributes\Layout;
@@ -32,7 +34,9 @@ class SmtpSettings extends Component
 
     public function mount(): void
     {
-        abort_unless(auth()->user()->role === UserRole::SuperAdmin, 403);
+        $user = $this->currentUser();
+
+        abort_unless($user->role === UserRole::SuperAdmin, 403);
 
         $smtp = SmtpSetting::first();
 
@@ -82,8 +86,9 @@ class SmtpSettings extends Component
         $this->testStatus = '';
 
         try {
-            $recipientEmail = auth()->user()->email;
-            $recipientName = auth()->user()->name;
+            $user = $this->currentUser();
+            $recipientEmail = $user->email;
+            $recipientName = $user->name;
 
             Mail::raw(
                 'This is a test email from PT. Roda Jaya Sakti Recruitment System. SMTP configuration is working correctly.',
@@ -102,5 +107,14 @@ class SmtpSettings extends Component
     public function render()
     {
         return view('livewire.superadmin.smtp-settings');
+    }
+
+    private function currentUser(): User
+    {
+        $user = Auth::user();
+
+        abort_unless($user instanceof User, 403);
+
+        return $user;
     }
 }

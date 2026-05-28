@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Livewire;
 
 use App\Models\Ptk;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
@@ -47,14 +49,15 @@ class PtkManagement extends Component
     public string $tanggal_permintaan = '';
 
     // Upload-only
-    /** @var \Livewire\Features\SupportFileUploads\TemporaryUploadedFile|null */
-    public $attachment = null;
+    public ?TemporaryUploadedFile $attachment = null;
 
     public ?string $existingAttachmentPath = null;
 
     public function mount(): void
     {
-        abort_unless(Auth::user()->canAccessRecruitment(), 403);
+        $user = Auth::user();
+
+        abort_unless($user instanceof User && $user->canAccessRecruitment(), 403);
     }
 
     public function openCreate(): void

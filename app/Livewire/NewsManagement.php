@@ -6,6 +6,8 @@ namespace App\Livewire;
 
 use App\Models\Article;
 use App\Models\ArticleImage;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
@@ -13,6 +15,7 @@ use Illuminate\View\View;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
@@ -38,8 +41,9 @@ class NewsManagement extends Component
 
     public string $published_at = '';
 
-    public $featuredImage = null;
+    public ?TemporaryUploadedFile $featuredImage = null;
 
+    /** @var array<int, TemporaryUploadedFile> */
     public array $galleryImages = [];
 
     #[Computed]
@@ -64,7 +68,9 @@ class NewsManagement extends Component
 
     public function mount(): void
     {
-        abort_unless(auth()->user()->canAccessRecruitment(), 403);
+        $user = Auth::user();
+
+        abort_unless($user instanceof User && $user->canAccessRecruitment(), 403);
     }
 
     public function updatedTitle(string $value): void
@@ -129,7 +135,7 @@ class NewsManagement extends Component
             $article = Article::findOrFail($this->editingId);
             $article->update($data);
         } else {
-            $data['author_id'] = auth()->id();
+            $data['author_id'] = Auth::id();
             $article = Article::create($data);
         }
 

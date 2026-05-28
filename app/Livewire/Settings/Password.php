@@ -3,6 +3,7 @@
 namespace App\Livewire\Settings;
 
 use App\Concerns\PasswordValidationRules;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Title;
@@ -35,12 +36,21 @@ class Password extends Component
             throw $e;
         }
 
-        Auth::user()->update([
+        $this->currentUser()->update([
             'password' => $validated['password'],
         ]);
 
         $this->reset('current_password', 'password', 'password_confirmation');
 
         $this->dispatch('password-updated');
+    }
+
+    private function currentUser(): User
+    {
+        $user = Auth::user();
+
+        abort_unless($user instanceof User, 403);
+
+        return $user;
     }
 }

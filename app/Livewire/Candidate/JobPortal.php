@@ -9,6 +9,7 @@ use App\Models\Application;
 use App\Models\Department;
 use App\Models\Job;
 use App\Models\Site;
+use App\Models\User;
 use App\Notifications\ApplicationReceived;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Auth;
@@ -44,7 +45,7 @@ class JobPortal extends Component
 
     public function mount(): void
     {
-        abort_unless(Auth::user()?->hasUserRole(), 403);
+        abort_unless($this->currentUser()->hasUserRole(), 403);
     }
 
     public function updatingSearch(): void
@@ -74,7 +75,7 @@ class JobPortal extends Component
 
     public function apply(Job $job): void
     {
-        $user = Auth::user();
+        $user = $this->currentUser();
 
         abort_unless($job->is_active, 403);
 
@@ -110,7 +111,7 @@ class JobPortal extends Component
             return;
         }
 
-        $user = Auth::user();
+        $user = $this->currentUser();
 
         $alreadyApplied = Application::where('user_id', $user->id)
             ->where('job_id', $this->confirmingJobId)
@@ -179,7 +180,7 @@ class JobPortal extends Component
 
     public function render(): \Illuminate\View\View
     {
-        $user = Auth::user();
+        $user = $this->currentUser();
 
         $appliedJobIds = Application::where('user_id', $user->id)->pluck('job_id')->all();
 
@@ -222,5 +223,14 @@ class JobPortal extends Component
             'sites' => Cache::remember('ref.sites', 300, fn () => Site::orderBy('name')->get()),
             'trackingApplication' => $trackingApplication,
         ]);
+    }
+
+    private function currentUser(): User
+    {
+        $user = Auth::user();
+
+        abort_unless($user instanceof User, 403);
+
+        return $user;
     }
 }

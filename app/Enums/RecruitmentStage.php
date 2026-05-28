@@ -33,6 +33,22 @@ enum RecruitmentStage: string
         };
     }
 
+    public function notificationLabel(): string
+    {
+        return match ($this) {
+            self::APPLIED => 'Lamaran Terkirim',
+            self::ADMINISTRASI => 'Lolos Administrasi',
+            self::HR_INTERVIEW => 'Interview HR',
+            self::USER_INTERVIEW => 'Interview User',
+            self::OFFERING => 'Offering Letter',
+            self::PSYCHOTEST => 'Psikotes',
+            self::MCU => 'Medical Check Up',
+            self::ONBOARDING => 'Onboarding',
+            self::HIRED => 'Diterima',
+            self::REJECTED => 'Tidak Lolos',
+        };
+    }
+
     /**
      * Get the next stage in the forward-only pipeline.
      */

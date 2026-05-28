@@ -41,7 +41,9 @@ class UserManagement extends Component
 
     public function mount(): void
     {
-        abort_unless(Auth::user()->isSuperAdmin(), 403);
+        $user = Auth::user();
+
+        abort_unless($user instanceof User && $user->isSuperAdmin(), 403);
     }
 
     public function openCreate(): void

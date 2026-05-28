@@ -8,8 +8,11 @@ use App\Models\CandidateEducation;
 use App\Models\CandidateExperience;
 use App\Models\CandidateOrganization;
 use App\Models\CandidateProfile;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 
 #[Layout('layouts.candidate')]
@@ -42,9 +45,9 @@ class ProfileSetup extends Component
 
     public string $linkedin_url = '';
 
-    public $photo = null;
+    public ?TemporaryUploadedFile $photo = null;
 
-    public $ktp_file = null;
+    public ?TemporaryUploadedFile $ktp_file = null;
 
     // Step 2: Education (array of entries)
     public array $educations = [];
@@ -56,18 +59,20 @@ class ProfileSetup extends Component
     public array $organizations = [];
 
     // Step 5: Documents
-    public $portfolio = null;
+    public ?TemporaryUploadedFile $portfolio = null;
 
-    public $certificate = null;
+    public ?TemporaryUploadedFile $certificate = null;
 
-    public $paklaring = null;
+    public ?TemporaryUploadedFile $paklaring = null;
 
     public function mount(): void
     {
-        abort_unless(auth()->user()->hasUserRole(), 403);
+        $user = $this->currentUser();
+
+        abort_unless($user->hasUserRole(), 403);
 
         // If profile already exists, redirect to portal
-        if (auth()->user()->profile) {
+        if ($user->profile) {
             $this->redirect(route('candidate.portal'));
 
             return;
@@ -186,7 +191,7 @@ class ProfileSetup extends Component
             'paklaring' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
         ]);
 
-        $user = auth()->user();
+        $user = $this->currentUser();
 
         $photoPath = $this->photo?->store('candidate/photos', 'public');
         $ktpPath = $this->ktp_file?->store('candidate/ktp', 'public');
@@ -304,5 +309,14 @@ class ProfileSetup extends Component
             ]),
             default => null,
         };
+    }
+
+    private function currentUser(): User
+    {
+        $user = Auth::user();
+
+        abort_unless($user instanceof User, 403);
+
+        return $user;
     }
 }

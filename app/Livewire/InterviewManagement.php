@@ -20,6 +20,7 @@ use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 use Livewire\WithFileUploads;
 use Livewire\WithPagination;
 
@@ -39,8 +40,7 @@ class InterviewManagement extends Component
 
     public ?int $uploadingInterviewId = null;
 
-    /** @var \Illuminate\Http\UploadedFile|null */
-    public $upload_file = null;
+    public ?TemporaryUploadedFile $upload_file = null;
 
     public ?int $application_id = null;
 
@@ -56,8 +56,7 @@ class InterviewManagement extends Component
 
     public string $hr_notes = '';
 
-    /** @var \Illuminate\Http\UploadedFile|null */
-    public $evaluation_file = null;
+    public ?TemporaryUploadedFile $evaluation_file = null;
 
     public string $tab = 'hr';
 
@@ -122,7 +121,9 @@ class InterviewManagement extends Component
 
     private function authorizeAccess(): void
     {
-        abort_unless(Auth::user()->canAccessRecruitment(), 403);
+        $user = Auth::user();
+
+        abort_unless($user instanceof User && $user->canAccessRecruitment(), 403);
     }
 
     public function openCreate(): void

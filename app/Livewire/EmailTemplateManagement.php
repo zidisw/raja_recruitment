@@ -6,6 +6,8 @@ namespace App\Livewire;
 
 use App\Enums\RecruitmentStage;
 use App\Models\EmailTemplate;
+use App\Models\User;
+use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
@@ -28,7 +30,9 @@ class EmailTemplateManagement extends Component
 
     public function mount(): void
     {
-        abort_unless(auth()->user()->canAccessRecruitment(), 403);
+        $user = Auth::user();
+
+        abort_unless($user instanceof User && $user->canAccessRecruitment(), 403);
     }
 
     public function openEdit(string $stage, string $jobLevel): void
@@ -44,8 +48,9 @@ class EmailTemplateManagement extends Component
         $this->editingStage = $stage;
         $this->editingStageLabel = $recruitmentStage->label();
         $this->editingLevel = $jobLevel;
-        $this->subject = $template->subject ?? "Application Update: {$recruitmentStage->label()}";
-        $this->body = $template->body ?? "Dear {name},\n\nYour application for {job} has been updated to: {status}.\n\nBest regards,\nRecruitment Team";
+        $defaults = EmailTemplate::defaultFor($recruitmentStage);
+        $this->subject = $template->subject ?? $defaults['subject'];
+        $this->body = $template->body ?? $defaults['body'];
         $this->showModal = true;
     }
 
@@ -68,7 +73,7 @@ class EmailTemplateManagement extends Component
         $this->showModal = false;
         $this->reset(['editingId', 'editingStage', 'editingStageLabel', 'editingLevel', 'subject', 'body']);
 
-        $this->dispatch('notify', ['message' => __('Email template saved successfully.'), 'type' => 'success']);
+        $this->dispatch('notify', ['message' => 'Template email berhasil disimpan.', 'type' => 'success']);
     }
 
     public function render(): \Illuminate\View\View
