@@ -6,6 +6,7 @@ Laravel/Livewire recruitment system for PT. Roda Jaya Sakti.
 
 - [Developer Guide](DEVELOPER_GUIDE.md)
 - [Deployment Runbook](docs/DEPLOYMENT_RUNBOOK.md)
+- [GitHub Actions to Hostinger Semi-Auto Deployment Guide](docs/GITHUB_ACTIONS_HOSTINGER_DEPLOYMENT.md)
 
 ## Quick Checks
 

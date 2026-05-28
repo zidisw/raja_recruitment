@@ -4,6 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'PT. Roda Jaya Sakti') - Mining, Heavy Equipment & Construction</title>
     <meta name="description"
         content="@yield('meta_description', 'PT. Roda Jaya Sakti - Leading Mining Services Contractor in Eastern Indonesia. Nickel hauling, construction, and heavy equipment support services.')">
