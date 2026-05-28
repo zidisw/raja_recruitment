@@ -28,7 +28,7 @@ class MyApplications extends Component
     #[Url]
     public string $tab = 'on_progress';
 
-    public ?int $uploadingForApplicationId = null;
+    public $uploadingForApplicationId = null;
 
     public ?TemporaryUploadedFile $signed_ol_file = null;
 

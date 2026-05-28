@@ -33,11 +33,11 @@ class JobPortal extends Component
 
     public bool $show_applied_only = false;
 
-    public ?int $trackingJobId = null;
+    public $trackingJobId = null;
 
     public bool $showTrackingModal = false;
 
-    public ?int $confirmingJobId = null;
+    public $confirmingJobId = null;
 
     public ?Job $confirmingJob = null;
 

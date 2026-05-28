@@ -25,11 +25,11 @@ class OnboardingManagement extends Component
 
     public bool $showModal = false;
 
-    public ?int $expandedRow = null;
+    public $expandedRow = null;
 
-    public ?int $editingOnboardingId = null;
+    public $editingOnboardingId = null;
 
-    public ?int $application_id = null;
+    public $application_id = null;
 
     public string $joining_date = '';
 

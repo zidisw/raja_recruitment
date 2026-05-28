@@ -40,7 +40,7 @@ class JobManagement extends Component
 
     public bool $showModal = false;
 
-    public ?int $editingId = null;
+    public $editingId = null;
 
     public string $title = '';
 
@@ -56,11 +56,11 @@ class JobManagement extends Component
 
     public string $closed_at = '';
 
-    public ?int $department_id = null;
+    public $department_id = null;
 
-    public ?int $site_id = null;
+    public $site_id = null;
 
-    public ?int $ptk_id = null;
+    public $ptk_id = null;
 
     public $featuredImage = null;
 

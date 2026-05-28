@@ -45,7 +45,7 @@ class CandidateManagement extends Component
 
     public string $filterStatus = '';
 
-    public ?int $expandedRow = null;
+    public $expandedRow = null;
 
     public array $selectedIds = [];
 
@@ -60,9 +60,9 @@ class CandidateManagement extends Component
     // Interview Scheduling fields
     public bool $showScheduleModal = false;
 
-    public ?int $schedulingApplicationId = null;
+    public $schedulingApplicationId = null;
 
-    public ?int $interviewer_id = null;
+    public $interviewer_id = null;
 
     public string $scheduled_date = '';
 

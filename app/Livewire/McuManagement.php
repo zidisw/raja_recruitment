@@ -27,11 +27,11 @@ class McuManagement extends Component
 
     public bool $showModal = false;
 
-    public ?int $expandedRow = null;
+    public $expandedRow = null;
 
-    public ?int $editingId = null;
+    public $editingId = null;
 
-    public ?int $application_id = null;
+    public $application_id = null;
 
     public string $mcu_date = '';
 

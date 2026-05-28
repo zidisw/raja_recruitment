@@ -27,7 +27,7 @@ class PtkManagement extends Component
 
     public bool $showModal = false;
 
-    public ?int $editingId = null;
+    public $editingId = null;
 
     /** '' = pilih mode, 'upload' = upload PTK fisik, 'create' = buat PTK digital */
     public string $mode = '';

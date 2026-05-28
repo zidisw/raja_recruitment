@@ -27,7 +27,7 @@ class NewsManagement extends Component
 
     public bool $showModal = false;
 
-    public ?int $editingId = null;
+    public $editingId = null;
 
     public string $title = '';
 

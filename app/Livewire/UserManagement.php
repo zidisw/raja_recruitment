@@ -20,7 +20,7 @@ class UserManagement extends Component
 
     public bool $showModal = false;
 
-    public ?int $editingId = null;
+    public $editingId = null;
 
     public string $name = '';
 
@@ -28,7 +28,7 @@ class UserManagement extends Component
 
     public string $role = '';
 
-    public ?int $department_id = null;
+    public $department_id = null;
 
     public string $password = '';
 

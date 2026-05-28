@@ -32,19 +32,19 @@ class InterviewManagement extends Component
 
     public bool $showModal = false;
 
-    public ?int $editingId = null;
+    public $editingId = null;
 
     public bool $showUploadModal = false;
 
-    public ?int $expandedRow = null;
+    public $expandedRow = null;
 
-    public ?int $uploadingInterviewId = null;
+    public $uploadingInterviewId = null;
 
     public ?TemporaryUploadedFile $upload_file = null;
 
-    public ?int $application_id = null;
+    public $application_id = null;
 
-    public ?int $interviewer_id = null;
+    public $interviewer_id = null;
 
     public string $interview_type = 'HR Interview';
 

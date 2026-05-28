@@ -41,7 +41,7 @@ class ApplicationManagement extends Component
 
     public int $perPage = 10;
 
-    public ?int $expandedRow = null;
+    public $expandedRow = null;
 
     // Bulk Email
     public bool $showBulkEmailModal = false;
