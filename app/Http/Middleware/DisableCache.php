@@ -32,7 +32,7 @@ class DisableCache
                 $session = $request->hasSession() ? $request->session() : null;
                 $sessionToken = $session ? $session->token() : 'no_session';
                 $requestToken = $request->header('X-CSRF-TOKEN') ?? $request->input('_token') ?? 'no_token';
-                
+
                 $logData = [
                     'url' => $request->fullUrl(),
                     'method' => $request->method(),
@@ -42,7 +42,7 @@ class DisableCache
                     'session_id' => $session ? $session->getId() : 'no_session_id',
                     'cookies' => $request->cookies->all(),
                 ];
-                
+
                 \Illuminate\Support\Facades\Log::build([
                     'driver' => 'single',
                     'path' => storage_path('logs/csrf_debug.log'),
