@@ -13,7 +13,7 @@
         }
     }" x-init="setTimeout(() => mounted = true, 50)"
         class="flex flex-col gap-8 w-full max-w-md mx-auto transition-all duration-500 opacity-0 translate-y-4"
-        :class="mounted ? '!opacity-100 !translate-y-0' : ''">
+        :class="mounted ? 'opacity-100! translate-y-0!' : ''">
 
         <div class="text-center space-y-2">
             <h1 class="text-3xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
