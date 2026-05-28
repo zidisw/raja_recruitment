@@ -31,5 +31,19 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        $exceptions->report(function (\Throwable $e) {
+            try {
+                \Illuminate\Support\Facades\Log::build([
+                    'driver' => 'single',
+                    'path' => storage_path('logs/csrf_debug.log'),
+                ])->error('Exception caught in handler: ' . get_class($e), [
+                    'message' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'trace' => substr($e->getTraceAsString(), 0, 2000), // limit trace length
+                ]);
+            } catch (\Throwable $loggingError) {
+                // Ignore errors during logging to prevent infinite loops
+            }
+        });
     })->create();
