@@ -33,6 +33,45 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
+        // Listen for exceptions in Livewire components
+        try {
+            if (class_exists(\Livewire\Livewire::class)) {
+                \Livewire\Livewire::listen('exception', function ($component, $e, $stopPropagation) {
+                    try {
+                        \Illuminate\Support\Facades\Log::build([
+                            'driver' => 'single',
+                            'path' => storage_path('logs/csrf_debug.log'),
+                        ])->error('Livewire component exception caught: '.get_class($e), [
+                            'component' => get_class($component),
+                            'message' => $e->getMessage(),
+                            'file' => $e->getFile(),
+                            'line' => $e->getLine(),
+                            'trace' => substr($e->getTraceAsString(), 0, 2000),
+                        ]);
+                    } catch (\Throwable) {
+                        // Ignore
+                    }
+                });
+
+                \Livewire\Livewire::listen('checksum.fail', function ($checksum, $comparitor, $snapshot) {
+                    try {
+                        \Illuminate\Support\Facades\Log::build([
+                            'driver' => 'single',
+                            'path' => storage_path('logs/csrf_debug.log'),
+                        ])->error('Livewire checksum verification failed', [
+                            'checksum' => $checksum,
+                            'comparitor' => $comparitor,
+                            'snapshot' => $snapshot,
+                        ]);
+                    } catch (\Throwable) {
+                        // Ignore
+                    }
+                });
+            }
+        } catch (\Throwable) {
+            // Ignore during setup/console commands if Livewire is not loaded
+        }
+
         $this->configureDefaults();
 
         $this->loadSmtpFromDatabase();

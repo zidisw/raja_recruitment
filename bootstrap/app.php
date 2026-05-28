@@ -46,4 +46,25 @@ return Application::configure(basePath: dirname(__DIR__))
                 // Ignore errors during logging to prevent infinite loops
             }
         });
+
+        $exceptions->render(function (\Throwable $e, \Illuminate\Http\Request $request) {
+            if (method_exists($e, 'getStatusCode') && $e->getStatusCode() === 419) {
+                try {
+                    \Illuminate\Support\Facades\Log::build([
+                        'driver' => 'single',
+                        'path' => storage_path('logs/csrf_debug.log'),
+                    ])->error('419 Page Expired detected in render phase: '.get_class($e), [
+                        'message' => $e->getMessage(),
+                        'url' => $request->fullUrl(),
+                        'file' => $e->getFile(),
+                        'line' => $e->getLine(),
+                        'trace' => substr($e->getTraceAsString(), 0, 2000),
+                    ]);
+                } catch (\Throwable) {
+                    // Ignore
+                }
+            }
+
+            return null; // Continue standard rendering
+        });
     })->create();
